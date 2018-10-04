@@ -16,3 +16,4 @@ NSString *const kDeezerBundleIdentifier = @"com.deezer.Deezer";
 NSString *const kMusicBundleIdentifier = @"com.apple.Music";
 
 NSString *const kNextTracksMessage = @"nextTracks";
+NSString *const kShowNextUp = @"showNextUp";
