@@ -18,7 +18,7 @@
 
 - (void)handleIncomingMessage:(NSString *)name withUserInfo:(NSDictionary *)dict {
     self.metadatas = dict[@"upcoming"];
-    [[NSNotificationCenter defaultCenter] postNotificationName:kShowNextUp
+    [[NSNotificationCenter defaultCenter] postNotificationName:kNewMetadata
                                                         object:nil];
 }
 

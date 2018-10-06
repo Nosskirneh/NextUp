@@ -31,10 +31,17 @@ NUMetadataSaver *metadataSaver;
 
         MPMusicPlayerController *player = [MPMusicPlayerController systemMusicPlayer];
 
+        // Do not compute if the current track is the same as last time
+        static long long prevTrackID = 0;
+        long long currTrackID = player.nowPlayingItem.persistentID;
+        if (currTrackID == prevTrackID)
+            return;
+        prevTrackID = currTrackID;
+
         NSMutableArray *upcomingMetadatas = [NSMutableArray new];
-        int i = 1;
+        int i = player.indexOfNowPlayingItem + 1;
         MPMediaItem *item = [player nowPlayingItemAtIndex:i];
-        while (item) {
+        while (item && upcomingMetadatas.count < 3) {
             NSDictionary *metadata = [player deserilizeTrack:item];
             [upcomingMetadatas addObject:metadata];
 
@@ -42,7 +49,22 @@ NUMetadataSaver *metadataSaver;
             item = [player nowPlayingItemAtIndex:i];
         };
 
+        if (upcomingMetadatas.count == 0) { // No more tracks, use the first one
+            NSDictionary *metadata = [player deserilizeTrack:[player nowPlayingItemAtIndex:0]];
+            [upcomingMetadatas addObject:metadata];
+        }
+
         sendNextTracks(upcomingMetadatas);
+
+
+        // For debugging
+        static int x = 0;
+        if (x > 4) {
+            HBLogDebug(@"posting notif for x: %d", x);
+            [[NSNotificationCenter defaultCenter] postNotificationName:kShowNextUp object:nil];
+            x = -1;
+        }
+        x++;
     }
 
     %end
@@ -100,7 +122,7 @@ NUMetadataSaver *metadataSaver;
         self.upcomingMetadatas = [NSMutableArray new];
         int i = 1;
         SPTPlayerTrack *track = [self metadataAtRelativeIndex:i];
-        while (track) {
+        while (track && self.upcomingMetadatas.count < 3) {
             HBLogDebug(@"track: %@", track);
             [self deserilizeTrack:track];
             i++;
@@ -156,7 +178,7 @@ NUMetadataSaver *metadataSaver;
         NSMutableArray *upcomingMetadatas = [NSMutableArray new];
         int i = 1;
         DZRDownloadableObject *downloadObject = [self downloadableAtTrackIndex:i];
-        while (downloadObject) {
+        while (downloadObject && upcomingMetadatas.count < 3) {
             NSDictionary *metadata = [self deserilizeTrack:downloadObject.playableObject];
             [upcomingMetadatas addObject:metadata];
 
@@ -182,100 +204,98 @@ NUMetadataSaver *metadataSaver;
 %end
 // ---
 
-
-
 /* Adding the widget */
 %group SpringBoard
 
-    // %hook NCNotificationCombinedListViewController
-
-    // -(double)_settlingYPositionForRevealForScrollView:(id)arg1  {
-    //     %log;
-    //     double org = %orig;
-    //     HBLogDebug(@"_settlingYPositionForRevealForScrollView: %f", org);
-    //     return org;
-    // }
-
-    // -(double)_revealHintViewPosition {
-    //     %log;
-    //     double org = %orig;
-    //     HBLogDebug(@"_revealHintViewPosition: %f", org);
-    //     return org;
-    // }
-
-    // %end
-
-    %subclass NextUpDashBoardAdjunctItemView : SBDashBoardAdjunctItemView
-
-    - (void)layoutSubviews {
-        %orig;
-        if (!self.contentHost) return;
-        self.contentHost.containerSize = self.bounds.size;
-    }
-
-    %end
-
-
     %hook SBDashBoardNotificationAdjunctListViewController
-    %property (nonatomic, retain) SBDashBoardAdjunctItemView *nextUpContainerView;
-    %property (nonatomic, retain) NextUpViewController *nextUpViewController;
-    // %property (nonatomic, retain) UIImpactFeedbackGenerator *nextUpHapticGenerator;
-    %property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
-    %property (nonatomic, assign, getter=isNextUpInitialized) BOOL nextUpInitialized;
 
     - (id)init {
         %log;
+
         id orig = %orig;
         [[NSNotificationCenter defaultCenter] addObserver:orig
-                                                 selector:@selector(tryToShowNextUp)
+                                                 selector:@selector(showNextUp)
                                                      name:kShowNextUp
                                                    object:nil];
         return orig;
     }
 
-    - (void)_updateMediaControlsVisibility {
-        %log;
-        %orig;
-
-        if (self.showingNextUp) // Put it at the end
-            [self insertNextUpSubviewAtEnd];
+    %new
+    - (SBDashBoardMediaControlsViewController *)mediaControlsController {
+        SBDashBoardNowPlayingController *nowPlayingController = [self valueForKey:@"_nowPlayingController"];
+        return nowPlayingController.controlsViewController;
     }
 
-    - (void)_updateAdjunctListItems {
+    %new
+    - (void)showNextUp {
         %log;
-        %orig;
+
+        SBDashBoardMediaControlsViewController *mediaControlsController = [self mediaControlsController];
+
+        if (mediaControlsController.showingNextUp)
+            return;
+
+        // Mark NextUp as should be visible
+        mediaControlsController.shouldShowNextUp = YES;
+
+        // Reload the widget
+        MSHookIvar<NSInteger>(self, "_nowPlayingState") = 0;
+        [self _updateMediaControlsVisibilityAnimated:NO];
+        MSHookIvar<NSInteger>(self, "_nowPlayingState") = 2;
+        [self _updateMediaControlsVisibilityAnimated:YES];
+
+        // Not restoring width and height here since we want
+        // to do it when the animation is complete
     }
+
+    // Restore width and height (touches don't work otherwise)
+    %new
+    - (void)nextUpViewWasAdded {
+        %log;
+        SBDashBoardMediaControlsViewController *mediaControlsController = [self mediaControlsController];
+
+        CGRect frame = mediaControlsController.view.frame;
+        frame.size.width = self.view.frame.size.width;
+        frame.size.height = self.view.frame.size.height;
+        mediaControlsController.view.frame = frame;
+    }
+
+    %end
+
+
+    %hook SBDashBoardMediaControlsViewController
+    %property (nonatomic, retain) NextUpViewController *nextUpViewController;
+    %property (nonatomic, assign) BOOL nextUpNeedPostFix;
+    %property (nonatomic, assign) BOOL shouldShowNextUp;
+    %property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
+    %property (nonatomic, assign, getter=isNextUpInitialized) BOOL nextUpInitialized;
 
     - (void)viewDidLoad {
-        if(![self isShowingNextUp]) {
-            %log;
-            %orig;
+        %orig;
 
-            [self initNextUpContainerView];
-        }
+        [self initNextUp];
+    }
+
+    - (CGSize)preferredContentSize {
+        CGSize orig = %orig;
+        if (self.shouldShowNextUp)
+            orig.height += 105;
+        return orig;
+    }
+
+    - (void)_layoutMediaControls {
+        %orig;
+
+        if (self.shouldShowNextUp)
+            [self addNextUpView];
     }
 
     %new
-    - (void)tryToShowNextUp {
-        %log;
-        if ([self isShowingMediaControls])
-            [self showNextUp];
-    }
-
-    %new
-    - (void)initNextUpContainerView {
-        %log;
+    - (void)initNextUp {
         if(![self isNextUpInitialized]) {
             self.nextUpViewController = [[%c(NextUpViewController) alloc] init];
             self.nextUpViewController.cornerRadius = 15;
             self.nextUpViewController.metadataSaver = metadataSaver;
-
-            self.nextUpContainerView = [[%c(NextUpDashBoardAdjunctItemView) alloc] initWithRecipe:0 options:0]; // initWithRecipe:1 options:2
-            self.nextUpContainerView.contentHost = self.nextUpViewController;
-            self.nextUpContainerView.alpha = 0.0;
-            self.nextUpContainerView.transform = CGAffineTransformMakeScale(0.5, 0.5);
-
-            self.nextUpViewController.containerView = self.nextUpContainerView;
 
             // self.hapticGenerator = [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleMedium];
 
@@ -283,47 +303,34 @@ NUMetadataSaver *metadataSaver;
         }
     }
 
-    %new
-    - (void)insertNextUpSubviewAtEnd {
-        UIStackView *_stackView = [self valueForKey:@"_stackView"];
-        [_stackView insertArrangedSubview:self.nextUpContainerView atIndex:1];
+    - (void)handleEvent:(SBDashBoardEvent *)event {
+        %orig;
+
+        if (event.type == 18 && self.nextUpNeedPostFix) { // SignificantUserInteraction
+            self.nextUpNeedPostFix = NO;
+            [self.nextUpViewController viewDidAppear:YES];
+            [[self _presenter] nextUpViewWasAdded];
+        }
     }
 
     %new
-    - (void)showNextUp {
-        [self insertNextUpSubviewAtEnd];
+    - (void)addNextUpView {
+        [self.view addSubview:self.nextUpViewController.view];
 
-        UIStackView *_stackView = [self valueForKey:@"_stackView"];
-        [_stackView addArrangedSubview:self.nextUpContainerView];
-        [UIView animateWithDuration:0.375
-                              delay:0.0
-                            options:nil
-                         animations: ^{
-                            self.nextUpContainerView.alpha = 1.0;
-                            self.nextUpContainerView.transform = CGAffineTransformMakeScale(1, 1);
-                        }
-                         completion: ^(BOOL finished) {
-                            self.showingNextUp = YES;
-                        }
-        ];
+        UIView *mediaView = ((UIViewController *)[self valueForKey:@"_mediaControlsPanelViewController"]).view;
+
+        self.nextUpViewController.view.frame = CGRectMake(mediaView.frame.origin.x,
+                                                          mediaView.frame.origin.y + mediaView.frame.size.height,
+                                                          mediaView.frame.size.width,
+                                                          105);
+        self.showingNextUp = YES;
+        self.nextUpNeedPostFix = YES;
     }
 
     %new
-    - (void)hideNextUp {
-        [UIView animateWithDuration:0.375
-                              delay:0.0
-                            options:nil
-                         animations: ^{
-                            self.nextUpContainerView.alpha = 0.0;
-                            self.nextUpContainerView.transform = CGAffineTransformMakeScale(0.5, 0.5);
-                        }
-                         completion: ^(BOOL finished) {
-                            UIStackView *_stackView = [self valueForKey:@"_stackView"];
-                            [_stackView setTranslatesAutoresizingMaskIntoConstraints:NO];
-                            [_stackView removeArrangedSubview:self.nextUpContainerView];
-                            self.showingNextUp = NO;
-                        }
-        ];
+    - (void)removeNextUpView {
+        [self.nextUpViewController.view removeFromSuperview];
+        self.showingNextUp = NO;
     }
 
     %end

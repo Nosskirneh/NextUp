@@ -15,5 +15,6 @@ NSString *const kSpotifyBundleIdentifier = @"com.spotify.client";
 NSString *const kDeezerBundleIdentifier = @"com.deezer.Deezer";
 NSString *const kMusicBundleIdentifier = @"com.apple.Music";
 
-NSString *const kNextTracksMessage = @"nextTracks";
-NSString *const kShowNextUp = @"showNextUp";
+NSString *const kNextTracksMessage = @"se.nosskirneh.nextup/nextTracks";
+NSString *const kShowNextUp = @"se.nosskirneh.nextup/showNextUp";
+NSString *const kNewMetadata = @"se.nosskirneh.nextup/newMetadata";

@@ -17,3 +17,4 @@ extern NSString *const kMusicBundleIdentifier;
 
 extern NSString *const kNextTracksMessage;
 extern NSString *const kShowNextUp;
+extern NSString *const kNewMetadata;
