@@ -59,10 +59,10 @@ NUMetadataSaver *metadataSaver;
 
         // For debugging
         static int x = 0;
-        if (x > 4) {
+        if (x > 2) {
             HBLogDebug(@"posting notif for x: %d", x);
             [[NSNotificationCenter defaultCenter] postNotificationName:kShowNextUp object:nil];
-            x = -1;
+            x = 0;
         }
         x++;
     }

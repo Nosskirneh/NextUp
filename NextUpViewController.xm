@@ -1,6 +1,8 @@
 #import "Headers.h"
 #import "Common.h"
 
+#define DIGITAL_TOUCH_BUNDLE [NSBundle bundleWithPath:@"/System/Library/PrivateFrameworks/DigitalTouchShared.framework"]
+
 @implementation NextUpViewController
 
 @dynamic view;
@@ -49,10 +51,26 @@
     [self.headerLabel.bottomAnchor constraintEqualToAnchor:self.contentView.topAnchor constant:20].active = YES;
     [self.headerLabel.leftAnchor constraintEqualToAnchor:self.contentView.leftAnchor constant:15].active = YES;
 
+    // Media view constraints
     [_mediaView.topAnchor constraintEqualToAnchor:self.headerLabel.bottomAnchor].active = YES;
     [_mediaView.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor].active = YES;
     [_mediaView.leftAnchor constraintEqualToAnchor:self.contentView.leftAnchor constant:-8].active = YES;
-    [_mediaView.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor constant:16].active = YES;
+    [_mediaView.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor constant:-45].active = YES;
+
+    self.skipButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [self.skipButton addTarget:self 
+               action:@selector(skipTrack:)
+     forControlEvents:UIControlEventTouchUpInside];
+    UIImage *image = [UIImage imageNamed:@"Cancel.png" inBundle:DIGITAL_TOUCH_BUNDLE];
+    [self.skipButton setImage:image forState:UIControlStateNormal];
+    self.skipButton.frame = CGRectMake(0, 0, 45, 45);
+    [self.contentView addSubview:self.skipButton];
+
+    self.skipButton.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.skipButton.topAnchor constraintEqualToAnchor:_mediaView.topAnchor constant:30].active = YES;
+    [self.skipButton.bottomAnchor constraintEqualToAnchor:_mediaView.bottomAnchor constant:-30].active = YES;
+    [self.skipButton.leftAnchor constraintEqualToAnchor:_mediaView.rightAnchor].active = YES;
+    [self.skipButton.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor constant:-20].active = YES;
 
     [self.view addArrangedSubview:self.contentView];
 
@@ -63,8 +81,11 @@
     [self.contentView.rightAnchor constraintEqualToAnchor:self.view.rightAnchor].active = YES;
 }
 
+- (void)skipTrack:(UIButton *)sender {
+    HBLogDebug(@"skipTrack");
+}
+
 - (void)updateLabels {
-    HBLogDebug(@"updateLabels with data: %@", _metadataSaver.metadatas);
     // NSArray *metadatas = @[
     // @{
     //     @"artistTitle" : @"Sunfly Karaoke",

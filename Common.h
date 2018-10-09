@@ -18,3 +18,9 @@ extern NSString *const kMusicBundleIdentifier;
 extern NSString *const kNextTracksMessage;
 extern NSString *const kShowNextUp;
 extern NSString *const kNewMetadata;
+
+
+
+@interface UIImage (Private)
++ (id)imageNamed:(id)arg1 inBundle:(id)arg2;
+@end

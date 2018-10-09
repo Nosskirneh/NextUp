@@ -41,6 +41,7 @@
 @interface NextUpViewController : UIViewController
 @property (nonatomic, retain) UIStackView *view;
 @property (nonatomic, retain) UIView *contentView;
+@property (nonatomic, retain) UIButton *skipButton;
 @property (nonatomic, retain) NUMetadataSaver *metadataSaver;
 @property (nonatomic, retain) UILabel *headerLabel;
 @property (nonatomic, retain) MediaControlsHeaderView *mediaView;
