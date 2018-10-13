@@ -79,10 +79,16 @@
     [self.contentView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor].active = YES;
     [self.contentView.leftAnchor constraintEqualToAnchor:self.view.leftAnchor].active = YES;
     [self.contentView.rightAnchor constraintEqualToAnchor:self.view.rightAnchor].active = YES;
+
+    [self updateLabels];
 }
 
 - (void)skipTrack:(UIButton *)sender {
     HBLogDebug(@"skipTrack");
+    if (isAppCurrentMediaApp(kSpotifyBundleID))
+        notify(kSPTSkipNext);
+    else if (isAppCurrentMediaApp(kDeezerBundleID))
+        notify(kDZRSkipNext);
 }
 
 - (void)updateLabels {
@@ -92,13 +98,12 @@
     //     @"trackTitle" : @"What Have I Done to Deserve This in the Style of Dusty Springfield & Pet Shop Boys"
     // }];
 
-    NSArray *metadatas = _metadataSaver.metadatas;
-    if (metadatas.count > 0) {
+    NSDictionary *metadata = _metadataSaver.metadata;
+    if (metadata) {
+        _mediaView.primaryString = metadata[@"trackTitle"];
+        _mediaView.secondaryString = metadata[@"artistTitle"];
 
-        _mediaView.primaryString = metadatas[0][@"trackTitle"];
-        _mediaView.secondaryString = metadatas[0][@"artistTitle"];
-
-        _mediaView.artworkView.image = [UIImage imageWithData:metadatas[0][@"artwork"]];
+        _mediaView.artworkView.image = [UIImage imageWithData:metadata[@"artwork"]];
     }    
 }
 

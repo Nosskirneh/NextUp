@@ -1,3 +1,3 @@
 @interface NUMetadataSaver : NSObject
-@property (nonatomic, strong) NSArray *metadatas;
+@property (nonatomic, strong) NSDictionary *metadata;
 @end

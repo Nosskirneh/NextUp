@@ -1,13 +1,9 @@
-#import <SpringBoard/SBMediaController.h>
 #import "NUMetadataSaver.h"
 #import <MediaPlayer/MediaPlayer.h>
 #import "Common.h"
 #import "Spotify.h"
 #import "Deezer.h"
 #import "Headers.h"
-
-
-#define isAppCurrentMediaApp(x) [((SBMediaController *)[%c(SBMediaController) sharedInstance]).nowPlayingApplication.mainSceneID isEqualToString:x]
 
 
 NUMetadataSaver *metadataSaver;
@@ -26,7 +22,7 @@ NUMetadataSaver *metadataSaver;
     - (void)setNowPlayingInfo:(id)arg {
         %orig;
 
-        if (![self.nowPlayingApplication.mainSceneID isEqualToString:kMusicBundleIdentifier])
+        if (![self.nowPlayingApplication.mainSceneID isEqualToString:kMusicBundleID])
             return;
 
         MPMusicPlayerController *player = [MPMusicPlayerController systemMusicPlayer];
@@ -38,23 +34,15 @@ NUMetadataSaver *metadataSaver;
             return;
         prevTrackID = currTrackID;
 
-        NSMutableArray *upcomingMetadatas = [NSMutableArray new];
-        int i = player.indexOfNowPlayingItem + 1;
-        MPMediaItem *item = [player nowPlayingItemAtIndex:i];
-        while (item && upcomingMetadatas.count < 3) {
-            NSDictionary *metadata = [player deserilizeTrack:item];
-            [upcomingMetadatas addObject:metadata];
+        MPMediaItem *item = [player nowPlayingItemAtIndex:player.indexOfNowPlayingItem + 1];
 
-            i++;
-            item = [player nowPlayingItemAtIndex:i];
-        };
+        NSDictionary *metadata;
+        if (!item) // No more tracks upcoming, use the first one
+            metadata = [player deserilizeTrack:[player nowPlayingItemAtIndex:0]];
+        else
+            metadata = [player deserilizeTrack:item];
 
-        if (upcomingMetadatas.count == 0) { // No more tracks, use the first one
-            NSDictionary *metadata = [player deserilizeTrack:[player nowPlayingItemAtIndex:0]];
-            [upcomingMetadatas addObject:metadata];
-        }
-
-        sendNextTracks(upcomingMetadatas);
+        sendNextTrackMetadata(metadata);
 
 
         // For debugging
@@ -90,6 +78,10 @@ NUMetadataSaver *metadataSaver;
 /* Spotify */
 %group Spotify
 
+    void skipNext(notificationArguments) {
+        [getQueueImplementation() skipNext];
+    }
+
     SpotifyApplication *getSpotifyApplication() {
         return (SpotifyApplication *)[UIApplication sharedApplication];
     }
@@ -98,43 +90,40 @@ NUMetadataSaver *metadataSaver;
         return getSpotifyApplication().remoteControlDelegate;
     }
 
-    SPTNowPlayingTrackMetadataQueue *getTrackMetadataQueue() {
-        return getRemoteDelegate().trackMetadataQueue;
-    }
-
     SPTQueueServiceImplementation *getQueueService() {
         return getRemoteDelegate().queueService;
     }
 
+    SPTQueueViewModelImplementation *getQueueImplementation() {
+        return getRemoteDelegate().queueInteractor.target;
+    }
 
-    %hook SPTNowPlayingTrackMetadataQueue
+
+    %hook SPTQueueViewModelImplementation
 
     %property (nonatomic, retain) SPTGLUEImageLoader *imageLoader;
-    %property (nonatomic, retain) NSMutableArray *upcomingMetadatas;
-    %property (nonatomic, assign) NSInteger processingTracksCount;
 
-    - (void)player:(id)player didMoveToRelativeTrack:(id)arg {
+    %new
+    - (void)skipNext {
+        SPTPlayerTrack *track = self.dataSource.futureTracks[0];
+        NSSet *tracks = [NSSet setWithArray:@[track]];
+        [self removeTracks:tracks];
+    }
+
+    - (void)player:(id)player queueDidChange:(SPTPlayerQueue *)queue {
         %orig;
 
         if (!self.imageLoader)
             self.imageLoader = [getQueueService().glueImageLoaderFactory createImageLoaderForSourceIdentifier:@"se.nosskirneh.nextup"];
 
-        self.upcomingMetadatas = [NSMutableArray new];
-        int i = 1;
-        SPTPlayerTrack *track = [self metadataAtRelativeIndex:i];
-        while (track && self.upcomingMetadatas.count < 3) {
-            HBLogDebug(@"track: %@", track);
-            [self deserilizeTrack:track];
-            i++;
-            track = [self metadataAtRelativeIndex:i];
-        };
-        // sendNextTracks(self.upcomingMetadatas);
+        if (queue.nextTracks.count > 0) {
+            SPTPlayerTrack *track = queue.nextTracks[0];
+            [self sendNextUpMetadata:track];
+        }
     }
 
     %new
-    - (void)deserilizeTrack:(SPTPlayerTrack *)track {
-        self.processingTracksCount++;
-
+    - (void)sendNextUpMetadata:(SPTPlayerTrack *)track {
         NSMutableDictionary *metadata = [NSMutableDictionary new];
         metadata[@"trackTitle"] = [track trackTitle];
         metadata[@"artistTitle"] = track.artistTitle;
@@ -146,23 +135,17 @@ NUMetadataSaver *metadataSaver;
         // Do this lastly
         if ([self.imageLoader respondsToSelector:@selector(loadImageForURL:imageSize:completion:)]) {
             [self.imageLoader loadImageForURL:track.coverArtURLSmall imageSize:imageSize completion:^(UIImage *img) {
-                self.processingTracksCount--;
                 if (img)
                     image = img;
 
                 metadata[@"artwork"] = UIImagePNGRepresentation(image);
-                [self.upcomingMetadatas addObject:metadata];
-
-                if (self.processingTracksCount == 0) {
-                    // Send message to springboard
-                    HBLogDebug(@"last artwork");
-                    sendNextTracks(self.upcomingMetadatas);
-                }
+                sendNextTrackMetadata(metadata);
             }];
         }
     }
 
     %end
+
 %end
 // ---
 
@@ -175,18 +158,10 @@ NUMetadataSaver *metadataSaver;
     - (void)setDownloadablesByPlayableUniqueIDs:(NSMutableArray *)array {
         %orig;
 
-        NSMutableArray *upcomingMetadatas = [NSMutableArray new];
-        int i = 1;
-        DZRDownloadableObject *downloadObject = [self downloadableAtTrackIndex:i];
-        while (downloadObject && upcomingMetadatas.count < 3) {
-            NSDictionary *metadata = [self deserilizeTrack:downloadObject.playableObject];
-            [upcomingMetadatas addObject:metadata];
+        DZRDownloadableObject *downloadObject = [self downloadableAtTrackIndex:1];
+        NSDictionary *metadata = [self deserilizeTrack:downloadObject.playableObject];
 
-            i++;
-            downloadObject = [self downloadableAtTrackIndex:i];
-        };
-
-        sendNextTracks(upcomingMetadatas);
+        sendNextTrackMetadata(metadata);
     }
 
     %new
@@ -286,6 +261,8 @@ NUMetadataSaver *metadataSaver;
     - (void)_layoutMediaControls {
         %orig;
 
+        self.shouldShowNextUp = YES;
+
         if (self.shouldShowNextUp)
             [self addNextUpView];
     }
@@ -340,11 +317,12 @@ NUMetadataSaver *metadataSaver;
 
 
 %ctor {
-    if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:@"com.apple.springboard"]) {
+    if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:kSpringBoardBundleID]) {
         %init(SpringBoard);
         %init(Music);
-    } else if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:kSpotifyBundleIdentifier]) {
+    } else if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:kSpotifyBundleID]) {
         %init(Spotify)
+        subscribe(&skipNext, kSPTSkipNext);
     } else {
         %init(Deezer)
     }

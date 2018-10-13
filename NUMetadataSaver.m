@@ -11,13 +11,13 @@
     CPDistributedMessagingCenter *c = [CPDistributedMessagingCenter centerNamed:NEXTUP_IDENTIFIER];
     rocketbootstrap_distributedmessagingcenter_apply(c);
     [c runServerOnCurrentThread];
-    [c registerForMessageName:kNextTracksMessage target:self selector:@selector(handleIncomingMessage:withUserInfo:)];
+    [c registerForMessageName:kNextTrackMessage target:self selector:@selector(handleIncomingMessage:withUserInfo:)];
 
     return self;
 }
 
 - (void)handleIncomingMessage:(NSString *)name withUserInfo:(NSDictionary *)dict {
-    self.metadatas = dict[@"upcoming"];
+    self.metadata = dict;
     [[NSNotificationCenter defaultCenter] postNotificationName:kNewMetadata
                                                         object:nil];
 }
