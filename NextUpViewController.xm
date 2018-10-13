@@ -55,7 +55,7 @@
     [_mediaView.topAnchor constraintEqualToAnchor:self.headerLabel.bottomAnchor].active = YES;
     [_mediaView.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor].active = YES;
     [_mediaView.leftAnchor constraintEqualToAnchor:self.contentView.leftAnchor constant:-8].active = YES;
-    [_mediaView.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor constant:-45].active = YES;
+    [_mediaView.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor constant:-20].active = YES;
 
     self.skipButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [self.skipButton addTarget:self 
@@ -67,10 +67,12 @@
     [self.contentView addSubview:self.skipButton];
 
     self.skipButton.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.skipButton.topAnchor constraintEqualToAnchor:_mediaView.topAnchor constant:30].active = YES;
-    [self.skipButton.bottomAnchor constraintEqualToAnchor:_mediaView.bottomAnchor constant:-30].active = YES;
-    [self.skipButton.leftAnchor constraintEqualToAnchor:_mediaView.rightAnchor].active = YES;
-    [self.skipButton.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor constant:-20].active = YES;
+    [self.skipButton.topAnchor constraintEqualToAnchor:_mediaView.topAnchor constant:31].active = YES;
+    [self.skipButton.bottomAnchor constraintEqualToAnchor:_mediaView.bottomAnchor constant:-31].active = YES;
+
+    int leftConstant = -38;
+    [self.skipButton.leftAnchor constraintEqualToAnchor:self.contentView.rightAnchor constant:leftConstant].active = YES;
+    [self.skipButton.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor constant:leftConstant+23].active = YES;
 
     [self.view addArrangedSubview:self.contentView];
 
@@ -107,6 +109,7 @@
     }    
 }
 
+// Note that this is called manually!
 - (void)viewDidAppear:(BOOL)arg {
     [super viewDidAppear:arg];
 
