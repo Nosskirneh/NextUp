@@ -12,7 +12,7 @@ NUMetadataSaver *metadataSaver;
 %group Music
 
     @interface MPMusicPlayerController (Addition)
-    - (NSDictionary *)deserilizeTrack:(MPMediaItem *)track;
+    - (NSDictionary *)serializeTrack:(MPMediaItem *)track;
     - (id)nowPlayingItemAtIndex:(NSUInteger)arg1;
     @end
 
@@ -38,9 +38,9 @@ NUMetadataSaver *metadataSaver;
 
         NSDictionary *metadata;
         if (!item) // No more tracks upcoming, use the first one
-            metadata = [player deserilizeTrack:[player nowPlayingItemAtIndex:0]];
+            metadata = [player serializeTrack:[player nowPlayingItemAtIndex:0]];
         else
-            metadata = [player deserilizeTrack:item];
+            metadata = [player serializeTrack:item];
 
         sendNextTrackMetadata(metadata);
     }
@@ -50,7 +50,7 @@ NUMetadataSaver *metadataSaver;
     %hook MPMusicPlayerController
 
     %new
-    - (NSDictionary *)deserilizeTrack:(MPMediaItem *)track {
+    - (NSDictionary *)serializeTrack:(MPMediaItem *)track {
         NSMutableDictionary *metadata = [NSMutableDictionary new];
         metadata[@"trackTitle"] = track.title;
         metadata[@"artistTitle"] = track.artist;
@@ -68,7 +68,7 @@ NUMetadataSaver *metadataSaver;
 /* Spotify */
 %group Spotify
 
-    void skipNext(notificationArguments) {
+    void SPTSkipNext(notificationArguments) {
         [getQueueImplementation() skipNext];
     }
 
@@ -93,13 +93,6 @@ NUMetadataSaver *metadataSaver;
 
     %property (nonatomic, retain) SPTGLUEImageLoader *imageLoader;
 
-    %new
-    - (void)skipNext {
-        SPTQueueTrackImplementation *track = self.dataSource.futureTracks[0];
-        NSSet *tracks = [NSSet setWithArray:@[track]];
-        [self removeTracks:tracks];
-    }
-
     - (void)player:(id)player queueDidChange:(SPTPlayerQueue *)queue {
         %orig;
 
@@ -110,6 +103,13 @@ NUMetadataSaver *metadataSaver;
             SPTPlayerTrack *track = queue.nextTracks[0];
             [self sendNextUpMetadata:track];
         }
+    }
+
+    %new
+    - (void)skipNext {
+        SPTQueueTrackImplementation *track = self.dataSource.futureTracks[0];
+        NSSet *tracks = [NSSet setWithArray:@[track]];
+        [self removeTracks:tracks];
     }
 
     %new
@@ -143,29 +143,81 @@ NUMetadataSaver *metadataSaver;
 
 /* Deezer */
 %group Deezer
-    %hook DZRMyMusicShuffleQueuer
+    void DZRSkipNext(notificationArguments) {
+        [getMixQueuer() skipNext];
+    }
 
-    - (void)setDownloadablesByPlayableUniqueIDs:(NSMutableArray *)array {
+    DZRAppDelegate *getDeezerAppDelegate() {
+        return (DZRAppDelegate *)[[UIApplication sharedApplication] delegate];
+    }
+
+    DZRMixQueuer *getMixQueuer() {
+        return getDeezerAppDelegate().playerManager.player.queuer;
+    }
+
+    %hook DZRMixQueuer
+
+    - (void)setCurrentTrackIndex:(NSUInteger)index {
         %orig;
 
-        DZRDownloadableObject *downloadObject = [self downloadableAtTrackIndex:1];
-        NSDictionary *metadata = [self deserilizeTrack:downloadObject.playableObject];
-
-        sendNextTrackMetadata(metadata);
+        [self fetchNextUp];
     }
 
     %new
-    - (NSDictionary *)deserilizeTrack:(DeezerTrack *)track {
+    - (void)fetchNextUp {
+        if (self.tracks.count <= self.currentTrackIndex + 1)
+            return;
+
+        DeezerTrack *track = self.tracks[self.currentTrackIndex + 1];
+        [track fetchNowPlayingArtworkWithCompletion:^(id image) {
+            NSDictionary *metadata = [self serializeTrack:track image:image];
+            sendNextTrackMetadata(metadata);
+        }];
+    }
+
+    %new
+    - (void)skipNext {
+        NSMutableArray *newTracks = [self.tracks mutableCopy];
+        [newTracks removeObjectAtIndex:self.currentTrackIndex + 1];
+        self.tracks = newTracks;
+
+        [self fetchNextUp];
+    }
+
+    %new
+    - (NSDictionary *)serializeTrack:(DeezerTrack *)track image:(UIImage *)image {
         NSMutableDictionary *metadata = [NSMutableDictionary new];
         metadata[@"trackTitle"] = track.title;
         metadata[@"artistTitle"] = track.artistName;
-        UIImage *artwork = [track.nowPlayingArtwork imageWithSize:CGSizeMake(46, 46)];
+        UIImage *artwork = image;
+        // `nowPlayingArtwork` has to be fetched. It doesn't exist a method to do that
+        // with a completionhandler, so I've implemented this in DeezerTrack below
+        if (!artwork)
+            artwork = [track.nowPlayingArtwork imageWithSize:CGSizeMake(46, 46)];
         metadata[@"artwork"] = UIImagePNGRepresentation(artwork);
         return metadata;
     }
 
+    %end
+
+
+    %hook DeezerTrack
+
+    %new
+    - (void)fetchNowPlayingArtworkWithCompletion:(void (^)(UIImage *))completion {
+        NSArray *illustrations = [self illustrations];
+        _TtC6Deezer18DeezerIllustration *illustration = [illustrations firstObject];
+
+        [%c(_TtC6Deezer19IllustrationManager) fetchImageFor:illustration
+                                                       size:CGSizeMake(46, 46)
+                                                     effect:nil
+                                                    success:^(_TtC6Deezer18DeezerIllustration *illustration, UIImage *image) {
+                                                        completion(image);
+                                                  } failure:nil];
+    }
 
     %end
+
 %end
 // ---
 
@@ -354,9 +406,10 @@ NUMetadataSaver *metadataSaver;
         %init(Music);
     } else if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:kSpotifyBundleID]) {
         %init(Spotify)
-        subscribe(&skipNext, kSPTSkipNext);
+        subscribe(&SPTSkipNext, kSPTSkipNext);
     } else {
         %init(Deezer)
+        subscribe(&DZRSkipNext, kDZRSkipNext);
     }
 
     metadataSaver = [[NUMetadataSaver alloc] init];
