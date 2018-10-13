@@ -23,7 +23,9 @@ extern NSString *const kSpringBoardBundleID;
 
 extern NSString *const kNextTrackMessage;
 extern NSString *const kShowNextUp;
+extern NSString *const kHideNextUp;
 extern NSString *const kNewMetadata;
+extern NSString *const kClearMetadata;
 
 extern NSString *const kSPTSkipNext;
 extern NSString *const kDZRSkipNext;

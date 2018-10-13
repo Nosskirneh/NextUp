@@ -13,6 +13,12 @@
     [c runServerOnCurrentThread];
     [c registerForMessageName:kNextTrackMessage target:self selector:@selector(handleIncomingMessage:withUserInfo:)];
 
+
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(clearMetadata)
+                                                 name:kClearMetadata
+                                               object:nil];
+
     return self;
 }
 
@@ -20,6 +26,10 @@
     self.metadata = dict;
     [[NSNotificationCenter defaultCenter] postNotificationName:kNewMetadata
                                                         object:nil];
+}
+
+- (void)clearMetadata {
+	self.metadata = nil;
 }
 
 @end

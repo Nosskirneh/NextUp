@@ -43,16 +43,6 @@ NUMetadataSaver *metadataSaver;
             metadata = [player deserilizeTrack:item];
 
         sendNextTrackMetadata(metadata);
-
-
-        // For debugging
-        static int x = 0;
-        if (x > 2) {
-            HBLogDebug(@"posting notif for x: %d", x);
-            [[NSNotificationCenter defaultCenter] postNotificationName:kShowNextUp object:nil];
-            x = 0;
-        }
-        x++;
     }
 
     %end
@@ -105,7 +95,7 @@ NUMetadataSaver *metadataSaver;
 
     %new
     - (void)skipNext {
-        SPTPlayerTrack *track = self.dataSource.futureTracks[0];
+        SPTQueueTrackImplementation *track = self.dataSource.futureTracks[0];
         NSSet *tracks = [NSSet setWithArray:@[track]];
         [self removeTracks:tracks];
     }
@@ -182,6 +172,26 @@ NUMetadataSaver *metadataSaver;
 /* Adding the widget */
 %group SpringBoard
 
+    %hook SBMediaController
+
+    - (void)_setNowPlayingApplication:(SBApplication *)app {
+        %log;
+        %orig;
+
+        if (!app ||
+            (![app.bundleIdentifier isEqualToString:kSpotifyBundleID] &&
+             ![app.bundleIdentifier isEqualToString:kDeezerBundleID] &&
+             ![app.bundleIdentifier isEqualToString:kMusicBundleID])) {
+            [[NSNotificationCenter defaultCenter] postNotificationName:kClearMetadata object:nil];
+            [[NSNotificationCenter defaultCenter] postNotificationName:kHideNextUp object:nil];
+            return;
+        }
+
+        [[NSNotificationCenter defaultCenter] postNotificationName:kShowNextUp object:nil];
+    }
+
+    %end
+
     %hook SBDashBoardNotificationAdjunctListViewController
 
     - (id)init {
@@ -191,6 +201,11 @@ NUMetadataSaver *metadataSaver;
         [[NSNotificationCenter defaultCenter] addObserver:orig
                                                  selector:@selector(showNextUp)
                                                      name:kShowNextUp
+                                                   object:nil];
+
+        [[NSNotificationCenter defaultCenter] addObserver:orig
+                                                 selector:@selector(hideNextUp)
+                                                     name:kHideNextUp
                                                    object:nil];
         return orig;
     }
@@ -221,6 +236,23 @@ NUMetadataSaver *metadataSaver;
 
         // Not restoring width and height here since we want
         // to do it when the animation is complete
+    }
+
+    %new
+    - (void)hideNextUp {
+        %log;
+
+        SBDashBoardMediaControlsViewController *mediaControlsController = [self mediaControlsController];
+
+        if (!mediaControlsController.showingNextUp)
+            return;
+
+        // Mark NextUp as should be visible
+        mediaControlsController.shouldShowNextUp = NO;
+
+        // Reload the widget
+        MSHookIvar<NSInteger>(self, "_nowPlayingState") = 0;
+        [self _updateMediaControlsVisibilityAnimated:YES];
     }
 
     // Restore width and height (touches don't work otherwise)

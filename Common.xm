@@ -16,7 +16,9 @@ NSString *const kSpringBoardBundleID = @"com.apple.springboard";
 
 NSString *const kNextTrackMessage = @"se.nosskirneh.nextup/nextTrack";
 NSString *const kShowNextUp = @"se.nosskirneh.nextup/showNextUp";
+NSString *const kHideNextUp = @"se.nosskirneh.nextup/hideNextUp";
 NSString *const kNewMetadata = @"se.nosskirneh.nextup/newMetadata";
+NSString *const kClearMetadata = @"se.nosskirneh.nextup/clearMetadata";
 
 NSString *const kSPTSkipNext = @"se.nosskirneh.nextup/SPTSkipNext";
 NSString *const kDZRSkipNext = @"se.nosskirneh.nextup/DZRSkipNext";
