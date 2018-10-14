@@ -3,23 +3,18 @@
 #import "Common.h"
 #import "Spotify.h"
 #import "Deezer.h"
+#import "Music.h"
 #import "Headers.h"
-
 
 NUMetadataSaver *metadataSaver;
 
 /* Fetch Apple Music metadata */
 %group Music
 
-    @interface MPMusicPlayerController (Addition)
-    - (NSDictionary *)serializeTrack:(MPMediaItem *)track;
-    - (id)nowPlayingItemAtIndex:(NSUInteger)arg1;
-    @end
-
-
     %hook SBMediaController
 
     - (void)setNowPlayingInfo:(id)arg {
+        %log;
         %orig;
 
         if (![self.nowPlayingApplication.mainSceneID isEqualToString:kMusicBundleID])
@@ -30,19 +25,39 @@ NUMetadataSaver *metadataSaver;
         // Do not compute if the current track is the same as last time
         static long long prevTrackID = 0;
         long long currTrackID = player.nowPlayingItem.persistentID;
-        if (currTrackID == prevTrackID)
+        if (currTrackID == prevTrackID && prevTrackID != 0)
             return;
         prevTrackID = currTrackID;
 
-        MPMediaItem *item = [player nowPlayingItemAtIndex:player.indexOfNowPlayingItem + 1];
+        id item = [player nowPlayingItemAtIndex:player.indexOfNowPlayingItem + 1];
 
         NSDictionary *metadata;
         if (!item) // No more tracks upcoming, use the first one
-            metadata = [player serializeTrack:[player nowPlayingItemAtIndex:0]];
+            item = [player nowPlayingItemAtIndex:0];
+
+        if ([item isKindOfClass:%c(MPModelObjectMediaItem)])
+            return [self handleNextUpModelObjectMediaItem:item];
         else
-            metadata = [player serializeTrack:item];
+            metadata = [player serializeTrack:item image:nil];
 
         sendNextTrackMetadata(metadata);
+    }
+
+    %new
+    - (void)handleNextUpModelObjectMediaItem:(MPMediaItem *)item {
+        MPModelObjectMediaItem *object = (MPModelObjectMediaItem *)item;
+        MPModelSong *song = object.modelObject;
+        block artworkBlock = [song valueForModelKey:@"MPModelPropertySongArtwork"];
+
+        MPArtworkCatalog *catalog = artworkBlock();
+        [catalog setFittingSize:CGSizeMake(60, 60)];
+        catalog.destinationScale = 2.0;
+
+        [catalog requestImageWithCompletionHandler:^(UIImage *image) {
+            MPMusicPlayerController *player = [MPMusicPlayerController systemMusicPlayer];
+            NSDictionary *metadata = [player serializeTrack:item image:image];
+            sendNextTrackMetadata(metadata);
+        }];
     }
 
     %end
@@ -50,11 +65,16 @@ NUMetadataSaver *metadataSaver;
     %hook MPMusicPlayerController
 
     %new
-    - (NSDictionary *)serializeTrack:(MPMediaItem *)track {
+    - (NSDictionary *)serializeTrack:(id)item image:(UIImage *)image {
         NSMutableDictionary *metadata = [NSMutableDictionary new];
+        MPMediaItem *track = (MPMediaItem *)item;
         metadata[@"trackTitle"] = track.title;
         metadata[@"artistTitle"] = track.artist;
-        UIImage *artwork = [track.artwork imageWithSize:CGSizeMake(46, 46)];
+
+        UIImage *artwork = image;
+        if (!image)
+            artwork = [track.artwork imageWithSize:CGSizeMake(60, 60)];
+
         metadata[@"artwork"] = UIImagePNGRepresentation(artwork);
         return metadata;
     }
@@ -119,7 +139,7 @@ NUMetadataSaver *metadataSaver;
         metadata[@"artistTitle"] = track.artistTitle;
 
         // Artwork
-        CGSize imageSize = CGSizeMake(46, 46);
+        CGSize imageSize = CGSizeMake(60, 60);
         __block UIImage *image = [UIImage trackSPTPlaceholderWithSize:0];
 
         // Do this lastly
@@ -193,7 +213,7 @@ NUMetadataSaver *metadataSaver;
         // `nowPlayingArtwork` has to be fetched. It doesn't exist a method to do that
         // with a completionhandler, so I've implemented this in DeezerTrack below
         if (!artwork)
-            artwork = [track.nowPlayingArtwork imageWithSize:CGSizeMake(46, 46)];
+            artwork = [track.nowPlayingArtwork imageWithSize:CGSizeMake(60, 60)];
         metadata[@"artwork"] = UIImagePNGRepresentation(artwork);
         return metadata;
     }
@@ -209,7 +229,7 @@ NUMetadataSaver *metadataSaver;
         _TtC6Deezer18DeezerIllustration *illustration = [illustrations firstObject];
 
         [%c(_TtC6Deezer19IllustrationManager) fetchImageFor:illustration
-                                                       size:CGSizeMake(46, 46)
+                                                       size:CGSizeMake(60, 60)
                                                      effect:nil
                                                     success:^(_TtC6Deezer18DeezerIllustration *illustration, UIImage *image) {
                                                         completion(image);
