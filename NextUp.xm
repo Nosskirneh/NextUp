@@ -51,7 +51,7 @@ NUMetadataSaver *metadataSaver;
 
         MPArtworkCatalog *catalog = artworkBlock();
         [catalog setFittingSize:CGSizeMake(60, 60)];
-        catalog.destinationScale = 2.0;
+        catalog.destinationScale = [UIScreen mainScreen].scale;
 
         [catalog requestImageWithCompletionHandler:^(UIImage *image) {
             MPMusicPlayerController *player = [MPMusicPlayerController systemMusicPlayer];
