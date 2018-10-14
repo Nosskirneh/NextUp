@@ -44,9 +44,8 @@ NUMetadataSaver *metadataSaver;
     }
 
     %new
-    - (void)handleNextUpModelObjectMediaItem:(MPMediaItem *)item {
-        MPModelObjectMediaItem *object = (MPModelObjectMediaItem *)item;
-        MPModelSong *song = object.modelObject;
+    - (void)handleNextUpModelObjectMediaItem:(MPModelObjectMediaItem *)item {
+        MPModelSong *song = item.modelObject;
         block artworkBlock = [song valueForModelKey:@"MPModelPropertySongArtwork"];
 
         MPArtworkCatalog *catalog = artworkBlock();
@@ -65,9 +64,8 @@ NUMetadataSaver *metadataSaver;
     %hook MPMusicPlayerController
 
     %new
-    - (NSDictionary *)serializeTrack:(id)item image:(UIImage *)image {
+    - (NSDictionary *)serializeTrack:(MPMediaItem *)track image:(UIImage *)image {
         NSMutableDictionary *metadata = [NSMutableDictionary new];
-        MPMediaItem *track = (MPMediaItem *)item;
         metadata[@"trackTitle"] = track.title;
         metadata[@"artistTitle"] = track.artist;
 
