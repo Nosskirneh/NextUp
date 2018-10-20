@@ -3,10 +3,15 @@
 #import <rocketbootstrap/rocketbootstrap.h>
 
 // Methods that updates changes to .plist
-void sendNextTrackMetadata(NSDictionary *metadata) {
+void sendNextTrackMetadata(NSDictionary *metadata, NUMediaApplication app) {
     CPDistributedMessagingCenter *c = [%c(CPDistributedMessagingCenter) centerNamed:NEXTUP_IDENTIFIER];
     rocketbootstrap_distributedmessagingcenter_apply(c);
-    [c sendMessageName:kNextTrackMessage userInfo:metadata];
+
+    NSDictionary *dict = @{
+    	@"metadata": metadata,
+    	@"mediaApplication": @(app)
+    };
+    [c sendMessageName:kNextTrackMessage userInfo:dict];
 }
 
 NSString *const kSpotifyBundleID = @"com.spotify.client";

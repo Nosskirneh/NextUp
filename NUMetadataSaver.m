@@ -13,17 +13,16 @@
     [c runServerOnCurrentThread];
     [c registerForMessageName:kNextTrackMessage target:self selector:@selector(handleIncomingMessage:withUserInfo:)];
 
-
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(clearMetadata)
-                                                 name:kClearMetadata
-                                               object:nil];
-
     return self;
 }
 
 - (void)handleIncomingMessage:(NSString *)name withUserInfo:(NSDictionary *)dict {
-    self.metadata = dict;
+    // If Spotify is running in background and changed track on a Connect device,
+    // but Deezer is playing music at the device: do nothing
+    if ([dict[@"mediaApplication"] intValue] != self.mediaApplication)
+        return;
+
+    self.metadata = dict[@"metadata"];
     [[NSNotificationCenter defaultCenter] postNotificationName:kUpdateLabels
                                                         object:nil];
 }
@@ -31,14 +30,9 @@
 - (void)setMediaApplication:(NUMediaApplication)app {
     _mediaApplication = app;
 
-    if (app == NUUnsupportedApplication)
-        self.metadata = nil;
+    self.metadata = nil;
     [[NSNotificationCenter defaultCenter] postNotificationName:kUpdateLabels
                                                         object:nil];
-}
-
-- (void)clearMetadata {
-	self.metadata = nil;
 }
 
 @end

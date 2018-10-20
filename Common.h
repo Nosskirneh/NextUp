@@ -3,23 +3,22 @@
 #import <SpringBoard/SBMediaController.h>
 #define isAppCurrentMediaApp(x) [((SBMediaController *)[objc_getClass("SBMediaController") sharedInstance]).nowPlayingApplication.mainSceneID isEqualToString:x]
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-void sendNextTrackMetadata(NSDictionary *metadata);
-
-#ifdef __cplusplus
-}
-#endif
-
-
 typedef enum {
     NUUnsupportedApplication,
     NUSpotifyApplication,
     NUDeezerApplication,
     NUMusicApplication
 } NUMediaApplication;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void sendNextTrackMetadata(NSDictionary *metadata, NUMediaApplication app);
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #define NEXTUP_IDENTIFIER @"se.nosskirneh.nextup"

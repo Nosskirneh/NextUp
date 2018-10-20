@@ -41,7 +41,7 @@ NUMetadataSaver *metadataSaver;
         else
             metadata = [player serializeTrack:item image:nil];
 
-        sendNextTrackMetadata(metadata);
+        sendNextTrackMetadata(metadata, NUMusicApplication);
     }
 
     %new
@@ -56,7 +56,7 @@ NUMetadataSaver *metadataSaver;
         [catalog requestImageWithCompletionHandler:^(UIImage *image) {
             MPMusicPlayerController *player = [MPMusicPlayerController systemMusicPlayer];
             NSDictionary *metadata = [player serializeTrack:item image:image];
-            sendNextTrackMetadata(metadata);
+            sendNextTrackMetadata(metadata, NUMusicApplication);
         }];
     }
 
@@ -163,7 +163,7 @@ NUMetadataSaver *metadataSaver;
                     image = img;
 
                 metadata[@"artwork"] = UIImagePNGRepresentation(image);
-                sendNextTrackMetadata(metadata);
+                sendNextTrackMetadata(metadata, NUSpotifyApplication);
             }];
         }
     }
@@ -205,7 +205,7 @@ NUMetadataSaver *metadataSaver;
         DeezerTrack *track = self.tracks[self.currentTrackIndex + 1];
         [track fetchNowPlayingArtworkWithCompletion:^(id image) {
             NSDictionary *metadata = [self serializeTrack:track image:image];
-            sendNextTrackMetadata(metadata);
+            sendNextTrackMetadata(metadata, NUDeezerApplication);
         }];
     }
 
@@ -440,7 +440,6 @@ NUMetadataSaver *metadataSaver;
 
 %ctor {
     if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:kSpringBoardBundleID]) {
-        HBLogDebug(@"*** SPRINGBOARD ***");
         %init(SpringBoard);
         %init(Music);
     } else if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:kSpotifyBundleID]) {
