@@ -14,6 +14,14 @@ void sendNextTrackMetadata(NSDictionary *metadata);
 #endif
 
 
+typedef enum {
+    NUUnsupportedApplication,
+    NUSpotifyApplication,
+    NUDeezerApplication,
+    NUMusicApplication
+} NUMediaApplication;
+
+
 #define NEXTUP_IDENTIFIER @"se.nosskirneh.nextup"
 
 extern NSString *const kSpotifyBundleID;
@@ -24,7 +32,7 @@ extern NSString *const kSpringBoardBundleID;
 extern NSString *const kNextTrackMessage;
 extern NSString *const kShowNextUp;
 extern NSString *const kHideNextUp;
-extern NSString *const kNewMetadata;
+extern NSString *const kUpdateLabels;
 extern NSString *const kClearMetadata;
 
 extern NSString *const kSPTSkipNext;

@@ -24,7 +24,16 @@
 
 - (void)handleIncomingMessage:(NSString *)name withUserInfo:(NSDictionary *)dict {
     self.metadata = dict;
-    [[NSNotificationCenter defaultCenter] postNotificationName:kNewMetadata
+    [[NSNotificationCenter defaultCenter] postNotificationName:kUpdateLabels
+                                                        object:nil];
+}
+
+- (void)setMediaApplication:(NUMediaApplication)app {
+    _mediaApplication = app;
+
+    if (app == NUUnsupportedApplication)
+        self.metadata = nil;
+    [[NSNotificationCenter defaultCenter] postNotificationName:kUpdateLabels
                                                         object:nil];
 }
 

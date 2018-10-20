@@ -11,7 +11,7 @@
     if (self == [super init])
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(updateLabels)
-                                                     name:kNewMetadata
+                                                     name:kUpdateLabels
                                                    object:nil];
 
     return self;
@@ -106,7 +106,11 @@
         _mediaView.secondaryString = metadata[@"artistTitle"];
 
         _mediaView.artworkView.image = [UIImage imageWithData:metadata[@"artwork"]];
-    }    
+    } else {
+        _mediaView.primaryString = @"Loading...";
+        _mediaView.secondaryString = nil;
+        _mediaView.artworkView.image = nil;
+    }
 }
 
 // Note that this is called manually!

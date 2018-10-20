@@ -2,13 +2,22 @@
 @property (readonly, nonatomic, getter=isAdvertisement) BOOL advertisement;
 @property (readonly, nonatomic) NSString *subtitle;
 @property (readonly, nonatomic) NSString *artistTitle;
-@property (readonly, nonatomic) NSURL *coverArtURLSmall;
+@property (readonly, nonatomic) NSURL *coverArtURL;
 @property (readonly, nonatomic) NSURL *imageURL;
 - (id)trackTitle;
 @end
 
 @interface SPTPlayerQueue : NSObject
 @property (copy, nonatomic) NSArray<SPTPlayerTrack *> *nextTracks;
+@end
+
+@interface SPTPlayerState : NSObject
+@property(retain, nonatomic) NSArray *future;
+@end
+
+@interface SPTPlayerImpl : NSObject
+@property (readonly, copy, nonatomic) SPTPlayerState *state;
+- (void)addPlayerObserver:(id)arg1;
 @end
 
 @interface SPTQueueTrackImplementation : NSObject
@@ -27,7 +36,9 @@
 - (id)loadImageForURL:(id)arg1 imageSize:(CGSize)arg2 completion:(id)arg3;
 @end
 
-@interface SPTQueueViewModelImplementation : NSObject
+@interface SPTQueueViewModelImplementation : NSObject {
+    SPTPlayerImpl *_player;
+}
 @property (nonatomic, retain) SPTGLUEImageLoader *imageLoader;
 @property (nonatomic, strong) SPTQueueViewModelDataSource *dataSource;
 - (SPTQueueViewModelDataSource *)removeTracks:(NSSet *)arg1;
@@ -36,10 +47,6 @@
 @end
 
 
-
-@interface SPTPlayerState : NSObject
-@property (retain, nonatomic) NSArray *future;
-@end
 
 @interface SPTStatefulPlayerQueue : NSObject
 @property (retain, nonatomic) SPTPlayerState *playerState;

@@ -6,6 +6,8 @@
 #import "Music.h"
 #import "Headers.h"
 
+#define ARTWORK_SIZE CGSizeMake(60, 60)
+
 NUMetadataSaver *metadataSaver;
 
 /* Fetch Apple Music metadata */
@@ -14,7 +16,6 @@ NUMetadataSaver *metadataSaver;
     %hook SBMediaController
 
     - (void)setNowPlayingInfo:(id)arg {
-        %log;
         %orig;
 
         if (![self.nowPlayingApplication.mainSceneID isEqualToString:kMusicBundleID])
@@ -49,7 +50,7 @@ NUMetadataSaver *metadataSaver;
         block artworkBlock = [song valueForModelKey:@"MPModelPropertySongArtwork"];
 
         MPArtworkCatalog *catalog = artworkBlock();
-        [catalog setFittingSize:CGSizeMake(60, 60)];
+        [catalog setFittingSize:ARTWORK_SIZE];
         catalog.destinationScale = [UIScreen mainScreen].scale;
 
         [catalog requestImageWithCompletionHandler:^(UIImage *image) {
@@ -71,7 +72,7 @@ NUMetadataSaver *metadataSaver;
 
         UIImage *artwork = image;
         if (!image)
-            artwork = [track.artwork imageWithSize:CGSizeMake(60, 60)];
+            artwork = [track.artwork imageWithSize:ARTWORK_SIZE];
 
         metadata[@"artwork"] = UIImagePNGRepresentation(artwork);
         return metadata;
@@ -106,21 +107,35 @@ NUMetadataSaver *metadataSaver;
         return getRemoteDelegate().queueInteractor.target;
     }
 
+    // Fetch next track on app launch
+    %hook SPBarViewController
+
+    - (void)viewDidLoad {
+        %orig;
+
+        // Load image loader
+        SPTQueueViewModelImplementation *queueViewModel = getQueueImplementation();
+        queueViewModel.imageLoader = [getQueueService().glueImageLoaderFactory createImageLoaderForSourceIdentifier:@"se.nosskirneh.nextup"];
+
+        // Add observer (otherwise this is only done as late as when opening the now playing view)
+        SPTPlayerImpl *player = MSHookIvar<SPTPlayerImpl *>(queueViewModel, "_player");
+        [player addPlayerObserver:queueViewModel];
+    }
+
+    %end
+
 
     %hook SPTQueueViewModelImplementation
 
     %property (nonatomic, retain) SPTGLUEImageLoader *imageLoader;
 
-    - (void)player:(id)player queueDidChange:(SPTPlayerQueue *)queue {
+    - (void)player:(SPTPlayerImpl *)player stateDidChange:(SPTPlayerState *)newState fromState:(SPTPlayerState *)oldState {
         %orig;
 
-        if (!self.imageLoader)
-            self.imageLoader = [getQueueService().glueImageLoaderFactory createImageLoaderForSourceIdentifier:@"se.nosskirneh.nextup"];
 
-        if (queue.nextTracks.count > 0) {
-            SPTPlayerTrack *track = queue.nextTracks[0];
-            [self sendNextUpMetadata:track];
-        }
+        NSArray *next = newState.future;
+        if (next.count > 0)
+            [self sendNextUpMetadata:next[0]];
     }
 
     %new
@@ -132,17 +147,18 @@ NUMetadataSaver *metadataSaver;
 
     %new
     - (void)sendNextUpMetadata:(SPTPlayerTrack *)track {
+        %log;
         NSMutableDictionary *metadata = [NSMutableDictionary new];
         metadata[@"trackTitle"] = [track trackTitle];
         metadata[@"artistTitle"] = track.artistTitle;
 
         // Artwork
-        CGSize imageSize = CGSizeMake(60, 60);
+        CGSize imageSize = ARTWORK_SIZE;
         __block UIImage *image = [UIImage trackSPTPlaceholderWithSize:0];
 
         // Do this lastly
         if ([self.imageLoader respondsToSelector:@selector(loadImageForURL:imageSize:completion:)]) {
-            [self.imageLoader loadImageForURL:track.coverArtURLSmall imageSize:imageSize completion:^(UIImage *img) {
+            [self.imageLoader loadImageForURL:track.coverArtURL imageSize:imageSize completion:^(UIImage *img) {
                 if (img)
                     image = img;
 
@@ -211,7 +227,7 @@ NUMetadataSaver *metadataSaver;
         // `nowPlayingArtwork` has to be fetched. It doesn't exist a method to do that
         // with a completionhandler, so I've implemented this in DeezerTrack below
         if (!artwork)
-            artwork = [track.nowPlayingArtwork imageWithSize:CGSizeMake(60, 60)];
+            artwork = [track.nowPlayingArtwork imageWithSize:ARTWORK_SIZE];
         metadata[@"artwork"] = UIImagePNGRepresentation(artwork);
         return metadata;
     }
@@ -227,7 +243,7 @@ NUMetadataSaver *metadataSaver;
         _TtC6Deezer18DeezerIllustration *illustration = [illustrations firstObject];
 
         [%c(_TtC6Deezer19IllustrationManager) fetchImageFor:illustration
-                                                       size:CGSizeMake(60, 60)
+                                                       size:ARTWORK_SIZE
                                                      effect:nil
                                                     success:^(_TtC6Deezer18DeezerIllustration *illustration, UIImage *image) {
                                                         completion(image);
@@ -242,22 +258,26 @@ NUMetadataSaver *metadataSaver;
 /* Adding the widget */
 %group SpringBoard
 
+    void setMediaAppAndSendShowNextUp(NUMediaApplication app) {
+        metadataSaver.mediaApplication = app;
+        [[NSNotificationCenter defaultCenter] postNotificationName:kShowNextUp object:nil];
+    }
+
     %hook SBMediaController
 
     - (void)_setNowPlayingApplication:(SBApplication *)app {
         %log;
         %orig;
 
-        if (!app ||
-            (![app.bundleIdentifier isEqualToString:kSpotifyBundleID] &&
-             ![app.bundleIdentifier isEqualToString:kDeezerBundleID] &&
-             ![app.bundleIdentifier isEqualToString:kMusicBundleID])) {
-            [[NSNotificationCenter defaultCenter] postNotificationName:kClearMetadata object:nil];
-            [[NSNotificationCenter defaultCenter] postNotificationName:kHideNextUp object:nil];
-            return;
-        }
-
-        [[NSNotificationCenter defaultCenter] postNotificationName:kShowNextUp object:nil];
+        if ([app.bundleIdentifier isEqualToString:kSpotifyBundleID])
+            return setMediaAppAndSendShowNextUp(NUSpotifyApplication);
+        else if ([app.bundleIdentifier isEqualToString:kDeezerBundleID])
+            return setMediaAppAndSendShowNextUp(NUDeezerApplication);
+        else if ([app.bundleIdentifier isEqualToString:kMusicBundleID])
+            return setMediaAppAndSendShowNextUp(NUMusicApplication);
+        
+        metadataSaver.mediaApplication = NUUnsupportedApplication;
+        [[NSNotificationCenter defaultCenter] postNotificationName:kHideNextUp object:nil];
     }
 
     %end
@@ -420,6 +440,7 @@ NUMetadataSaver *metadataSaver;
 
 %ctor {
     if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:kSpringBoardBundleID]) {
+        HBLogDebug(@"*** SPRINGBOARD ***");
         %init(SpringBoard);
         %init(Music);
     } else if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:kSpotifyBundleID]) {
