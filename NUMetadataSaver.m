@@ -19,7 +19,8 @@
 - (void)handleIncomingMessage:(NSString *)name withUserInfo:(NSDictionary *)dict {
     // If Spotify is running in background and changed track on a Connect device,
     // but Deezer is playing music at the device: do nothing
-    if ([dict[@"mediaApplication"] intValue] != self.mediaApplication)
+    if ([dict[@"mediaApplication"] intValue] != self.mediaApplication &&
+        self.mediaApplication != NUUnsupportedApplication)
         return;
 
     self.metadata = dict[@"metadata"];
@@ -30,7 +31,8 @@
 - (void)setMediaApplication:(NUMediaApplication)app {
     _mediaApplication = app;
 
-    self.metadata = nil;
+    if (app == NUUnsupportedApplication)
+        self.metadata = nil;
     [[NSNotificationCenter defaultCenter] postNotificationName:kUpdateLabels
                                                         object:nil];
 }

@@ -1,1 +1,1 @@
-{ Filter = { Bundles = ( "com.apple.springboard", "com.spotify.client", "com.deezer.Deezer" ); }; }
+{ Filter = { Bundles = ( "com.apple.springboard", "com.spotify.client", "com.deezer.Deezer", "com.apple.Music" ); }; }

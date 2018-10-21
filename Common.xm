@@ -23,7 +23,7 @@ NSString *const kNextTrackMessage = @"se.nosskirneh.nextup/nextTrack";
 NSString *const kShowNextUp = @"se.nosskirneh.nextup/showNextUp";
 NSString *const kHideNextUp = @"se.nosskirneh.nextup/hideNextUp";
 NSString *const kUpdateLabels = @"se.nosskirneh.nextup/updateLabels";
-NSString *const kClearMetadata = @"se.nosskirneh.nextup/clearMetadata";
 
 NSString *const kSPTSkipNext = @"se.nosskirneh.nextup/SPTSkipNext";
+NSString *const kAPMSkipNext = @"se.nosskirneh.nextup/APMSkipNext";
 NSString *const kDZRSkipNext = @"se.nosskirneh.nextup/DZRSkipNext";

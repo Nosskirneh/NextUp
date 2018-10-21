@@ -89,6 +89,8 @@
     HBLogDebug(@"skipTrack");
     if (isAppCurrentMediaApp(kSpotifyBundleID))
         notify(kSPTSkipNext);
+    else if (isAppCurrentMediaApp(kMusicBundleID))
+        notify(kAPMSkipNext);
     else if (isAppCurrentMediaApp(kDeezerBundleID))
         notify(kDZRSkipNext);
 }

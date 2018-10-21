@@ -8,74 +8,91 @@
 
 #define ARTWORK_SIZE CGSizeMake(60, 60)
 
+
 NUMetadataSaver *metadataSaver;
 
 /* Fetch Apple Music metadata */
 %group Music
 
-    %hook SBMediaController
+    void APMSkipNext(notificationArguments) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:kAPMSkipNext object:nil];
+    }
 
-    - (void)setNowPlayingInfo:(id)arg {
+    %hook MPCMediaPlayerLegacyPlaylistManager
+
+    - (id)init {
+        MPCMediaPlayerLegacyPlaylistManager *orig = %orig;
+        [[NSNotificationCenter defaultCenter] addObserver:orig
+                                                 selector:@selector(skipNext)
+                                                     name:kAPMSkipNext
+                                                   object:nil];
+        return orig;
+    }
+
+    - (void)player:(id)player currentItemDidChangeFromItem:(MPMediaItem *)from toItem:(MPMediaItem *)to {
+        NUMediaItem *next = [self metadataItemForPlaylistIndex:self.nextCurrentIndex + 1];
+
+        if (!next)
+            next = [self metadataItemForPlaylistIndex:0];
+
+        if (next)
+            [self fetchNextUpItem:next withArtworkCatalog:[next artworkCatalogBlock]];
         %orig;
-
-        if (![self.nowPlayingApplication.mainSceneID isEqualToString:kMusicBundleID])
-            return;
-
-        MPMusicPlayerController *player = [MPMusicPlayerController systemMusicPlayer];
-
-        // Do not compute if the current track is the same as last time
-        static long long prevTrackID = 0;
-        long long currTrackID = player.nowPlayingItem.persistentID;
-        if (currTrackID == prevTrackID && prevTrackID != 0)
-            return;
-        prevTrackID = currTrackID;
-
-        id item = [player nowPlayingItemAtIndex:player.indexOfNowPlayingItem + 1];
-
-        NSDictionary *metadata;
-        if (!item) // No more tracks upcoming, use the first one
-            item = [player nowPlayingItemAtIndex:0];
-
-        if ([item isKindOfClass:%c(MPModelObjectMediaItem)])
-            return [self handleNextUpModelObjectMediaItem:item];
-        else
-            metadata = [player serializeTrack:item image:nil];
-
-        sendNextTrackMetadata(metadata, NUMusicApplication);
     }
 
     %new
-    - (void)handleNextUpModelObjectMediaItem:(MPModelObjectMediaItem *)item {
-        MPModelSong *song = item.modelObject;
-        block artworkBlock = [song valueForModelKey:@"MPModelPropertySongArtwork"];
+    - (void)skipNext {
+        %log;
 
+        int nextIndex = self.nextCurrentIndex + 1;
+        if (![self metadataItemForPlaylistIndex:nextIndex])
+            nextIndex = 0;
+
+        if ([self currentIndex] == nextIndex)
+            return; // This means we have no tracks left in the queue
+
+        [self removeItemAtPlaybackIndex:nextIndex];
+
+        NUMediaItem *next = [self metadataItemForPlaylistIndex:nextIndex];
+        if (next) 
+            [self fetchNextUpItem:next withArtworkCatalog:[next artworkCatalogBlock]];
+    }
+
+    %new
+    - (NSDictionary *)serializeTrack:(NUMediaItem *)item image:(UIImage *)image {
+        %log;
+
+        NSMutableDictionary *metadata = [NSMutableDictionary new];
+
+
+        UIImage *artwork = image;
+
+        if ([item isKindOfClass:%c(MPCModelGenericAVItem)])
+            metadata[@"trackTitle"] = [item mainTitle];
+        else if ([item isKindOfClass:%c(MPMediaItem)]) {
+            metadata[@"trackTitle"] = item.title;
+
+            if (!image)
+                artwork = [item.artwork imageWithSize:ARTWORK_SIZE];
+        }
+
+        metadata[@"artistTitle"] = item.artist;
+
+        metadata[@"artwork"] = UIImagePNGRepresentation(artwork);
+        return metadata;
+    }
+
+    %new
+    - (void)fetchNextUpItem:(MPMediaItem *)item withArtworkCatalog:(block)artworkBlock {
         MPArtworkCatalog *catalog = artworkBlock();
+
         [catalog setFittingSize:ARTWORK_SIZE];
         catalog.destinationScale = [UIScreen mainScreen].scale;
 
         [catalog requestImageWithCompletionHandler:^(UIImage *image) {
-            MPMusicPlayerController *player = [MPMusicPlayerController systemMusicPlayer];
-            NSDictionary *metadata = [player serializeTrack:item image:image];
+            NSDictionary *metadata = [self serializeTrack:item image:image];
             sendNextTrackMetadata(metadata, NUMusicApplication);
         }];
-    }
-
-    %end
-
-    %hook MPMusicPlayerController
-
-    %new
-    - (NSDictionary *)serializeTrack:(MPMediaItem *)track image:(UIImage *)image {
-        NSMutableDictionary *metadata = [NSMutableDictionary new];
-        metadata[@"trackTitle"] = track.title;
-        metadata[@"artistTitle"] = track.artist;
-
-        UIImage *artwork = image;
-        if (!image)
-            artwork = [track.artwork imageWithSize:ARTWORK_SIZE];
-
-        metadata[@"artwork"] = UIImagePNGRepresentation(artwork);
-        return metadata;
     }
 
     %end
@@ -437,14 +454,15 @@ NUMetadataSaver *metadataSaver;
 // ---
 
 
-
 %ctor {
     if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:kSpringBoardBundleID]) {
         %init(SpringBoard);
-        %init(Music);
     } else if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:kSpotifyBundleID]) {
         %init(Spotify)
         subscribe(&SPTSkipNext, kSPTSkipNext);
+    } else if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:kMusicBundleID]) {
+        %init(Music)
+        subscribe(&APMSkipNext, kAPMSkipNext);
     } else {
         %init(Deezer)
         subscribe(&DZRSkipNext, kDZRSkipNext);

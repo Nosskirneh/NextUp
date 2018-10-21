@@ -32,9 +32,9 @@ extern NSString *const kNextTrackMessage;
 extern NSString *const kShowNextUp;
 extern NSString *const kHideNextUp;
 extern NSString *const kUpdateLabels;
-extern NSString *const kClearMetadata;
 
 extern NSString *const kSPTSkipNext;
+extern NSString *const kAPMSkipNext;
 extern NSString *const kDZRSkipNext;
 
 

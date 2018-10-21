@@ -1,6 +1,12 @@
+@interface NUMediaItem : MPMediaItem
+- (NSString *)mainTitle;
+- (id)artworkCatalogBlock;
+@end
+
+
 @interface MPArtworkCatalog : NSObject
-@property (nonatomic,readonly) BOOL hasImageOnDisk;
-@property (assign,nonatomic) double destinationScale;
+@property (nonatomic, readonly) BOOL hasImageOnDisk;
+@property (assign, nonatomic) double destinationScale;
 - (id)bestImageFromDisk;
 - (void)requestImageWithCompletionHandler:(id)arg1;
 - (void)setFittingSize:(CGSize)arg1;
@@ -8,9 +14,18 @@
 
 typedef MPArtworkCatalog *(^block)(void);
 
-@interface MPMusicPlayerController (Addition)
+
+@interface MPCMediaPlayerLegacyPlaylistManager
+@property (assign, nonatomic) long long nextCurrentIndex;
+- (void)removeItemAtPlaybackIndex:(long long)arg;
+- (id)metadataItemForPlaylistIndex:(long long)arg;
+- (long long)currentIndex;
+- (long long)nextCurrentIndex;
+- (long long)upNextItemCount;
+
 - (NSDictionary *)serializeTrack:(id)item image:(UIImage *)image;
-- (id)nowPlayingItemAtIndex:(NSUInteger)arg1;
+- (void)fetchNextUpItem:(id)item withArtworkCatalog:(block)artworkBlock;
+- (void)skipNext;
 @end
 
 @interface MPModelObjectMediaItem : MPMediaItem
