@@ -42,8 +42,6 @@ NUMetadataSaver *metadataSaver;
 
     %new
     - (void)skipNext {
-        %log;
-
         int nextIndex = self.nextCurrentIndex + 1;
         if (![self metadataItemForPlaylistIndex:nextIndex])
             nextIndex = 0;
@@ -60,8 +58,6 @@ NUMetadataSaver *metadataSaver;
 
     %new
     - (NSDictionary *)serializeTrack:(NUMediaItem *)item image:(UIImage *)image {
-        %log;
-
         NSMutableDictionary *metadata = [NSMutableDictionary new];
 
 
@@ -164,7 +160,6 @@ NUMetadataSaver *metadataSaver;
 
     %new
     - (void)sendNextUpMetadata:(SPTPlayerTrack *)track {
-        %log;
         NSMutableDictionary *metadata = [NSMutableDictionary new];
         metadata[@"trackTitle"] = [track trackTitle];
         metadata[@"artistTitle"] = track.artistTitle;
@@ -283,7 +278,6 @@ NUMetadataSaver *metadataSaver;
     %hook SBMediaController
 
     - (void)_setNowPlayingApplication:(SBApplication *)app {
-        %log;
         %orig;
 
         if ([app.bundleIdentifier isEqualToString:kSpotifyBundleID])
@@ -302,8 +296,6 @@ NUMetadataSaver *metadataSaver;
     %hook SBDashBoardNotificationAdjunctListViewController
 
     - (id)init {
-        %log;
-
         id orig = %orig;
         [[NSNotificationCenter defaultCenter] addObserver:orig
                                                  selector:@selector(showNextUp)
