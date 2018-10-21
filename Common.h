@@ -37,6 +37,10 @@ extern NSString *const kSPTSkipNext;
 extern NSString *const kAPMSkipNext;
 extern NSString *const kDZRSkipNext;
 
+extern NSString *const kSPTManualUpdate;
+extern NSString *const kAPMManualUpdate;
+extern NSString *const kDZRManualUpdate;
+
 
 @interface UIImage (Private)
 + (id)imageNamed:(id)arg1 inBundle:(id)arg2;

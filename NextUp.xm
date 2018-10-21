@@ -18,6 +18,10 @@ NUMetadataSaver *metadataSaver;
         [[NSNotificationCenter defaultCenter] postNotificationName:kAPMSkipNext object:nil];
     }
 
+    void APMManualUpdate(notificationArguments) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:kAPMManualUpdate object:nil];
+    }
+
     %hook MPCMediaPlayerLegacyPlaylistManager
 
     - (id)init {
@@ -26,10 +30,20 @@ NUMetadataSaver *metadataSaver;
                                                  selector:@selector(skipNext)
                                                      name:kAPMSkipNext
                                                    object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:orig
+                                                 selector:@selector(fetchNextUp)
+                                                     name:kAPMManualUpdate
+                                                   object:nil];
         return orig;
     }
 
     - (void)player:(id)player currentItemDidChangeFromItem:(MPMediaItem *)from toItem:(MPMediaItem *)to {
+        [self fetchNextUp];
+        %orig;
+    }
+
+    %new
+    - (void)fetchNextUp {
         NUMediaItem *next = [self metadataItemForPlaylistIndex:self.nextCurrentIndex + 1];
 
         if (!next)
@@ -37,7 +51,6 @@ NUMetadataSaver *metadataSaver;
 
         if (next)
             [self fetchNextUpItem:next withArtworkCatalog:[next artworkCatalogBlock]];
-        %orig;
     }
 
     %new
@@ -104,6 +117,15 @@ NUMetadataSaver *metadataSaver;
         [getQueueImplementation() skipNext];
     }
 
+    void SPTManualUpdate(notificationArguments) {
+        HBLogDebug(@"SPTManualUpdate");
+        SPTQueueViewModelImplementation *queueViewModel = getQueueImplementation();
+        if (!queueViewModel)
+            return;
+        SPTPlayerImpl *player = MSHookIvar<SPTPlayerImpl *>(queueViewModel, "_player");
+        [queueViewModel fetchNextUpForState:player.state];
+    }
+
     SpotifyApplication *getSpotifyApplication() {
         return (SpotifyApplication *)[UIApplication sharedApplication];
     }
@@ -145,8 +167,12 @@ NUMetadataSaver *metadataSaver;
     - (void)player:(SPTPlayerImpl *)player stateDidChange:(SPTPlayerState *)newState fromState:(SPTPlayerState *)oldState {
         %orig;
 
+        [self fetchNextUpForState:newState];
+    }
 
-        NSArray *next = newState.future;
+    %new
+    - (void)fetchNextUpForState:(SPTPlayerState *)state {
+        NSArray *next = state.future;
         if (next.count > 0)
             [self sendNextUpMetadata:next[0]];
     }
@@ -191,6 +217,10 @@ NUMetadataSaver *metadataSaver;
 %group Deezer
     void DZRSkipNext(notificationArguments) {
         [getMixQueuer() skipNext];
+    }
+
+    void DZRManualUpdate(notificationArguments) {
+        [getMixQueuer() fetchNextUp];
     }
 
     DZRAppDelegate *getDeezerAppDelegate() {
@@ -278,17 +308,21 @@ NUMetadataSaver *metadataSaver;
     %hook SBMediaController
 
     - (void)_setNowPlayingApplication:(SBApplication *)app {
-        %orig;
-
-        if ([app.bundleIdentifier isEqualToString:kSpotifyBundleID])
-            return setMediaAppAndSendShowNextUp(NUSpotifyApplication);
-        else if ([app.bundleIdentifier isEqualToString:kDeezerBundleID])
-            return setMediaAppAndSendShowNextUp(NUDeezerApplication);
-        else if ([app.bundleIdentifier isEqualToString:kMusicBundleID])
-            return setMediaAppAndSendShowNextUp(NUMusicApplication);
+        if ([app.bundleIdentifier isEqualToString:kSpotifyBundleID]) {
+            notify(kSPTManualUpdate);
+            setMediaAppAndSendShowNextUp(NUSpotifyApplication);
+        } else if ([app.bundleIdentifier isEqualToString:kMusicBundleID]) {
+            notify(kAPMManualUpdate);
+            setMediaAppAndSendShowNextUp(NUMusicApplication);
+        } else if ([app.bundleIdentifier isEqualToString:kDeezerBundleID]) {
+            notify(kDZRManualUpdate);
+            setMediaAppAndSendShowNextUp(NUDeezerApplication);
+        } else {
+            metadataSaver.mediaApplication = NUUnsupportedApplication;
+            [[NSNotificationCenter defaultCenter] postNotificationName:kHideNextUp object:nil];
+        }
         
-        metadataSaver.mediaApplication = NUUnsupportedApplication;
-        [[NSNotificationCenter defaultCenter] postNotificationName:kHideNextUp object:nil];
+        %orig;
     }
 
     %end
@@ -452,12 +486,15 @@ NUMetadataSaver *metadataSaver;
     } else if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:kSpotifyBundleID]) {
         %init(Spotify)
         subscribe(&SPTSkipNext, kSPTSkipNext);
+        subscribe(&SPTManualUpdate, kSPTManualUpdate);
     } else if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:kMusicBundleID]) {
         %init(Music)
         subscribe(&APMSkipNext, kAPMSkipNext);
+        subscribe(&APMManualUpdate, kAPMManualUpdate);
     } else {
         %init(Deezer)
         subscribe(&DZRSkipNext, kDZRSkipNext);
+        subscribe(&DZRManualUpdate, kDZRManualUpdate);
     }
 
     metadataSaver = [[NUMetadataSaver alloc] init];

@@ -24,6 +24,7 @@ typedef MPArtworkCatalog *(^block)(void);
 - (long long)upNextItemCount;
 
 - (NSDictionary *)serializeTrack:(id)item image:(UIImage *)image;
+- (void)fetchNextUp;
 - (void)fetchNextUpItem:(id)item withArtworkCatalog:(block)artworkBlock;
 - (void)skipNext;
 @end

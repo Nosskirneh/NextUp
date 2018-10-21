@@ -27,3 +27,7 @@ NSString *const kUpdateLabels = @"se.nosskirneh.nextup/updateLabels";
 NSString *const kSPTSkipNext = @"se.nosskirneh.nextup/SPTSkipNext";
 NSString *const kAPMSkipNext = @"se.nosskirneh.nextup/APMSkipNext";
 NSString *const kDZRSkipNext = @"se.nosskirneh.nextup/DZRSkipNext";
+
+NSString *const kSPTManualUpdate = @"se.nosskirneh.nextup/SPTManualUpdate";
+NSString *const kAPMManualUpdate = @"se.nosskirneh.nextup/APMManualUpdate";
+NSString *const kDZRManualUpdate = @"se.nosskirneh.nextup/DZRManualUpdate";

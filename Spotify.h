@@ -43,6 +43,7 @@
 @property (nonatomic, strong) SPTQueueViewModelDataSource *dataSource;
 - (SPTQueueViewModelDataSource *)removeTracks:(NSSet *)arg1;
 - (void)sendNextUpMetadata:(SPTPlayerTrack *)track;
+- (void)fetchNextUpForState:(SPTPlayerState *)state;
 - (void)skipNext;
 @end
 
