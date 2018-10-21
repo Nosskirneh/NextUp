@@ -42,6 +42,11 @@ NUMetadataSaver *metadataSaver;
         %orig;
     }
 
+    - (void)queueFeederDidInvalidateRealShuffleType:(id)queueFeeder {
+        %orig;
+        [self fetchNextUp];
+    }
+
     %new
     - (void)fetchNextUp {
         NUMediaItem *next = [self metadataItemForPlaylistIndex:self.nextCurrentIndex + 1];
