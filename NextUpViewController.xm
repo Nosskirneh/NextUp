@@ -3,6 +3,40 @@
 
 #define DIGITAL_TOUCH_BUNDLE [NSBundle bundleWithPath:@"/System/Library/PrivateFrameworks/DigitalTouchShared.framework"]
 
+@interface NUSkipButton : UIButton
+@end
+
+%subclass NUSkipButton : UIButton
+
+- (void)setAlpha:(CGFloat)alpha {
+    %orig(0.95);
+}
+
+%end
+
+@interface NextUpMediaHeaderView : MediaControlsHeaderView
+@property (nonatomic, retain) NUSkipButton *routingButton;
+@end
+
+%subclass NextUpMediaHeaderView : MediaControlsHeaderView
+
+// Override routing button
+%property (nonatomic, retain) NUSkipButton *routingButton;
+
+- (id)initWithFrame:(CGRect)arg1 {
+    NextUpMediaHeaderView *orig = %orig;
+
+    NUSkipButton *skipButton = [[%c(NUSkipButton) alloc] initWithFrame:CGRectZero];
+    UIImage *image = [UIImage imageNamed:@"Cancel.png" inBundle:DIGITAL_TOUCH_BUNDLE];
+    [skipButton setImage:image forState:UIControlStateNormal];
+    orig.routingButton = skipButton;
+
+    [orig addSubview:orig.routingButton];
+    return orig;
+}
+
+%end
+
 @implementation NextUpViewController
 
 @dynamic view;
@@ -27,7 +61,7 @@
 
     self.contentView = [[UIView alloc] initWithFrame:CGRectZero];
 
-    self.mediaView = [[%c(MediaControlsHeaderView) alloc] initWithFrame:CGRectZero];
+    self.mediaView = [[%c(NextUpMediaHeaderView) alloc] initWithFrame:CGRectZero];
     _mediaView.style = 3;
     if ([_mediaView respondsToSelector:@selector(setShouldEnableMarquee:)])
         [_mediaView setShouldEnableMarquee:YES];
@@ -36,6 +70,10 @@
 
     _mediaView.translatesAutoresizingMaskIntoConstraints = NO;
     [self.contentView addSubview:_mediaView];
+
+    [_mediaView.routingButton addTarget:self 
+                                 action:@selector(skipTrack:)
+                       forControlEvents:UIControlEventTouchUpInside];
 
     self.headerLabel = [[UILabel alloc] init];
     self.headerLabel.backgroundColor = [UIColor clearColor];
@@ -55,24 +93,7 @@
     [_mediaView.topAnchor constraintEqualToAnchor:self.headerLabel.bottomAnchor].active = YES;
     [_mediaView.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor].active = YES;
     [_mediaView.leftAnchor constraintEqualToAnchor:self.contentView.leftAnchor constant:-8].active = YES;
-    [_mediaView.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor constant:-20].active = YES;
-
-    self.skipButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [self.skipButton addTarget:self 
-               action:@selector(skipTrack:)
-     forControlEvents:UIControlEventTouchUpInside];
-    UIImage *image = [UIImage imageNamed:@"Cancel.png" inBundle:DIGITAL_TOUCH_BUNDLE];
-    [self.skipButton setImage:image forState:UIControlStateNormal];
-    self.skipButton.frame = CGRectMake(0, 0, 45, 45);
-    [self.contentView addSubview:self.skipButton];
-
-    self.skipButton.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.skipButton.topAnchor constraintEqualToAnchor:_mediaView.topAnchor constant:31].active = YES;
-    [self.skipButton.bottomAnchor constraintEqualToAnchor:_mediaView.bottomAnchor constant:-31].active = YES;
-
-    int leftConstant = -38;
-    [self.skipButton.leftAnchor constraintEqualToAnchor:self.contentView.rightAnchor constant:leftConstant].active = YES;
-    [self.skipButton.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor constant:leftConstant+23].active = YES;
+    [_mediaView.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor constant:8].active = YES;
 
     [self.view addArrangedSubview:self.contentView];
 

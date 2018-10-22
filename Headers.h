@@ -15,6 +15,7 @@
 
 
 @interface MediaControlsHeaderView : UIView
+@property (nonatomic, retain) UIButton *routingButton;
 @property (nonatomic, retain) UIImageView *artworkView;
 @property (nonatomic, retain) MPUMarqueeView *primaryMarqueeView;
 @property (nonatomic, retain) MPUMarqueeView *secondaryMarqueeView;
@@ -41,7 +42,6 @@
 @interface NextUpViewController : UIViewController
 @property (nonatomic, retain) UIStackView *view;
 @property (nonatomic, retain) UIView *contentView;
-@property (nonatomic, retain) UIButton *skipButton;
 @property (nonatomic, retain) NUMetadataSaver *metadataSaver;
 @property (nonatomic, retain) UILabel *headerLabel;
 @property (nonatomic, retain) MediaControlsHeaderView *mediaView;
