@@ -39,7 +39,20 @@
 @end
 
 
+typedef enum UIImpactFeedbackStyle : NSInteger {
+    UIImpactFeedbackStyleHeavy,
+    UIImpactFeedbackStyleLight,
+    UIImpactFeedbackStyleMedium
+} UIImpactFeedbackStyle;
+
+@interface UIImpactFeedbackGenerator : NSObject
+- (id)initWithStyle:(UIImpactFeedbackStyle)style;
+- (void)impactOccurred;
+@end
+
+
 @interface NextUpViewController : UIViewController
+@property (nonatomic, retain) UIImpactFeedbackGenerator *hapticGenerator;
 @property (nonatomic, retain) UIStackView *view;
 @property (nonatomic, retain) UIView *contentView;
 @property (nonatomic, retain) NUMetadataSaver *metadataSaver;

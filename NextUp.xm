@@ -452,8 +452,6 @@ NUMetadataSaver *metadataSaver;
             self.nextUpViewController.cornerRadius = 15;
             self.nextUpViewController.metadataSaver = metadataSaver;
 
-            // self.hapticGenerator = [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleMedium];
-
             self.nextUpInitialized = YES;
         }
     }

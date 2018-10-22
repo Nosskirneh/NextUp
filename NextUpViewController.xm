@@ -61,6 +61,8 @@
                                                      name:kUpdateLabels
                                                    object:nil];
 
+    self.hapticGenerator = [[%c(UIImpactFeedbackGenerator) alloc] initWithStyle:UIImpactFeedbackStyleMedium];
+
     return self;
 }
 
@@ -120,6 +122,8 @@
 }
 
 - (void)skipTrack:(UIButton *)sender {
+    [self.hapticGenerator impactOccurred];
+
     HBLogDebug(@"skipTrack");
     if (isAppCurrentMediaApp(kSpotifyBundleID))
         notify(kSPTSkipNext);
