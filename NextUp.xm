@@ -124,7 +124,6 @@ NUMetadataSaver *metadataSaver;
     }
 
     void SPTManualUpdate(notificationArguments) {
-        HBLogDebug(@"SPTManualUpdate");
         SPTQueueViewModelImplementation *queueViewModel = getQueueImplementation();
         if (!queueViewModel)
             return;
@@ -188,8 +187,6 @@ NUMetadataSaver *metadataSaver;
 
     %new
     - (void)skipNext {
-        %log;
-
         if (!self.dataSource.futureTracks)
             return;
 
@@ -365,8 +362,6 @@ NUMetadataSaver *metadataSaver;
 
     %new
     - (void)showNextUp {
-        %log;
-
         SBDashBoardMediaControlsViewController *mediaControlsController = [self mediaControlsController];
 
         if (mediaControlsController.showingNextUp)
@@ -387,8 +382,6 @@ NUMetadataSaver *metadataSaver;
 
     %new
     - (void)hideNextUp {
-        %log;
-
         SBDashBoardMediaControlsViewController *mediaControlsController = [self mediaControlsController];
 
         if (!mediaControlsController.showingNextUp)
@@ -405,7 +398,6 @@ NUMetadataSaver *metadataSaver;
     // Restore width and height (touches don't work otherwise)
     %new
     - (void)nextUpViewWasAdded {
-        %log;
         SBDashBoardMediaControlsViewController *mediaControlsController = [self mediaControlsController];
 
         CGRect frame = mediaControlsController.view.frame;

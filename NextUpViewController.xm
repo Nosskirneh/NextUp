@@ -124,7 +124,6 @@
 - (void)skipTrack:(UIButton *)sender {
     [self.hapticGenerator impactOccurred];
 
-    HBLogDebug(@"skipTrack");
     if (isAppCurrentMediaApp(kSpotifyBundleID))
         notify(kSPTSkipNext);
     else if (isAppCurrentMediaApp(kMusicBundleID))
@@ -134,12 +133,6 @@
 }
 
 - (void)updateLabels {
-    // NSArray *metadatas = @[
-    // @{
-    //     @"artistTitle" : @"Sunfly Karaoke",
-    //     @"trackTitle" : @"What Have I Done to Deserve This in the Style of Dusty Springfield & Pet Shop Boys"
-    // }];
-
     NSDictionary *metadata = _metadataSaver.metadata;
     if (metadata) {
         _mediaView.primaryString = metadata[@"trackTitle"];
