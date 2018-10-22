@@ -12,6 +12,8 @@ NextUp_PRIVATE_FRAMEWORKS = AppSupport
 include $(THEOS_MAKE_PATH)/tweak.mk
 
 after-install::
-	install.exec "killall -9 Spotify; killall -9 Music; killall -9 Deezer"
+	install.exec "killall -9 SpringBoard"
+
+SUBPROJECTS += preferences
 
 include $(THEOS_MAKE_PATH)/aggregate.mk

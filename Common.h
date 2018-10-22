@@ -22,6 +22,7 @@ void sendNextTrackMetadata(NSDictionary *metadata, NUMediaApplication app);
 
 
 #define NEXTUP_IDENTIFIER @"se.nosskirneh.nextup"
+#define kPrefPath [NSString stringWithFormat:@"%@/Library/Preferences/%@.plist", NSHomeDirectory(), NEXTUP_IDENTIFIER]
 
 extern NSString *const kSpotifyBundleID;
 extern NSString *const kDeezerBundleID;
@@ -40,6 +41,12 @@ extern NSString *const kDZRSkipNext;
 extern NSString *const kSPTManualUpdate;
 extern NSString *const kAPMManualUpdate;
 extern NSString *const kDZRManualUpdate;
+
+
+/* Settings */
+extern NSString *const kEnableSpotify;
+extern NSString *const kEnableMusic;
+extern NSString *const kEnableDeezer;
 
 
 @interface UIImage (Private)

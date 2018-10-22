@@ -1,0 +1,18 @@
+include $(THEOS)/makefiles/common.mk
+
+TARGET = iphone:clang:9.2
+TARGET_IPHONEOS_DEPLOYMENT_VERSION = 9.2
+
+BUNDLE_NAME = NextUpPrefs
+NextUpPrefs_FILES = NextUpRootListController.m ../../DRM/PFStatusBarAlert/PFStatusBarAlert.mm
+NextUpPrefs_CFLAGS = -fobjc-arc
+NextUpPrefs_INSTALL_PATH = /Library/PreferenceBundles
+NextUpPrefs_FRAMEWORKS = UIKit
+NextUpPrefs_LIBRARIES = rocketbootstrap colorpicker
+NextUpPrefs_PRIVATE_FRAMEWORKS = Preferences AppSupport
+
+include $(THEOS_MAKE_PATH)/bundle.mk
+
+internal-stage::
+	$(ECHO_NOTHING)mkdir -p $(THEOS_STAGING_DIR)/Library/PreferenceLoader/Preferences$(ECHO_END)
+	$(ECHO_NOTHING)cp entry.plist $(THEOS_STAGING_DIR)/Library/PreferenceLoader/Preferences/NextUp.plist$(ECHO_END)

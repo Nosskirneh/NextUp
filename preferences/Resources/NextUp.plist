@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>items</key>
+	<array>
+
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>headerCellClass</key>
+            <string>NextUpSettingsHeaderCell</string>
+        </dict>
+
+
+        <!-- App settings -->
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>label</key>
+            <string>Enable apps</string>
+            <key>footerAlignment</key>
+            <integer>0</integer>
+            <key>footerText</key>
+            <string>These settings requires a respring.</string>
+        </dict>
+
+        <dict>
+            <key>cell</key>
+            <string>PSSwitchCell</string>
+            <key>cellClass</key>
+            <string>NextUpSwitchTableCell</string>
+            <key>default</key>
+            <true/>
+            <key>icon</key>
+            <string>spotify.png</string>
+            <key>key</key>
+            <string>EnableSpotify</string>
+            <key>id</key>
+            <string>Spotify</string>
+            <key>label</key>
+            <string>Enable for Spotify</string>
+        </dict>
+
+        <dict>
+            <key>cell</key>
+            <string>PSSwitchCell</string>
+            <key>cellClass</key>
+            <string>NextUpSwitchTableCell</string>
+            <key>default</key>
+            <true/>
+            <key>key</key>
+            <string>EnableMusic</string>
+            <key>id</key>
+            <string>Music</string>
+            <key>label</key>
+            <string>Enable for Music</string>
+        </dict>
+
+        <dict>
+            <key>cell</key>
+            <string>PSSwitchCell</string>
+            <key>cellClass</key>
+            <string>NextUpSwitchTableCell</string>
+            <key>default</key>
+            <true/>
+            <key>icon</key>
+            <string>deezer.png</string>
+            <key>key</key>
+            <string>EnableDeezer</string>
+            <key>id</key>
+            <string>Deezer</string>
+            <key>label</key>
+            <string>Enable for Deezer</string>
+        </dict>
+
+
+
+        <!-- Fill out -->
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+        </dict>
+
+
+        <!-- Other -->
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>label</key>
+            <string>About</string>
+            <key>footerAlignment</key>
+            <integer>1</integer>
+            <key>footerText</key>
+            <string>© 2018 Andreas Henriksson</string>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSButtonCell</string>
+            <key>action</key>
+            <string>sendEmail</string>
+            <key>id</key>
+            <string>Mail</string>
+            <key>label</key>
+            <string>Email me</string>
+        </dict>
+	</array>
+
+	<key>title</key>
+	<string>NextUp</string>
+</dict>
+</plist>

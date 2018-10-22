@@ -31,3 +31,9 @@ NSString *const kDZRSkipNext = @"se.nosskirneh.nextup/DZRSkipNext";
 NSString *const kSPTManualUpdate = @"se.nosskirneh.nextup/SPTManualUpdate";
 NSString *const kAPMManualUpdate = @"se.nosskirneh.nextup/APMManualUpdate";
 NSString *const kDZRManualUpdate = @"se.nosskirneh.nextup/DZRManualUpdate";
+
+
+/* Settings */
+NSString *const kEnableSpotify = @"EnableSpotify";
+NSString *const kEnableMusic = @"EnableMusic";
+NSString *const kEnableDeezer = @"EnableDeezer";

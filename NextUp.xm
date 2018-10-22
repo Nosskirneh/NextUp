@@ -5,6 +5,7 @@
 #import "Deezer.h"
 #import "Music.h"
 #import "Headers.h"
+#import "DRMOptions.mm"
 
 #define ARTWORK_SIZE CGSizeMake(60, 60)
 
@@ -491,19 +492,61 @@ NUMetadataSaver *metadataSaver;
 // ---
 
 
+%group Welcome
+%hook SBLockScreenManager
+
+- (BOOL)_finishUIUnlockFromSource:(int)arg1 withOptions:(id)arg2 {
+    OBFS_UIALERT(packageShown$bs(), WelcomeMsg$bs(), OK$bs());
+
+    return %orig;
+}
+
+%end
+%end
+
+
 %ctor {
+    // License check – if no license found, present message. If no valid license found, do not init
+    switch (check_lic(licensePath$bs(), package$bs())) {
+        case CheckNoLicense:
+            if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:kSpringBoardBundleID])
+                %init(Welcome);
+            break;
+        case CheckInvalidLicense:
+            break;
+        case CheckValidLicense:
+            goto init;
+            break;
+        case CheckUDIDsDoNotMatch:
+            break;
+    }
+    return;
+    // ---
+    init:
+
+    NSDictionary *preferences = [NSDictionary dictionaryWithContentsOfFile:kPrefPath];
+
     if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:kSpringBoardBundleID]) {
         %init(SpringBoard);
     } else if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:kSpotifyBundleID]) {
-        %init(Spotify)
+         if (preferences[kEnableSpotify] && ![preferences[kEnableSpotify] boolValue])
+            return;
+
+        %init(Spotify);
         subscribe(&SPTSkipNext, kSPTSkipNext);
         subscribe(&SPTManualUpdate, kSPTManualUpdate);
     } else if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:kMusicBundleID]) {
-        %init(Music)
+         if (preferences[kEnableMusic] && ![preferences[kEnableMusic] boolValue])
+            return;
+
+        %init(Music);
         subscribe(&APMSkipNext, kAPMSkipNext);
         subscribe(&APMManualUpdate, kAPMManualUpdate);
     } else {
-        %init(Deezer)
+         if (preferences[kEnableDeezer] && ![preferences[kEnableDeezer] boolValue])
+            return;
+
+        %init(Deezer);
         subscribe(&DZRSkipNext, kDZRSkipNext);
         subscribe(&DZRManualUpdate, kDZRManualUpdate);
     }
