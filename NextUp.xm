@@ -160,6 +160,9 @@ NUMetadataSaver *metadataSaver;
         // Add observer (otherwise this is only done as late as when opening the now playing view)
         SPTPlayerImpl *player = MSHookIvar<SPTPlayerImpl *>(queueViewModel, "_player");
         [player addPlayerObserver:queueViewModel];
+
+        // This will fill the dataSource's futureTracks, which makes it possible to skip tracks
+        [queueViewModel enableUpdates];
     }
 
     %end
@@ -184,6 +187,11 @@ NUMetadataSaver *metadataSaver;
 
     %new
     - (void)skipNext {
+        %log;
+
+        if (!self.dataSource.futureTracks)
+            return;
+
         SPTQueueTrackImplementation *track = self.dataSource.futureTracks[0];
         NSSet *tracks = [NSSet setWithArray:@[track]];
         [self removeTracks:tracks];

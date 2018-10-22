@@ -41,6 +41,7 @@
 }
 @property (nonatomic, retain) SPTGLUEImageLoader *imageLoader;
 @property (nonatomic, strong) SPTQueueViewModelDataSource *dataSource;
+- (void)enableUpdates;
 - (SPTQueueViewModelDataSource *)removeTracks:(NSSet *)arg1;
 - (void)sendNextUpMetadata:(SPTPlayerTrack *)track;
 - (void)fetchNextUpForState:(SPTPlayerState *)state;
