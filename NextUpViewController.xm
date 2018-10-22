@@ -8,6 +8,10 @@
 
 %subclass NUSkipButton : UIButton
 
+- (void)setUserInteractionEnabled:(BOOL)enabled {
+    %orig(YES);
+}
+
 - (void)setAlpha:(CGFloat)alpha {
     %orig(0.95);
 }
