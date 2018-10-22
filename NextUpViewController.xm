@@ -39,6 +39,15 @@
     return orig;
 }
 
+- (void)layoutSubviews {
+    %orig;
+
+    CGRect frame = self.primaryMarqueeView.frame;
+    float maxWidth = self.routingButton.frame.origin.x - self.artworkView.frame.origin.x - self.artworkView.frame.size.width - 15;
+    frame.size.width = fmin(frame.size.width, maxWidth);
+    self.primaryMarqueeView.frame = frame;
+}
+
 %end
 
 @implementation NextUpViewController
