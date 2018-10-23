@@ -1,9 +1,9 @@
 Package: se.nosskirneh.nextup
 Name: NextUp
-Depends: mobilesubstrate
-Version: 0.0.1
+Depends: mobilesubstrate, com.rpetrich.rocketbootstrap (>= 1.0.2)
+Version: 0.9
 Architecture: iphoneos-arm
-Description: An awesome MobileSubstrate tweak!
+Description: See and change the next track
 Maintainer: Andreas Henriksson
 Author: Andreas Henriksson
 Section: Tweaks
