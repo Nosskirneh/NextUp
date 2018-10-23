@@ -8,8 +8,7 @@ NextUpPrefs_FILES = NextUpRootListController.m ../../DRM/PFStatusBarAlert/PFStat
 NextUpPrefs_CFLAGS = -fobjc-arc
 NextUpPrefs_INSTALL_PATH = /Library/PreferenceBundles
 NextUpPrefs_FRAMEWORKS = UIKit
-NextUpPrefs_LIBRARIES = rocketbootstrap colorpicker
-NextUpPrefs_PRIVATE_FRAMEWORKS = Preferences AppSupport
+NextUpPrefs_PRIVATE_FRAMEWORKS = Preferences
 
 include $(THEOS_MAKE_PATH)/bundle.mk
 
