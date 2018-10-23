@@ -520,6 +520,7 @@ NUMetadataSaver *metadataSaver;
 
     if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:kSpringBoardBundleID]) {
         %init(SpringBoard);
+        metadataSaver = [[NUMetadataSaver alloc] init];
     } else if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:kSpotifyBundleID]) {
          if (preferences[kEnableSpotify] && ![preferences[kEnableSpotify] boolValue])
             return;
@@ -542,6 +543,4 @@ NUMetadataSaver *metadataSaver;
         subscribe(&DZRSkipNext, kDZRSkipNext);
         subscribe(&DZRManualUpdate, kDZRManualUpdate);
     }
-
-    metadataSaver = [[NUMetadataSaver alloc] init];
 }
