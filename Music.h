@@ -20,8 +20,6 @@ typedef MPArtworkCatalog *(^block)(void);
 - (void)removeItemAtPlaybackIndex:(long long)arg;
 - (id)metadataItemForPlaylistIndex:(long long)arg;
 - (long long)currentIndex;
-- (long long)nextCurrentIndex;
-- (long long)upNextItemCount;
 
 - (NSDictionary *)serializeTrack:(id)item image:(UIImage *)image;
 - (void)fetchNextUp;

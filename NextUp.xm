@@ -39,8 +39,8 @@ NUMetadataSaver *metadataSaver;
     }
 
     - (void)player:(id)player currentItemDidChangeFromItem:(MPMediaItem *)from toItem:(MPMediaItem *)to {
-        [self fetchNextUp];
         %orig;
+        [self fetchNextUp];
     }
 
     - (void)queueFeederDidInvalidateRealShuffleType:(id)queueFeeder {
@@ -50,7 +50,7 @@ NUMetadataSaver *metadataSaver;
 
     %new
     - (void)fetchNextUp {
-        NUMediaItem *next = [self metadataItemForPlaylistIndex:self.nextCurrentIndex + 1];
+        NUMediaItem *next = [self metadataItemForPlaylistIndex:[self currentIndex] + 1];
 
         if (!next)
             next = [self metadataItemForPlaylistIndex:0];
@@ -61,12 +61,13 @@ NUMetadataSaver *metadataSaver;
 
     %new
     - (void)skipNext {
-        int nextIndex = self.nextCurrentIndex + 1;
-        if (![self metadataItemForPlaylistIndex:nextIndex])
+        int nextIndex = [self currentIndex] + 1;
+        if (![self metadataItemForPlaylistIndex:nextIndex]) {
             nextIndex = 0;
 
-        if ([self currentIndex] == nextIndex)
-            return; // This means we have no tracks left in the queue
+            if ([self currentIndex] == nextIndex)
+                return; // This means we have no tracks left in the queue
+        }
 
         [self removeItemAtPlaybackIndex:nextIndex];
 
@@ -78,7 +79,6 @@ NUMetadataSaver *metadataSaver;
     %new
     - (NSDictionary *)serializeTrack:(NUMediaItem *)item image:(UIImage *)image {
         NSMutableDictionary *metadata = [NSMutableDictionary new];
-
 
         UIImage *artwork = image;
 
