@@ -66,7 +66,7 @@ NUMetadataSaver *metadataSaver;
             nextIndex = 0;
 
             if ([self currentIndex] == nextIndex)
-                return; // This means we have no tracks left in the queue
+                return [self fetchNextUp]; // This means we have no tracks left in the queue
         }
 
         [self removeItemAtPlaybackIndex:nextIndex];
