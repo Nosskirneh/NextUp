@@ -364,11 +364,11 @@ NUMetadataSaver *metadataSaver;
     - (void)showNextUp {
         SBDashBoardMediaControlsViewController *mediaControlsController = [self mediaControlsController];
 
-        if (mediaControlsController.showingNextUp)
-            return;
-
         // Mark NextUp as should be visible
         mediaControlsController.shouldShowNextUp = YES;
+
+        if (mediaControlsController.showingNextUp)
+            return;
 
         // Reload the widget
         MSHookIvar<NSInteger>(self, "_nowPlayingState") = 0;
@@ -384,11 +384,11 @@ NUMetadataSaver *metadataSaver;
     - (void)hideNextUp {
         SBDashBoardMediaControlsViewController *mediaControlsController = [self mediaControlsController];
 
-        if (!mediaControlsController.showingNextUp)
-            return;
-
         // Mark NextUp as should be visible
         mediaControlsController.shouldShowNextUp = NO;
+
+        if (!mediaControlsController.showingNextUp)
+            return;
 
         // Reload the widget
         MSHookIvar<NSInteger>(self, "_nowPlayingState") = 0;
@@ -431,8 +431,6 @@ NUMetadataSaver *metadataSaver;
 
     - (void)_layoutMediaControls {
         %orig;
-
-        self.shouldShowNextUp = YES;
 
         if (self.shouldShowNextUp)
             [self addNextUpView];

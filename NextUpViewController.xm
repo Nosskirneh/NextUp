@@ -55,16 +55,36 @@
 @dynamic view;
 
 - (id)init {
-    if (self == [super init])
+    if (self == [super init]) {
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(updateLabels)
                                                      name:kUpdateLabels
                                                    object:nil];
 
-    self.hapticGenerator = [[%c(UIImpactFeedbackGenerator) alloc] initWithStyle:UIImpactFeedbackStyleMedium];
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(showNextUp)
+                                                     name:kShowNextUp
+                                                   object:nil];
+
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(hideNextUp)
+                                                     name:kHideNextUp
+                                                   object:nil];
+
+        self.hapticGenerator = [[%c(UIImpactFeedbackGenerator) alloc] initWithStyle:UIImpactFeedbackStyleMedium];
+    }
 
     return self;
 }
+
+- (void)showNextUp {
+    self.view.alpha = 1.0f;
+}
+
+- (void)hideNextUp {
+    self.view.alpha = 0.0f;
+}
+
 
 - (void)loadView {
     [super loadView];
