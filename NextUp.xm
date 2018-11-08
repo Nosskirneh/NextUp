@@ -452,7 +452,6 @@ NUMetadataSaver *metadataSaver;
 
         if (event.type == 18 && self.nextUpNeedPostFix) { // SignificantUserInteraction
             self.nextUpNeedPostFix = NO;
-            [self.nextUpViewController viewDidAppear:YES];
             [[self _presenter] nextUpViewWasAdded];
         }
     }

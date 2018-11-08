@@ -166,12 +166,4 @@
     }
 }
 
-// Note that this is called manually!
-- (void)viewDidAppear:(BOOL)arg {
-    [super viewDidAppear:arg];
-
-    _mediaView.primaryMarqueeView.marqueeEnabled = YES;
-    _mediaView.secondaryMarqueeView.marqueeEnabled = YES;
-}
-
 @end
