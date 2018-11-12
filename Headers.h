@@ -11,6 +11,7 @@
 
 @interface MPUMarqueeView : UIView
 @property (assign, getter=isMarqueeEnabled, nonatomic) BOOL marqueeEnabled;
+@property (nonatomic, readonly) UIView *contentView;
 @end
 
 
@@ -27,6 +28,8 @@
 @property (nonatomic, retain) UIImageView *artworkView;
 @property (nonatomic, retain) MPUMarqueeView *primaryMarqueeView;
 @property (nonatomic, retain) MPUMarqueeView *secondaryMarqueeView;
+@property (nonatomic, retain) UILabel *primaryLabel;
+@property (nonatomic, retain) UILabel *secondaryLabel;
 @property (nonatomic, assign) long long style;
 @property (nonatomic, retain) NSString *titleString;
 @property (nonatomic, retain) NSString *primaryString;
@@ -70,6 +73,7 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @property (nonatomic, retain) UILabel *headerLabel;
 @property (nonatomic, retain) MediaControlsHeaderView *mediaView;
 @property (nonatomic, assign) BOOL showsHeader;
+@property (nonatomic, assign) BOOL noctisEnabled;
 @property (nonatomic, assign) int background;
 @property (nonatomic, assign) CGFloat cornerRadius;
 @end

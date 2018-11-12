@@ -18,6 +18,17 @@
 
 %end
 
+@interface NULabel : UILabel
+@end
+
+%subclass NULabel : UILabel
+
+- (void)setAlpha:(CGFloat)alpha {
+    %orig(0.6);
+}
+
+%end
+
 @interface NextUpMediaHeaderView : MediaControlsHeaderView
 @property (nonatomic, retain) NUSkipButton *routingButton;
 @end
@@ -26,6 +37,8 @@
 
 // Override routing button
 %property (nonatomic, retain) NUSkipButton *routingButton;
+%property (nonatomic, retain) NULabel *primaryLabel;
+%property (nonatomic, retain) NULabel *secondaryLabel;
 
 - (id)initWithFrame:(CGRect)arg1 {
     NextUpMediaHeaderView *orig = %orig;
@@ -34,8 +47,13 @@
     UIImage *image = [UIImage imageNamed:@"Cancel.png" inBundle:DIGITAL_TOUCH_BUNDLE];
     [skipButton setImage:image forState:UIControlStateNormal];
     orig.routingButton = skipButton;
-
     [orig addSubview:orig.routingButton];
+
+    orig.primaryLabel = [[%c(NULabel) alloc] initWithFrame:CGRectZero];
+    orig.secondaryLabel = [[%c(NULabel) alloc] initWithFrame:CGRectZero];
+    [orig.primaryMarqueeView.contentView addSubview:orig.primaryLabel];
+    [orig.secondaryMarqueeView.contentView addSubview:orig.secondaryLabel];
+
     return orig;
 }
 
@@ -72,6 +90,11 @@
                                                    object:nil];
 
         self.hapticGenerator = [[%c(UIImpactFeedbackGenerator) alloc] initWithStyle:UIImpactFeedbackStyleMedium];
+
+        if (%c(NoctisSystemController)) {
+            NSDictionary *noctisPrefs = [NSDictionary dictionaryWithContentsOfFile:@"/var/mobile/Library/Preferences/com.laughingquoll.noctisxiprefs.settings.plist"];
+            self.noctisEnabled = !noctisPrefs || [noctisPrefs[@"enableMedia"] boolValue];
+        }
     }
 
     return self;
@@ -97,7 +120,8 @@
     self.contentView = [[UIView alloc] initWithFrame:CGRectZero];
 
     self.mediaView = [[%c(NextUpMediaHeaderView) alloc] initWithFrame:CGRectZero];
-    _mediaView.style = 3;
+    _mediaView.style = self.noctisEnabled ? 2 : 3;
+
     if ([_mediaView respondsToSelector:@selector(setShouldEnableMarquee:)])
         [_mediaView setShouldEnableMarquee:YES];
     else if ([_mediaView respondsToSelector:@selector(setMarqueeEnabled:)])
@@ -111,9 +135,9 @@
                        forControlEvents:UIControlEventTouchUpInside];
 
     self.headerLabel = [[UILabel alloc] init];
-    self.headerLabel.backgroundColor = [UIColor clearColor];
+    self.headerLabel.backgroundColor = UIColor.clearColor;
     self.headerLabel.textAlignment = NSTextAlignmentLeft;
-    self.headerLabel.textColor = [UIColor blackColor];
+    self.headerLabel.textColor = self.noctisEnabled ? UIColor.whiteColor : UIColor.blackColor;
     self.headerLabel.numberOfLines = 0;
     self.headerLabel.alpha = 0.64;
     self.headerLabel.text = @"Next up";
@@ -164,6 +188,14 @@
         _mediaView.secondaryString = nil;
         _mediaView.artworkView.image = nil;
     }
+}
+
+// Note that this is called manually
+- (void)viewDidAppear:(BOOL)arg {
+    [super viewDidAppear:arg];
+
+    _mediaView.primaryMarqueeView.marqueeEnabled = YES;
+    _mediaView.secondaryMarqueeView.marqueeEnabled = YES;
 }
 
 @end
