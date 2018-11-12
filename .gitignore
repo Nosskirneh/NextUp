@@ -2,4 +2,4 @@
 .theos/
 packages/
 .cydiaRepoUpload.log
-DRMOptions.mm
+DRM*

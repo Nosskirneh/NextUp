@@ -480,6 +480,26 @@ NUMetadataSaver *metadataSaver;
 %end
 // ---
 
+/* ColorFlow 4 support */
+%group ColorFlow
+    %hook SBDashBoardMediaControlsViewController
+    - (void)cfw_colorize:(CFWColorInfo *)colorInfo {
+        %orig;
+
+        self.nextUpViewController.headerLabel.textColor = colorInfo.primaryColor;
+        [self.nextUpViewController.mediaView cfw_colorize:colorInfo];
+    }
+
+    - (void)cfw_revert {
+        %orig;
+
+        self.nextUpViewController.headerLabel.textColor = UIColor.whiteColor;
+        [self.nextUpViewController.mediaView cfw_revert];
+    }
+    %end
+%end
+// ---
+
 
 %group Welcome
 %hook SBLockScreenManager
@@ -511,12 +531,14 @@ NUMetadataSaver *metadataSaver;
     }
     return;
     // ---
+
     init:
 
     NSDictionary *preferences = [NSDictionary dictionaryWithContentsOfFile:kPrefPath];
 
     if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:kSpringBoardBundleID]) {
         %init(SpringBoard);
+        %init(ColorFlow);
         metadataSaver = [[NUMetadataSaver alloc] init];
     } else if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:kSpotifyBundleID]) {
          if (preferences[kEnableSpotify] && ![preferences[kEnableSpotify] boolValue])

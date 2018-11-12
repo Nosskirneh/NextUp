@@ -14,6 +14,14 @@
 @end
 
 
+@interface CFWColorInfo : NSObject
+@property(nonatomic, retain) UIColor *backgroundColor;
+@property(nonatomic, retain) UIColor *primaryColor;
+@property(nonatomic, retain) UIColor *secondaryColor;
+@property(nonatomic, assign, getter=isBackgroundDark) BOOL backgroundDark;
+@end
+
+
 @interface MediaControlsHeaderView : UIView
 @property (nonatomic, retain) UIButton *routingButton;
 @property (nonatomic, retain) UIImageView *artworkView;
@@ -25,6 +33,9 @@
 @property (nonatomic, retain) NSString *secondaryString;
 - (void)setShouldEnableMarquee:(BOOL)arg1; // 11.1.2
 - (void)setMarqueeEnabled:(BOOL)arg1; // 11.3.1
+
+- (void)cfw_colorize:(CFWColorInfo *)colorInfo;
+- (void)cfw_revert;
 @end
 
 
