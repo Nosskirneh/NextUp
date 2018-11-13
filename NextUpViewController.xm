@@ -24,7 +24,7 @@
 %subclass NULabel : UILabel
 
 - (void)setAlpha:(CGFloat)alpha {
-    %orig(0.6);
+    %orig(0.75);
 }
 
 %end
@@ -43,7 +43,7 @@
 - (id)initWithFrame:(CGRect)arg1 {
     NextUpMediaHeaderView *orig = %orig;
 
-    NUSkipButton *skipButton = [[%c(NUSkipButton) alloc] initWithFrame:CGRectZero];
+    NUSkipButton *skipButton = [%c(NUSkipButton) buttonWithType:UIButtonTypeSystem];
     UIImage *image = [UIImage imageNamed:@"Cancel.png" inBundle:DIGITAL_TOUCH_BUNDLE];
     [skipButton setImage:image forState:UIControlStateNormal];
     orig.routingButton = skipButton;

@@ -487,6 +487,7 @@ NUMetadataSaver *metadataSaver;
     - (void)cfw_colorize:(CFWColorInfo *)colorInfo {
         %orig;
 
+        self.nextUpViewController.mediaView.routingButton.tintColor = colorInfo.primaryColor;
         self.nextUpViewController.headerLabel.textColor = colorInfo.primaryColor;
         [self.nextUpViewController.mediaView cfw_colorize:colorInfo];
     }
@@ -494,6 +495,7 @@ NUMetadataSaver *metadataSaver;
     - (void)cfw_revert {
         %orig;
 
+        self.nextUpViewController.mediaView.routingButton.tintColor = UIColor.whiteColor;
         self.nextUpViewController.headerLabel.textColor = UIColor.whiteColor;
         [self.nextUpViewController.mediaView cfw_revert];
     }
