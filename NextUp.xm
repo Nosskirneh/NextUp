@@ -519,9 +519,13 @@ NUMetadataSaver *metadataSaver;
 %hook SBLockScreenManager
 
 - (BOOL)_finishUIUnlockFromSource:(int)arg1 withOptions:(id)arg2 {
-    OBFS_UIALERT(packageShown$bs(), WelcomeMsg$bs(), OK$bs());
+    BOOL orig = %orig;
+    UIViewController *root = [[UIApplication sharedApplication] keyWindow].rootViewController;
 
-    return %orig;
+    if ([root isKindOfClass:%c(SBHomeScreenViewController)])
+        OBFS_UIALERT(root, packageShown$bs(), WelcomeMsg$bs(), OK$bs());
+
+    return orig;
 }
 
 %end

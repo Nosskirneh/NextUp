@@ -4,14 +4,20 @@
 #import "../DRMOptions.mm"
 #import "../../DRM/PFStatusBarAlert/PFStatusBarAlert.h"
 #import <spawn.h>
+#import <PayPalMobile/PayPalMobile.h>
 
 #define NextUpColor [UIColor redColor]
 #define preferencesFrameworkPath @"/System/Library/PrivateFrameworks/Preferences.framework"
 
-@interface NextUpRootListController : PSListController <PFStatusBarAlertDelegate> {
+@interface NextUpRootListController : PSListController <PFStatusBarAlertDelegate, PayPalPaymentDelegate> {
     UIWindow *settingsView;
 }
 @property (nonatomic, strong) PFStatusBarAlert *statusAlert;
+
+@property(nonatomic, strong, readwrite) UIButton *payNowButton;
+@property(nonatomic, strong, readwrite) UIView *successView;
+@property(nonatomic, strong, readwrite) PayPalConfiguration *payPalConfig;
+@property(nonatomic, strong, readwrite) NSString *resultText;
 @end
 
 #define kIconImage @"iconImage"
@@ -27,6 +33,10 @@
                                                                           target:self
                                                                           action:@selector(respring:)];
         self.navigationItem.rightBarButtonItem = respringButton;
+
+        _payPalConfig = initPayPal();
+
+        self.successView.hidden = YES;
     }
 
     return self;
@@ -49,7 +59,7 @@
 
     // Add license specifier
     NSMutableArray *mspecs = (NSMutableArray *)[_specifiers mutableCopy];
-    _specifiers = addLicenseSpecifier(mspecs, self, licensePath$bs(), package$bs(), linkDeviceText$bs());
+    _specifiers = addDRMSpecifiers(mspecs, self, licensePath$bs(), package$bs(), licenseFooterText$bs(), trialFooterText$bs());
 
     return _specifiers;
 }
@@ -80,7 +90,25 @@
 }
 
 - (void)activate {
-    rnalloc(licensePath$bs(), package$bs(), version$bs(), self);
+    activate(licensePath$bs(), package$bs(), version$bs(), self);
+}
+
+- (void)paypalEmailTextFieldChanged:(UITextField *)textField {
+    UIAlertController *alertController = (UIAlertController *)self.presentedViewController;
+    if (alertController) {
+        UIAlertAction *okAction = alertController.actions.lastObject;
+        okAction.enabled = [self validateEmail:textField.text];
+    }
+}
+
+- (BOOL)validateEmail:(NSString *)candidate {
+    NSString *emailRegex = @"[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}";
+    NSPredicate *emailTest = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", emailRegex];
+    return [emailTest evaluateWithObject:candidate];
+}
+
+- (void)trial {
+    trial(licensePath$bs(), package$bs(), version$bs(), self);
 }
 
 - (void)viewDidLoad {
@@ -117,6 +145,39 @@
 
 - (void)sendEmail {
     [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"mailto:andreaskhenriksson@gmail.com?subject=NextUp"]];
+}
+
+#pragma mark PayPal
+
+- (void)purchase {
+    self.resultText = nil;
+
+    showPaymentViewController(packageShown$bs(), price$bs(), currency$bs(), SKU$bs(), self.payPalConfig, self);
+}
+
+- (void)payPalPaymentViewController:(PayPalPaymentViewController *)paymentViewController didCompletePayment:(PayPalPayment *)completedPayment {
+    self.resultText = [completedPayment description];
+    [self showSuccess];
+
+    [self dismissViewControllerAnimated:YES completion:^{
+        storePaymentAndActivate(completedPayment, licensePath$bs(), package$bs(), version$bs(), self);
+    }];
+}
+
+- (void)payPalPaymentDidCancel:(PayPalPaymentViewController *)paymentViewController {
+    self.resultText = nil;
+    self.successView.hidden = YES;
+    [self dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (void)showSuccess {
+    self.successView.hidden = NO;
+    self.successView.alpha = 1.0f;
+    [UIView beginAnimations:nil context:NULL];
+    [UIView setAnimationDuration:0.5];
+    [UIView setAnimationDelay:2.0];
+    self.successView.alpha = 0.0f;
+    [UIView commitAnimations];
 }
 
 @end
