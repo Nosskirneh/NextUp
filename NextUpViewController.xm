@@ -108,7 +108,6 @@
     self.view.alpha = 0.0f;
 }
 
-
 - (void)loadView {
     [super loadView];
 
@@ -120,7 +119,8 @@
     self.contentView = [[UIView alloc] initWithFrame:CGRectZero];
 
     self.mediaView = [[%c(NextUpMediaHeaderView) alloc] initWithFrame:CGRectZero];
-    _mediaView.style = self.noctisEnabled ? 2 : 3;
+    if (!self.controlCenter)
+        _mediaView.style = self.noctisEnabled ? 2 : 3; // lockscreen - else 0 (automatically)
 
     if ([_mediaView respondsToSelector:@selector(setShouldEnableMarquee:)])
         [_mediaView setShouldEnableMarquee:YES];
@@ -143,6 +143,13 @@
     self.headerLabel.text = @"Next up";
     [self.contentView addSubview:self.headerLabel];
 
+    int horizontalPadding = -8;
+    if (self.controlCenter) {
+        self.headerLabel.hidden = YES;
+
+        horizontalPadding = 0;
+    }
+
     self.headerLabel.translatesAutoresizingMaskIntoConstraints = NO;
     [self.headerLabel.topAnchor constraintEqualToAnchor:self.contentView.topAnchor].active = YES;
     [self.headerLabel.bottomAnchor constraintEqualToAnchor:self.contentView.topAnchor constant:20].active = YES;
@@ -151,8 +158,8 @@
     // Media view constraints
     [_mediaView.topAnchor constraintEqualToAnchor:self.headerLabel.bottomAnchor].active = YES;
     [_mediaView.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor].active = YES;
-    [_mediaView.leftAnchor constraintEqualToAnchor:self.contentView.leftAnchor constant:-8].active = YES;
-    [_mediaView.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor constant:8].active = YES;
+    [_mediaView.leftAnchor constraintEqualToAnchor:self.contentView.leftAnchor constant:horizontalPadding].active = YES;
+    [_mediaView.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor constant:-horizontalPadding].active = YES;
 
     [self.view addArrangedSubview:self.contentView];
 

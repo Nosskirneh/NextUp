@@ -310,7 +310,7 @@ NUMetadataSaver *metadataSaver;
 
 /* Adding the widget */
 %group SpringBoard
-
+    /* Listen on changes of now playing app */
     void setMediaAppAndSendShowNextUp(NUMediaApplication app) {
         metadataSaver.mediaApplication = app;
         [[NSNotificationCenter defaultCenter] postNotificationName:kShowNextUp object:nil];
@@ -338,6 +338,95 @@ NUMetadataSaver *metadataSaver;
 
     %end
 
+    /* Control Center */
+    %hook MediaControlsPanelViewController
+
+    %property (nonatomic, assign, getter=isNextUpInitialized) BOOL nextUpInitialized;
+
+    - (void)viewDidLoad {
+        %orig;
+
+        if (self.style == 0)
+            [self initNextUp];
+    }
+
+    %new
+    - (void)initNextUp {
+        if(![self isNextUpInitialized]) {
+            MediaControlsContainerView *containerView = self.parentContainerView.mediaControlsContainerView;
+
+            [[NSNotificationCenter defaultCenter] addObserver:containerView
+                                                     selector:@selector(showNextUp)
+                                                         name:kShowNextUp
+                                                       object:nil];
+
+            [[NSNotificationCenter defaultCenter] addObserver:containerView
+                                                     selector:@selector(hideNextUp)
+                                                         name:kHideNextUp
+                                                       object:nil];
+
+            containerView.nextUpViewController = [[%c(NextUpViewController) alloc] init];
+            containerView.nextUpViewController.cornerRadius = 15;
+            containerView.nextUpViewController.metadataSaver = metadataSaver;
+            containerView.nextUpViewController.controlCenter = YES;
+
+            self.nextUpInitialized = YES;
+        }
+    }
+
+    %end
+
+
+    %hook MediaControlsContainerView
+
+    %property (nonatomic, retain) NextUpViewController *nextUpViewController;
+    %property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
+    %property (nonatomic, assign) BOOL shouldShowNextUp;
+
+    - (void)layoutSubviews {
+        %orig;
+
+        if (self.style == 0 && self.shouldShowNextUp) {
+            %log;
+            CGRect frame = self.frame;
+            frame.size.height = 101.0;
+            self.frame = frame;
+
+            HBLogDebug(@"width: %f", self.frame.size.width);
+            self.nextUpViewController.view.frame = CGRectMake(self.frame.origin.x,
+                                                              self.frame.origin.y + self.frame.size.height,
+                                                              self.frame.size.width,
+                                                              105);
+
+            if (!self.showingNextUp)
+                [self addNextUpView];
+        }
+    }
+
+    %new
+    - (void)addNextUpView {
+        [self.superview addSubview:self.nextUpViewController.view];
+
+        self.showingNextUp = YES;
+    }
+
+    %new
+    - (void)showNextUp {
+        self.shouldShowNextUp = YES;
+        [self layoutSubviews];
+    }
+
+    %new
+    - (void)hideNextUp {
+        self.shouldShowNextUp = NO;
+        [self layoutSubviews];
+    }
+
+    %end
+    // ---
+
+
+    /* Lockscreen */
     %hook SBDashBoardNotificationAdjunctListViewController
 
     - (id)init {
@@ -489,6 +578,7 @@ NUMetadataSaver *metadataSaver;
     }
 
     %end
+    // ---
 %end
 // ---
 

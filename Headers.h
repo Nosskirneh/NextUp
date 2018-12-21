@@ -1,25 +1,17 @@
 #import "NUMetadataSaver.h"
 
-@protocol SBDashBoardAdjunctItemHosting
-@end
-
-@interface SBDashBoardAdjunctItemView: UIView
-@property (nonatomic, weak) UIViewController<SBDashBoardAdjunctItemHosting> *contentHost;
-- (void)_layoutContentHost;
+/* Common */
+@interface CFWColorInfo : NSObject
+@property(nonatomic, retain) UIColor *backgroundColor;
+@property(nonatomic, retain) UIColor *primaryColor;
+@property(nonatomic, retain) UIColor *secondaryColor;
+@property(nonatomic, assign, getter=isBackgroundDark) BOOL backgroundDark;
 @end
 
 
 @interface MPUMarqueeView : UIView
 @property (assign, getter=isMarqueeEnabled, nonatomic) BOOL marqueeEnabled;
 @property (nonatomic, readonly) UIView *contentView;
-@end
-
-
-@interface CFWColorInfo : NSObject
-@property(nonatomic, retain) UIColor *backgroundColor;
-@property(nonatomic, retain) UIColor *primaryColor;
-@property(nonatomic, retain) UIColor *secondaryColor;
-@property(nonatomic, assign, getter=isBackgroundDark) BOOL backgroundDark;
 @end
 
 
@@ -39,17 +31,6 @@
 
 - (void)cfw_colorize:(CFWColorInfo *)colorInfo;
 - (void)cfw_revert;
-@end
-
-
-@interface SBDashBoardNotificationAdjunctListViewController : UIViewController
-- (void)_updateAdjunctListItems;
-- (void)_updateMediaControlsVisibility;
-- (void)_updateMediaControlsVisibilityAnimated:(BOOL)arg;
-- (void)_prepareNowPlayingControlsView;
-- (void)nowPlayingController:(id)controller didChangeToState:(NSInteger)state;
-- (id)mediaControlsController;
-- (void)nextUpViewWasAdded;
 @end
 
 
@@ -74,8 +55,56 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @property (nonatomic, retain) MediaControlsHeaderView *mediaView;
 @property (nonatomic, assign) BOOL showsHeader;
 @property (nonatomic, assign) BOOL noctisEnabled;
+@property (nonatomic, assign) BOOL controlCenter;
 @property (nonatomic, assign) int background;
 @property (nonatomic, assign) CGFloat cornerRadius;
+@end
+// ---
+
+
+/* Control Center */
+@interface MediaControlsContainerView : UIView
+@property (assign, nonatomic) long long style;
+@property (nonatomic, retain) NextUpViewController *nextUpViewController;
+@property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
+@property (nonatomic, assign) BOOL shouldShowNextUp;
+- (void)addNextUpView;
+@end
+
+
+@interface MediaControlsParentContainerView : UIView
+@property (nonatomic, retain) MediaControlsContainerView *mediaControlsContainerView;
+@end
+
+
+@interface MediaControlsPanelViewController : UIViewController
+@property (nonatomic, retain) MediaControlsParentContainerView *parentContainerView;
+@property (assign, nonatomic) long long style;
+
+@property (nonatomic, assign, getter=isNextUpInitialized) BOOL nextUpInitialized;
+- (void)initNextUp;
+@end
+// ---
+
+
+/* Lockscreen */
+@protocol SBDashBoardAdjunctItemHosting
+@end
+
+@interface SBDashBoardAdjunctItemView: UIView
+@property (nonatomic, weak) UIViewController<SBDashBoardAdjunctItemHosting> *contentHost;
+- (void)_layoutContentHost;
+@end
+
+
+@interface SBDashBoardNotificationAdjunctListViewController : UIViewController
+- (void)_updateAdjunctListItems;
+- (void)_updateMediaControlsVisibility;
+- (void)_updateMediaControlsVisibilityAnimated:(BOOL)arg;
+- (void)_prepareNowPlayingControlsView;
+- (void)nowPlayingController:(id)controller didChangeToState:(NSInteger)state;
+- (id)mediaControlsController;
+- (void)nextUpViewWasAdded;
 @end
 
 
@@ -110,3 +139,4 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @interface UIVisualEffectView (Missing)
 - (void)_setCornerRadius:(double)arg1;
 @end
+// ---
