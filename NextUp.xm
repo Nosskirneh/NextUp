@@ -171,6 +171,7 @@ NUMetadataSaver *metadataSaver;
     %hook SPTQueueViewModelImplementation
 
     %property (nonatomic, retain) SPTGLUEImageLoader *imageLoader;
+    %property (nonatomic, retain) SPTPlayerTrack *lastSentTrack;
 
     - (void)player:(SPTPlayerImpl *)player stateDidChange:(SPTPlayerState *)newState fromState:(SPTPlayerState *)oldState {
         %orig;
@@ -180,8 +181,8 @@ NUMetadataSaver *metadataSaver;
 
     %new
     - (void)fetchNextUpForState:(SPTPlayerState *)state {
-        NSArray *next = state.future;
-        if (next.count > 0)
+        NSArray<SPTPlayerTrack *> *next = state.future;
+        if (next.count > 0 && ![next[0] isEqual:self.lastSentTrack])
             [self sendNextUpMetadata:next[0]];
     }
 
@@ -197,6 +198,8 @@ NUMetadataSaver *metadataSaver;
 
     %new
     - (void)sendNextUpMetadata:(SPTPlayerTrack *)track {
+        self.lastSentTrack = track;
+
         NSMutableDictionary *metadata = [NSMutableDictionary new];
         metadata[@"trackTitle"] = [track trackTitle];
         metadata[@"artistTitle"] = track.artistTitle;

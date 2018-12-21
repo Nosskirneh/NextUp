@@ -39,6 +39,7 @@
 @interface SPTQueueViewModelImplementation : NSObject {
     SPTPlayerImpl *_player;
 }
+@property (nonatomic, retain) SPTPlayerTrack *lastSentTrack;
 @property (nonatomic, retain) SPTGLUEImageLoader *imageLoader;
 @property (nonatomic, strong) SPTQueueViewModelDataSource *dataSource;
 - (void)enableUpdates;
