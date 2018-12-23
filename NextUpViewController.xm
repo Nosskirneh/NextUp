@@ -181,6 +181,8 @@
         notify(kAPMSkipNext);
     else if (isAppCurrentMediaApp(kDeezerBundleID))
         notify(kDZRSkipNext);
+    else if (isAppCurrentMediaApp(kPodcastsBundleID))
+        notify(kPODSkipNext);
 }
 
 - (void)updateLabels {
@@ -188,12 +190,13 @@
     if (metadata) {
         _mediaView.primaryString = metadata[@"trackTitle"];
         _mediaView.secondaryString = metadata[@"artistTitle"];
-
         _mediaView.artworkView.image = [UIImage imageWithData:metadata[@"artwork"]];
+        _mediaView.routingButton.hidden = NO;
     } else {
-        _mediaView.primaryString = @"Loading...";
+        _mediaView.primaryString = @"No next track available";
         _mediaView.secondaryString = nil;
         _mediaView.artworkView.image = nil;
+        _mediaView.routingButton.hidden = YES;
     }
 }
 

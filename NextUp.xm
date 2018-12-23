@@ -12,9 +12,154 @@
 
 NUMetadataSaver *metadataSaver;
 
-/* Fetch Apple Music metadata */
-%group Music
 
+@interface MPNowPlayingInfoCenter (Addition)
++ (id)infoCenterForPlayerID:(id)arg1;
+@end
+
+@interface MTPlayerItem : NSObject
+@property (nonatomic, retain) NSString *title;
+@property (nonatomic, retain) NSString *subtitle;
+- (void)retrieveArtwork:(id)completion withSize:(CGSize)size;
+@end
+
+@interface MTCompositeManifest : NSObject
+@property (nonatomic, assign) NSUInteger currentIndex;
+- (NSUInteger)count;
+- (MTPlayerItem *)objectAtIndex:(NSUInteger)index;
+@end
+
+@interface MTPlaybackQueueController : NSObject
+@property (nonatomic, retain) MTPlayerItem *lastSentEpisode;
+
+@property (nonatomic, retain) MTCompositeManifest *manifest; // iOS 11.1.2
+@property (nonatomic, retain) MTCompositeManifest *compositeManifest; // iOS 11.3.1
+
+- (BOOL)removeItemWithContentID:(NSString *)itemID;
+- (BOOL)nowPlayingInfoCenter:(id)arg removeItemAtOffset:(NSInteger)offset;
+
+- (NSDictionary *)serializeTrack:(MTPlayerItem *)item image:(UIImage *)image;
+- (void)fetchNextUp;
+- (void)fetchNextUpFromItem:(MTPlayerItem *)item;
+- (MTCompositeManifest *)getManifest;
+@end
+
+
+%group Podcasts
+    void PODSkipNext(notificationArguments) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:kPODSkipNext object:nil];
+    }
+
+    void PODManualUpdate(notificationArguments) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:kPODManualUpdate object:nil];
+    }
+
+    %hook MTPlaybackQueueController
+    %property (nonatomic, retain) MTPlayerItem *lastSentEpisode;
+
+    - (id)init {
+        MTPlaybackQueueController *orig = %orig;
+        [[NSNotificationCenter defaultCenter] addObserver:orig
+                                                 selector:@selector(skipNext)
+                                                     name:kPODSkipNext
+                                                   object:nil];
+
+        [[NSNotificationCenter defaultCenter] addObserver:orig
+                                                 selector:@selector(fetchNextUp)
+                                                     name:kPODManualUpdate
+                                                   object:nil];
+
+        [[NSNotificationCenter defaultCenter] addObserver:orig
+                                                 selector:@selector(fetchNextUp)
+                                                     name:@"IMPlayerManifestDidChange"
+                                                   object:nil];
+        return orig;
+    }
+
+    %new
+    - (NSDictionary *)serializeTrack:(MTPlayerItem *)item image:(UIImage *)image {
+        NSMutableDictionary *metadata = [NSMutableDictionary new];
+
+        metadata[@"trackTitle"] = item.title;
+        metadata[@"artistTitle"] = item.subtitle;
+        HBLogDebug(@"metadata: %@", metadata);
+
+        if (image)
+            metadata[@"artwork"] = UIImagePNGRepresentation(image);
+
+        return metadata;
+    }
+
+    %new
+    - (MTCompositeManifest *)getManifest {
+        if ([self respondsToSelector:@selector(manifest)])
+            return self.manifest;
+        else if ([self respondsToSelector:@selector(compositeManifest)])
+            return self.compositeManifest;
+        return nil;
+
+    }
+
+    %new
+    - (void)fetchNextUp {
+        MTCompositeManifest *manifest = [self getManifest];
+
+        MTPlayerItem *item = nil;
+        int nextIndex = manifest.currentIndex + 1;
+        if (manifest.currentIndex == LONG_MAX)
+            nextIndex = 1;
+
+        if ([manifest count] > nextIndex) {
+            item = [manifest objectAtIndex:nextIndex];
+            [self fetchNextUpFromItem:item];
+        } else {
+            sendNextTrackMetadata(nil, NUPodcastsApplication);
+        }
+        self.lastSentEpisode = item;
+    }
+
+    %new
+    - (void)fetchNextUpFromItem:(MTPlayerItem *)item {
+        // Since manual updates are coming from SpringBoard when the
+        // current now playing app changed to Podcasts, this would otherwise
+        // happen twice (due to the IMPlayerManifestDidChange notification).
+        if ([self.lastSentEpisode isEqual:item])
+            return;
+
+        [item retrieveArtwork:^(UIImage *image) {
+            NSDictionary *metadata = [self serializeTrack:item image:image];
+            sendNextTrackMetadata(metadata, NUPodcastsApplication);
+        } withSize:CGSizeMake(50, 50)];
+    }
+
+    %new
+    - (void)skipNext {
+        %log;
+
+        MTCompositeManifest *manifest = [self getManifest];
+        int nextIndex = manifest.currentIndex + 1;
+        if ([manifest count] > nextIndex) {
+            // TODO: This doesn't always work
+            MPNowPlayingInfoCenter *infoCenter = [MPNowPlayingInfoCenter infoCenterForPlayerID:@"Podcasts"];
+            BOOL removed = [self nowPlayingInfoCenter:infoCenter removeItemAtOffset:nextIndex];
+            HBLogDebug(@"removed: %d, count: %d, nextIndex: %d", removed, [manifest count], nextIndex);
+            if (removed) {
+                HBLogDebug(@"fetching next");
+                [self fetchNextUp];
+            }
+        }
+    }
+
+    %end
+
+
+%end
+// ---
+
+
+/* Fetch Apple Music metadata */
+
+%group Music
     void APMSkipNext(notificationArguments) {
         [[NSNotificationCenter defaultCenter] postNotificationName:kAPMSkipNext object:nil];
     }
@@ -331,6 +476,9 @@ NUMetadataSaver *metadataSaver;
         } else if ([app.bundleIdentifier isEqualToString:kDeezerBundleID]) {
             notify(kDZRManualUpdate);
             setMediaAppAndSendShowNextUp(NUDeezerApplication);
+        } else if ([app.bundleIdentifier isEqualToString:kPodcastsBundleID]) {
+            notify(kPODManualUpdate);
+            setMediaAppAndSendShowNextUp(NUPodcastsApplication);
         } else {
             metadataSaver.mediaApplication = NUUnsupportedApplication;
             [[NSNotificationCenter defaultCenter] postNotificationName:kHideNextUp object:nil];
@@ -395,7 +543,6 @@ NUMetadataSaver *metadataSaver;
             frame.size.height = 101.0;
             self.frame = frame;
 
-            HBLogDebug(@"width: %f", self.frame.size.width);
             self.nextUpViewController.view.frame = CGRectMake(self.frame.origin.x,
                                                               self.frame.origin.y + self.frame.size.height,
                                                               self.frame.size.width,
@@ -652,21 +799,29 @@ NUMetadataSaver *metadataSaver;
         %init(ColorFlow);
         metadataSaver = [[NUMetadataSaver alloc] init];
     } else if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:kSpotifyBundleID]) {
-         if (preferences[kEnableSpotify] && ![preferences[kEnableSpotify] boolValue])
+        if (preferences[kEnableSpotify] && ![preferences[kEnableSpotify] boolValue])
             return;
 
         %init(Spotify);
         subscribe(&SPTSkipNext, kSPTSkipNext);
         subscribe(&SPTManualUpdate, kSPTManualUpdate);
     } else if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:kMusicBundleID]) {
-         if (preferences[kEnableMusic] && ![preferences[kEnableMusic] boolValue])
+        if (preferences[kEnableMusic] && ![preferences[kEnableMusic] boolValue])
             return;
 
         %init(Music);
         subscribe(&APMSkipNext, kAPMSkipNext);
         subscribe(&APMManualUpdate, kAPMManualUpdate);
+    } else if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:kPodcastsBundleID]) {
+        if (preferences[kEnablePodcasts] && ![preferences[kEnablePodcasts] boolValue])
+            return;
+
+        %init(Podcasts)
+        [%c(MTPlaybackQueueController) sharedInstance]; // Makes sure its init method get called
+        subscribe(&PODSkipNext, kPODSkipNext);
+        subscribe(&PODManualUpdate, kPODManualUpdate);
     } else {
-         if (preferences[kEnableDeezer] && ![preferences[kEnableDeezer] boolValue])
+        if (preferences[kEnableDeezer] && ![preferences[kEnableDeezer] boolValue])
             return;
 
         %init(Deezer);
