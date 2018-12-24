@@ -4,6 +4,7 @@
 #import "Spotify.h"
 #import "Deezer.h"
 #import "Music.h"
+#import "Podcasts.h"
 #import "Headers.h"
 #import "DRMOptions.mm"
 
@@ -11,38 +12,6 @@
 
 
 NUMetadataSaver *metadataSaver;
-
-
-@interface MPNowPlayingInfoCenter (Addition)
-+ (id)infoCenterForPlayerID:(id)arg1;
-@end
-
-@interface MTPlayerItem : NSObject
-@property (nonatomic, retain) NSString *title;
-@property (nonatomic, retain) NSString *subtitle;
-- (void)retrieveArtwork:(id)completion withSize:(CGSize)size;
-@end
-
-@interface MTCompositeManifest : NSObject
-@property (nonatomic, assign) NSUInteger currentIndex;
-- (NSUInteger)count;
-- (MTPlayerItem *)objectAtIndex:(NSUInteger)index;
-@end
-
-@interface MTPlaybackQueueController : NSObject
-@property (nonatomic, retain) MTPlayerItem *lastSentEpisode;
-
-@property (nonatomic, retain) MTCompositeManifest *manifest; // iOS 11.1.2
-@property (nonatomic, retain) MTCompositeManifest *compositeManifest; // iOS 11.3.1
-
-- (BOOL)removeItemWithContentID:(NSString *)itemID;
-- (BOOL)nowPlayingInfoCenter:(id)arg removeItemAtOffset:(NSInteger)offset;
-
-- (NSDictionary *)serializeTrack:(MTPlayerItem *)item image:(UIImage *)image;
-- (void)fetchNextUp;
-- (void)fetchNextUpFromItem:(MTPlayerItem *)item;
-- (MTCompositeManifest *)getManifest;
-@end
 
 
 %group Podcasts
@@ -87,12 +56,12 @@ NUMetadataSaver *metadataSaver;
     }
 
     %new
-    - (NSDictionary *)serializeTrack:(MTPlayerItem *)item image:(UIImage *)image {
+    - (NSDictionary *)serializeTrack:(MTPlayerItem *)item image:(UIImage *)image skipable:(BOOL)skipable {
         NSMutableDictionary *metadata = [NSMutableDictionary new];
 
         metadata[@"trackTitle"] = item.title;
         metadata[@"artistTitle"] = item.subtitle;
-        HBLogDebug(@"metadata: %@", metadata);
+        metadata[@"skipable"] = @(skipable);
 
         if (image)
             metadata[@"artwork"] = UIImagePNGRepresentation(image);
@@ -120,8 +89,9 @@ NUMetadataSaver *metadataSaver;
             nextIndex = 1;
 
         if ([manifest count] > nextIndex) {
+            BOOL skipable = manifest.upNextManifest.count > 0;
             item = [manifest objectAtIndex:nextIndex];
-            [self fetchNextUpFromItem:item];
+            [self fetchNextUpFromItem:item skipable:skipable];
         } else {
             sendNextTrackMetadata(nil, NUPodcastsApplication);
         }
@@ -129,7 +99,7 @@ NUMetadataSaver *metadataSaver;
     }
 
     %new
-    - (void)fetchNextUpFromItem:(MTPlayerItem *)item {
+    - (void)fetchNextUpFromItem:(MTPlayerItem *)item skipable:(BOOL)skipable {
         // Since manual updates are coming from SpringBoard when the
         // current now playing app changed to Podcasts, this would otherwise
         // happen twice (due to the IMPlayerManifestDidChange notification).
@@ -137,26 +107,28 @@ NUMetadataSaver *metadataSaver;
             return;
 
         [item retrieveArtwork:^(UIImage *image) {
-            NSDictionary *metadata = [self serializeTrack:item image:image];
+            NSDictionary *metadata = [self serializeTrack:item image:image skipable:skipable];
             sendNextTrackMetadata(metadata, NUPodcastsApplication);
         } withSize:CGSizeMake(50, 50)];
     }
 
     %new
     - (void)skipNext {
-        %log;
-
         MTCompositeManifest *manifest = [self getManifest];
         int nextIndex = manifest.currentIndex + 1;
         if ([manifest count] > nextIndex) {
             // TODO: This doesn't always work
-            MPNowPlayingInfoCenter *infoCenter = [MPNowPlayingInfoCenter infoCenterForPlayerID:@"Podcasts"];
-            BOOL removed = [self nowPlayingInfoCenter:infoCenter removeItemAtOffset:nextIndex];
-            HBLogDebug(@"removed: %d, count: %d, nextIndex: %d", removed, [manifest count], nextIndex);
-            if (removed) {
-                HBLogDebug(@"fetching next");
-                [self fetchNextUp];
+            BOOL removed = NO;
+            if ([self respondsToSelector:@selector(nowPlayingInfoCenter:removeItemAtOffset:)]) {
+                MPNowPlayingInfoCenter *infoCenter = [MPNowPlayingInfoCenter infoCenterForPlayerID:@"Podcasts"];
+                removed = [self nowPlayingInfoCenter:infoCenter removeItemAtOffset:nextIndex];
+            } else if ([self respondsToSelector:@selector(removeItemWithContentID:)]) {
+                MTPlayerItem *item = [manifest objectAtIndex:nextIndex];
+                removed = [self removeItemWithContentID:[item contentItemIdentifier]];
             }
+
+            if (removed)
+                [self fetchNextUp];
         }
     }
 

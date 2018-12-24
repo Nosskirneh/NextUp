@@ -191,7 +191,7 @@
         _mediaView.primaryString = metadata[@"trackTitle"];
         _mediaView.secondaryString = metadata[@"artistTitle"];
         _mediaView.artworkView.image = [UIImage imageWithData:metadata[@"artwork"]];
-        _mediaView.routingButton.hidden = NO;
+        _mediaView.routingButton.hidden = metadata[@"skipable"] && ![metadata[@"skipable"] boolValue];
     } else {
         _mediaView.primaryString = @"No next track available";
         _mediaView.secondaryString = nil;
