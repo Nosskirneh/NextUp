@@ -54,6 +54,16 @@ NUMetadataSaver *metadataSaver;
         [[NSNotificationCenter defaultCenter] postNotificationName:kPODManualUpdate object:nil];
     }
 
+
+    %hook MTAppDelegate_Shared
+
+    - (BOOL)application:(id)arg didFinishLaunchingWithOptions:(id)options {
+        [%c(MTPlaybackQueueController) sharedInstance]; // Makes sure its init method get called
+        return %orig;
+    }
+
+    %end
+
     %hook MTPlaybackQueueController
     %property (nonatomic, retain) MTPlayerItem *lastSentEpisode;
 
@@ -817,7 +827,6 @@ NUMetadataSaver *metadataSaver;
             return;
 
         %init(Podcasts)
-        [%c(MTPlaybackQueueController) sharedInstance]; // Makes sure its init method get called
         subscribe(&PODSkipNext, kPODSkipNext);
         subscribe(&PODManualUpdate, kPODManualUpdate);
     } else {
