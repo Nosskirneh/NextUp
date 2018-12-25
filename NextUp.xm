@@ -16,11 +16,13 @@ NextUpManager *manager;
 /* Podcasts */
 %group Podcasts
     void PODSkipNext(notificationArguments) {
-        [[NSNotificationCenter defaultCenter] postNotificationName:kPODSkipNext object:nil];
+        [[%c(MTPlaybackQueueController) sharedInstance] skipNext];
     }
 
     void PODManualUpdate(notificationArguments) {
-        [[NSNotificationCenter defaultCenter] postNotificationName:kPODManualUpdate object:nil];
+        MTPlaybackQueueController *queueController = [%c(MTPlaybackQueueController) sharedInstance];
+        queueController.lastSentEpisode = nil;
+        [queueController fetchNextUp];
     }
 
 
@@ -38,15 +40,6 @@ NextUpManager *manager;
 
     - (id)init {
         MTPlaybackQueueController *orig = %orig;
-        [[NSNotificationCenter defaultCenter] addObserver:orig
-                                                 selector:@selector(skipNext)
-                                                     name:kPODSkipNext
-                                                   object:nil];
-
-        [[NSNotificationCenter defaultCenter] addObserver:orig
-                                                 selector:@selector(fetchNextUp)
-                                                     name:kPODManualUpdate
-                                                   object:nil];
 
         [[NSNotificationCenter defaultCenter] addObserver:orig
                                                  selector:@selector(fetchNextUp)
@@ -76,7 +69,12 @@ NextUpManager *manager;
         else if ([self respondsToSelector:@selector(compositeManifest)])
             return self.compositeManifest;
         return nil;
+    }
 
+    %new
+    - (void)manuallyUpdate {
+        self.lastSentEpisode = nil;
+        [self fetchNextUp];
     }
 
     %new
@@ -253,6 +251,7 @@ NextUpManager *manager;
         if (!queueViewModel)
             return;
         SPTPlayerImpl *player = MSHookIvar<SPTPlayerImpl *>(queueViewModel, "_player");
+        queueViewModel.lastSentTrack = nil;
         [queueViewModel fetchNextUpForState:player.state];
     }
 
