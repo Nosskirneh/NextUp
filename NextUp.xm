@@ -360,12 +360,8 @@ NextUpManager *manager;
         [getMixQueuer() fetchNextUp];
     }
 
-    DZRAppDelegate *getDeezerAppDelegate() {
-        return (DZRAppDelegate *)[[UIApplication sharedApplication] delegate];
-    }
-
     DZRMixQueuer *getMixQueuer() {
-        return getDeezerAppDelegate().playerManager.player.queuer;
+        return [%c(DZRAudioPlayer) sharedPlayer].queuer;
     }
 
     %hook DZRMixQueuer

@@ -2,8 +2,6 @@
 
 @interface _TtC6Deezer18DeezerIllustration : NSObject
 @property (nonatomic, strong) UIImage *image;
-// - (NSDictionary *)dictionary;
-// + (id)illustrationWithMd5:(NSString *)md5 pictureDomain:(NSString *)domain format:(NSUInteger)format placeholderPrefix:(NSString *)prefix;
 @end
 
 @interface _TtC6Deezer19IllustrationManager : NSObject
@@ -32,26 +30,14 @@
 
 @interface DZRAudioPlayer : NSObject
 @property (nonatomic, strong, readwrite) DZRMixQueuer *queuer;
++ (DZRAudioPlayer *)sharedPlayer;
 @end
-
-@interface DZRPlayerManager : NSObject
-@property (nonatomic, strong, readwrite) DZRAudioPlayer *player;
-@end
-
-@interface DZRAppDelegate : NSObject
-@property (nonatomic, strong, readwrite) DZRPlayerManager *playerManager;
-@end
-
-
 
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-    DZRAppDelegate *getDeezerAppDelegate();
     DZRMixQueuer *getMixQueuer();
-
 #ifdef __cplusplus
 }
 #endif
