@@ -6,7 +6,7 @@
 #import <spawn.h>
 #import <PayPalMobile/PayPalMobile.h>
 
-#define NextUpColor [UIColor redColor]
+#define NextUpColor [UIColor colorWithRed:0.00 green:0.65 blue:1.00 alpha:1.0] // #00A5FF
 #define preferencesFrameworkPath @"/System/Library/PrivateFrameworks/Preferences.framework"
 
 @interface NextUpRootListController : PSListController <PFStatusBarAlertDelegate, PayPalPaymentDelegate> {
@@ -240,6 +240,20 @@
 - (CGFloat)preferredHeightForWidth:(CGFloat)arg1 {
     // Return a custom cell height.
     return 140.f;
+}
+
+@end
+
+
+@interface NextUpColorButtonCell : PSTableCell
+@end
+
+
+@implementation NextUpColorButtonCell
+
+- (void)layoutSubviews {
+    [super layoutSubviews];
+    [self.textLabel setTextColor:NextUpColor];
 }
 
 @end
