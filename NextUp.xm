@@ -759,6 +759,68 @@ NUMetadataSaver *metadataSaver;
 // ---
 
 
+/* Custom views */
+%group CustomViews
+    #define DIGITAL_TOUCH_BUNDLE [NSBundle bundleWithPath:@"/System/Library/PrivateFrameworks/DigitalTouchShared.framework"]
+
+    %subclass NULabel : UILabel
+
+    - (void)setAlpha:(CGFloat)alpha {
+        %orig(0.75);
+    }
+
+    %end
+
+    %subclass NUSkipButton : UIButton
+
+    - (void)setUserInteractionEnabled:(BOOL)enabled {
+        %orig(YES);
+    }
+
+    - (void)setAlpha:(CGFloat)alpha {
+        %orig(0.95);
+    }
+
+    %end
+
+    %subclass NextUpMediaHeaderView : MediaControlsHeaderView
+
+    // Override routing button
+    %property (nonatomic, retain) NUSkipButton *routingButton;
+    %property (nonatomic, retain) NULabel *primaryLabel;
+    %property (nonatomic, retain) NULabel *secondaryLabel;
+
+    - (id)initWithFrame:(CGRect)arg1 {
+        NextUpMediaHeaderView *orig = %orig;
+
+        NUSkipButton *skipButton = [%c(NUSkipButton) buttonWithType:UIButtonTypeSystem];
+        UIImage *image = [UIImage imageNamed:@"Cancel.png" inBundle:DIGITAL_TOUCH_BUNDLE];
+        [skipButton setImage:image forState:UIControlStateNormal];
+        orig.routingButton = skipButton;
+        [orig addSubview:orig.routingButton];
+
+        orig.primaryLabel = [[%c(NULabel) alloc] initWithFrame:CGRectZero];
+        orig.secondaryLabel = [[%c(NULabel) alloc] initWithFrame:CGRectZero];
+        [orig.primaryMarqueeView.contentView addSubview:orig.primaryLabel];
+        [orig.secondaryMarqueeView.contentView addSubview:orig.secondaryLabel];
+
+        return orig;
+    }
+
+    - (void)layoutSubviews {
+        %orig;
+
+        CGRect frame = self.primaryMarqueeView.frame;
+        float maxWidth = self.routingButton.frame.origin.x - self.artworkView.frame.origin.x - self.artworkView.frame.size.width - 15;
+        frame.size.width = fmin(frame.size.width, maxWidth);
+        self.primaryMarqueeView.frame = frame;
+    }
+
+    %end
+%end
+// ---
+
+
 %group Welcome
 %hook SBLockScreenManager
 
@@ -801,6 +863,7 @@ NUMetadataSaver *metadataSaver;
     if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:kSpringBoardBundleID]) {
         %init(SpringBoard);
         %init(ColorFlow);
+        %init(CustomViews);
         metadataSaver = [[NUMetadataSaver alloc] init];
     } else if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:kSpotifyBundleID]) {
         if (preferences[kEnableSpotify] && ![preferences[kEnableSpotify] boolValue])
