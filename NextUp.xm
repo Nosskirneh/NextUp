@@ -117,7 +117,8 @@ NUMetadataSaver *metadataSaver;
         MTCompositeManifest *manifest = [self getManifest];
         int nextIndex = manifest.currentIndex + 1;
         if ([manifest count] > nextIndex) {
-            // TODO: This doesn't always work
+            // This only work with items that were manually queued;
+            // seems to be a limiation in how the Podcasts app is built.
             BOOL removed = NO;
             if ([self respondsToSelector:@selector(nowPlayingInfoCenter:removeItemAtOffset:)]) {
                 MPNowPlayingInfoCenter *infoCenter = [MPNowPlayingInfoCenter infoCenterForPlayerID:@"Podcasts"];
