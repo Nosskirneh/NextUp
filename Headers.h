@@ -67,6 +67,7 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @property (nonatomic, retain) MediaControlsHeaderView *mediaView;
 @property (nonatomic, assign) BOOL showsHeader;
 @property (nonatomic, assign) BOOL noctisEnabled;
+@property (nonatomic, assign) BOOL controlCenter;
 @property (nonatomic, assign) int background;
 @property (nonatomic, assign) CGFloat cornerRadius;
 @property (assign, nonatomic) long long style;
