@@ -37,6 +37,12 @@
     self.view.alpha = 0.0f;
 }
 
+- (void)setStyle:(long long)style {
+    _style = style;
+
+    self.mediaView.style = style;
+}
+
 - (void)loadView {
     [super loadView];
 

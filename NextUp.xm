@@ -471,11 +471,20 @@ NUMetadataSaver *metadataSaver;
 
     %property (nonatomic, assign, getter=isNextUpInitialized) BOOL nextUpInitialized;
 
-    - (void)viewDidLoad {
+    - (void)setDelegate:(id)delegate {
         %orig;
 
         if ([self NU_isControlCenter])
             [self initNextUp];
+    }
+
+    - (void)setStyle:(int)style {
+        %orig;
+
+        if ([self NU_isControlCenter]) {
+            MediaControlsContainerView *containerView = self.parentContainerView.mediaControlsContainerView;
+            containerView.nextUpViewController.style = style;
+        }
     }
 
     %new
@@ -485,7 +494,7 @@ NUMetadataSaver *metadataSaver;
 
     %new
     - (void)initNextUp {
-        if(![self isNextUpInitialized]) {
+        if (![self isNextUpInitialized]) {
             MediaControlsContainerView *containerView = self.parentContainerView.mediaControlsContainerView;
 
             [[NSNotificationCenter defaultCenter] addObserver:containerView
@@ -502,7 +511,6 @@ NUMetadataSaver *metadataSaver;
             containerView.nextUpViewController.cornerRadius = 15;
             containerView.nextUpViewController.metadataSaver = metadataSaver;
             containerView.nextUpViewController.controlCenter = YES;
-            containerView.nextUpViewController.style = self.style;
 
             self.nextUpInitialized = YES;
         }
@@ -532,9 +540,7 @@ NUMetadataSaver *metadataSaver;
         %orig;
 
         if (metadataSaver.controlCenterExpanded && self.shouldShowNextUp) {
-            %log;
             CGRect frame = self.frame;
-            HBLogDebug(@"initial height: %f", frame.size.height);
             frame.size.height = 101.0;
             self.frame = frame;
 
@@ -784,6 +790,7 @@ NUMetadataSaver *metadataSaver;
 
     %end
 
+
     %subclass NextUpMediaHeaderView : MediaControlsHeaderView
 
     // Override routing button
@@ -794,10 +801,9 @@ NUMetadataSaver *metadataSaver;
     - (id)initWithFrame:(CGRect)arg1 {
         NextUpMediaHeaderView *orig = %orig;
 
-        NUSkipButton *skipButton = [%c(NUSkipButton) buttonWithType:UIButtonTypeSystem];
+        orig.routingButton = [%c(NUSkipButton) buttonWithType:UIButtonTypeSystem];
         UIImage *image = [UIImage imageNamed:@"Cancel.png" inBundle:DIGITAL_TOUCH_BUNDLE];
-        [skipButton setImage:image forState:UIControlStateNormal];
-        orig.routingButton = skipButton;
+        [orig.routingButton setImage:image forState:UIControlStateNormal];
         [orig addSubview:orig.routingButton];
 
         orig.primaryLabel = [[%c(NULabel) alloc] initWithFrame:CGRectZero];
@@ -813,8 +819,18 @@ NUMetadataSaver *metadataSaver;
 
         CGRect frame = self.primaryMarqueeView.frame;
         float maxWidth = self.routingButton.frame.origin.x - self.artworkView.frame.origin.x - self.artworkView.frame.size.width - 15;
-        frame.size.width = fmin(frame.size.width, maxWidth);
+        if (self.routingButton.hidden)
+            maxWidth += self.routingButton.frame.size.width;
+
+        maxWidth = fmin(frame.size.width, maxWidth);
+        frame.size.width = maxWidth;
         self.primaryMarqueeView.frame = frame;
+
+        frame = self.secondaryMarqueeView.frame;
+        frame.size.width = maxWidth;
+        self.secondaryMarqueeView.frame = frame;
+
+        self.buttonBackground.hidden = YES;
     }
 
     %end

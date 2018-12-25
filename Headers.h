@@ -17,6 +17,7 @@
 
 @interface MediaControlsHeaderView : UIView
 @property (nonatomic, retain) UIButton *routingButton;
+@property (nonatomic, retain) UIView *buttonBackground;
 @property (nonatomic, retain) UIImageView *artworkView;
 @property (nonatomic, retain) MPUMarqueeView *primaryMarqueeView;
 @property (nonatomic, retain) MPUMarqueeView *secondaryMarqueeView;
@@ -64,7 +65,7 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @property (nonatomic, retain) UIView *contentView;
 @property (nonatomic, retain) NUMetadataSaver *metadataSaver;
 @property (nonatomic, retain) UILabel *headerLabel;
-@property (nonatomic, retain) MediaControlsHeaderView *mediaView;
+@property (nonatomic, retain) NextUpMediaHeaderView *mediaView;
 @property (nonatomic, assign) BOOL showsHeader;
 @property (nonatomic, assign) BOOL noctisEnabled;
 @property (nonatomic, assign) BOOL controlCenter;
