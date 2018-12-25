@@ -110,7 +110,7 @@ NUMetadataSaver *metadataSaver;
         [item retrieveArtwork:^(UIImage *image) {
             NSDictionary *metadata = [self serializeTrack:item image:image skipable:skipable];
             sendNextTrackMetadata(metadata, NUPodcastsApplication);
-        } withSize:CGSizeMake(50, 50)];
+        } withSize:ARTWORK_SIZE];
     }
 
     %new
