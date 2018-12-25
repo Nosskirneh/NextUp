@@ -13,7 +13,7 @@
 
 NUMetadataSaver *metadataSaver;
 
-
+/* Podcasts */
 %group Podcasts
     void PODSkipNext(notificationArguments) {
         [[NSNotificationCenter defaultCenter] postNotificationName:kPODSkipNext object:nil];
@@ -134,14 +134,11 @@ NUMetadataSaver *metadataSaver;
     }
 
     %end
-
-
 %end
 // ---
 
 
-/* Fetch Apple Music metadata */
-
+/* Music */
 %group Music
     void APMSkipNext(notificationArguments) {
         [[NSNotificationCenter defaultCenter] postNotificationName:kAPMSkipNext object:nil];
@@ -241,7 +238,6 @@ NUMetadataSaver *metadataSaver;
     %end
 %end
 // ---
-
 
 
 /* Spotify */
@@ -433,7 +429,6 @@ NUMetadataSaver *metadataSaver;
     }
 
     %end
-
 %end
 // ---
 
@@ -478,8 +473,13 @@ NUMetadataSaver *metadataSaver;
     - (void)viewDidLoad {
         %orig;
 
-        if (self.style == 0)
+        if ([self NU_isControlCenter])
             [self initNextUp];
+    }
+
+    %new
+    - (BOOL)NU_isControlCenter {
+        return ([self.delegate class] == %c(MediaControlsEndpointsViewController));
     }
 
     %new
@@ -501,6 +501,7 @@ NUMetadataSaver *metadataSaver;
             containerView.nextUpViewController.cornerRadius = 15;
             containerView.nextUpViewController.metadataSaver = metadataSaver;
             containerView.nextUpViewController.controlCenter = YES;
+            containerView.nextUpViewController.style = self.style;
 
             self.nextUpInitialized = YES;
         }
@@ -508,19 +509,31 @@ NUMetadataSaver *metadataSaver;
 
     %end
 
+    %hook CCUIContentModuleContainerViewController
+
+    - (void)setExpanded:(BOOL)expanded {
+        %orig;
+
+        if ([self.moduleIdentifier isEqualToString:@"com.apple.mediaremote.controlcenter.nowplaying"])
+            metadataSaver.controlCenterExpanded = expanded;
+    }
+
+    %end
 
     %hook MediaControlsContainerView
 
     %property (nonatomic, retain) NextUpViewController *nextUpViewController;
     %property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
     %property (nonatomic, assign) BOOL shouldShowNextUp;
+    %property (nonatomic, assign) MediaControlsPanelViewController *panelViewController;
 
     - (void)layoutSubviews {
         %orig;
 
-        if (self.style == 0 && self.shouldShowNextUp) {
+        if (metadataSaver.controlCenterExpanded && self.shouldShowNextUp) {
             %log;
             CGRect frame = self.frame;
+            HBLogDebug(@"initial height: %f", frame.size.height);
             frame.size.height = 101.0;
             self.frame = frame;
 
@@ -671,6 +684,16 @@ NUMetadataSaver *metadataSaver;
     - (void)initNextUp {
         if(![self isNextUpInitialized]) {
             self.nextUpViewController = [[%c(NextUpViewController) alloc] init];
+
+            BOOL noctisEnabled = NO;
+            if (%c(NoctisSystemController)) {
+                NSDictionary *noctisPrefs = [NSDictionary dictionaryWithContentsOfFile:@"/var/mobile/Library/Preferences/com.laughingquoll.noctisxiprefs.settings.plist"];
+                noctisEnabled = !noctisPrefs || [noctisPrefs[@"enableMedia"] boolValue];
+                self.nextUpViewController.noctisEnabled = noctisEnabled;
+            }
+
+            MediaControlsPanelViewController *panelViewController = MSHookIvar<MediaControlsPanelViewController *>(self, "_mediaControlsPanelViewController");
+            self.nextUpViewController.style = noctisEnabled ? 2 : panelViewController.style;
             self.nextUpViewController.cornerRadius = 15;
             self.nextUpViewController.metadataSaver = metadataSaver;
 

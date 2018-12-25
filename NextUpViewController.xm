@@ -90,11 +90,6 @@
                                                    object:nil];
 
         self.hapticGenerator = [[%c(UIImpactFeedbackGenerator) alloc] initWithStyle:UIImpactFeedbackStyleMedium];
-
-        if (%c(NoctisSystemController)) {
-            NSDictionary *noctisPrefs = [NSDictionary dictionaryWithContentsOfFile:@"/var/mobile/Library/Preferences/com.laughingquoll.noctisxiprefs.settings.plist"];
-            self.noctisEnabled = !noctisPrefs || [noctisPrefs[@"enableMedia"] boolValue];
-        }
     }
 
     return self;
@@ -119,8 +114,7 @@
     self.contentView = [[UIView alloc] initWithFrame:CGRectZero];
 
     self.mediaView = [[%c(NextUpMediaHeaderView) alloc] initWithFrame:CGRectZero];
-    if (!self.controlCenter)
-        _mediaView.style = self.noctisEnabled ? 2 : 3; // lockscreen - else 0 (automatically)
+    self.mediaView.style = self.style;
 
     if ([_mediaView respondsToSelector:@selector(setShouldEnableMarquee:)])
         [_mediaView setShouldEnableMarquee:YES];

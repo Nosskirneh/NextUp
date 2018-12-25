@@ -55,14 +55,19 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @property (nonatomic, retain) MediaControlsHeaderView *mediaView;
 @property (nonatomic, assign) BOOL showsHeader;
 @property (nonatomic, assign) BOOL noctisEnabled;
-@property (nonatomic, assign) BOOL controlCenter;
 @property (nonatomic, assign) int background;
 @property (nonatomic, assign) CGFloat cornerRadius;
+@property (assign, nonatomic) long long style;
 @end
 // ---
 
 
 /* Control Center */
+@interface CCUIContentModuleContainerViewController
+@property (nonatomic, assign, readwrite) NSString *moduleIdentifier;
+@end
+
+
 @interface MediaControlsContainerView : UIView
 @property (assign, nonatomic) long long style;
 @property (nonatomic, retain) NextUpViewController *nextUpViewController;
@@ -78,11 +83,13 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 
 
 @interface MediaControlsPanelViewController : UIViewController
+@property (nonatomic, retain) id delegate;
 @property (nonatomic, retain) MediaControlsParentContainerView *parentContainerView;
 @property (assign, nonatomic) long long style;
 
 @property (nonatomic, assign, getter=isNextUpInitialized) BOOL nextUpInitialized;
 - (void)initNextUp;
+- (BOOL)NU_isControlCenter;
 @end
 // ---
 
