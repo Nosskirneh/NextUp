@@ -89,7 +89,8 @@ NUMetadataSaver *metadataSaver;
             nextIndex = 1;
 
         if ([manifest count] > nextIndex) {
-            BOOL skipable = manifest.upNextManifest.count > 0;
+            BOOL skipable = manifest.upNextManifest.count > 0 &&
+                            !(manifest.upNextManifest.count == 1 && manifest.isPlayingFromUpNext);
             item = [manifest objectAtIndex:nextIndex];
             [self fetchNextUpFromItem:item skipable:skipable];
         } else {
