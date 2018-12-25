@@ -1,9 +1,9 @@
-#import "NUMetadataSaver.h"
+#import "NextUpManager.h"
 #import "Common.h"
 #import <AppSupport/CPDistributedMessagingCenter.h>
 #import <rocketbootstrap/rocketbootstrap.h>
 
-@implementation NUMetadataSaver
+@implementation NextUpManager
 
 - (id)init {
     self = [super init];

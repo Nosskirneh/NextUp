@@ -1,4 +1,4 @@
-#import "NUMetadataSaver.h"
+#import "NextUpManager.h"
 
 /* Common */
 @interface CFWColorInfo : NSObject
@@ -63,7 +63,7 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @property (nonatomic, retain) UIImpactFeedbackGenerator *hapticGenerator;
 @property (nonatomic, retain) UIStackView *view;
 @property (nonatomic, retain) UIView *contentView;
-@property (nonatomic, retain) NUMetadataSaver *metadataSaver;
+@property (nonatomic, retain) NextUpManager *manager;
 @property (nonatomic, retain) UILabel *headerLabel;
 @property (nonatomic, retain) NextUpMediaHeaderView *mediaView;
 @property (nonatomic, assign) BOOL showsHeader;

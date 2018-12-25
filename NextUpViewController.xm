@@ -120,7 +120,7 @@
 }
 
 - (void)updateLabels {
-    NSDictionary *metadata = _metadataSaver.metadata;
+    NSDictionary *metadata = _manager.metadata;
     if (metadata) {
         _mediaView.primaryString = metadata[kTitle];
         _mediaView.secondaryString = metadata[kSubtitle];

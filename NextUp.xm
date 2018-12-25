@@ -1,4 +1,4 @@
-#import "NUMetadataSaver.h"
+#import "NextUpManager.h"
 #import <MediaPlayer/MediaPlayer.h>
 #import "Common.h"
 #import "Spotify.h"
@@ -11,7 +11,7 @@
 #define ARTWORK_SIZE CGSizeMake(60, 60)
 
 
-NUMetadataSaver *metadataSaver;
+NextUpManager *manager;
 
 /* Podcasts */
 %group Podcasts
@@ -437,7 +437,7 @@ NUMetadataSaver *metadataSaver;
 %group SpringBoard
     /* Listen on changes of now playing app */
     void setMediaAppAndSendShowNextUp(NUMediaApplication app) {
-        metadataSaver.mediaApplication = app;
+        manager.mediaApplication = app;
         [[NSNotificationCenter defaultCenter] postNotificationName:kShowNextUp object:nil];
     }
 
@@ -457,7 +457,7 @@ NUMetadataSaver *metadataSaver;
             notify(kPODManualUpdate);
             setMediaAppAndSendShowNextUp(NUPodcastsApplication);
         } else {
-            metadataSaver.mediaApplication = NUUnsupportedApplication;
+            manager.mediaApplication = NUUnsupportedApplication;
             [[NSNotificationCenter defaultCenter] postNotificationName:kHideNextUp object:nil];
         }
         
@@ -509,7 +509,7 @@ NUMetadataSaver *metadataSaver;
 
             containerView.nextUpViewController = [[%c(NextUpViewController) alloc] init];
             containerView.nextUpViewController.cornerRadius = 15;
-            containerView.nextUpViewController.metadataSaver = metadataSaver;
+            containerView.nextUpViewController.manager = manager;
             containerView.nextUpViewController.controlCenter = YES;
 
             self.nextUpInitialized = YES;
@@ -524,7 +524,7 @@ NUMetadataSaver *metadataSaver;
         %orig;
 
         if ([self.moduleIdentifier isEqualToString:@"com.apple.mediaremote.controlcenter.nowplaying"])
-            metadataSaver.controlCenterExpanded = expanded;
+            manager.controlCenterExpanded = expanded;
     }
 
     %end
@@ -539,7 +539,7 @@ NUMetadataSaver *metadataSaver;
     - (void)layoutSubviews {
         %orig;
 
-        if (metadataSaver.controlCenterExpanded && self.shouldShowNextUp) {
+        if (manager.controlCenterExpanded && self.shouldShowNextUp) {
             CGRect frame = self.frame;
             frame.size.height = 101.0;
             self.frame = frame;
@@ -702,7 +702,7 @@ NUMetadataSaver *metadataSaver;
             MediaControlsPanelViewController *panelViewController = MSHookIvar<MediaControlsPanelViewController *>(self, "_mediaControlsPanelViewController");
             self.nextUpViewController.style = noctisEnabled ? 2 : panelViewController.style;
             self.nextUpViewController.cornerRadius = 15;
-            self.nextUpViewController.metadataSaver = metadataSaver;
+            self.nextUpViewController.manager = manager;
 
             self.nextUpInitialized = YES;
         }
@@ -881,7 +881,7 @@ NUMetadataSaver *metadataSaver;
         %init(SpringBoard);
         %init(ColorFlow);
         %init(CustomViews);
-        metadataSaver = [[NUMetadataSaver alloc] init];
+        manager = [[NextUpManager alloc] init];
     } else if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:kSpotifyBundleID]) {
         if (preferences[kEnableSpotify] && ![preferences[kEnableSpotify] boolValue])
             return;
