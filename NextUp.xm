@@ -27,7 +27,7 @@ NextUpManager *manager;
     %hook MTAppDelegate_Shared
 
     - (BOOL)application:(id)arg didFinishLaunchingWithOptions:(id)options {
-        [%c(MTPlaybackQueueController) sharedInstance]; // Makes sure its init method get called
+        [%c(MTPlaybackQueueController) sharedInstance]; // Makes sure its init method gets called
         return %orig;
     }
 
