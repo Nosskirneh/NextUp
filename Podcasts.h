@@ -19,6 +19,7 @@
 @end
 
 @interface MTCompositeManifest : IMPlayerManifest
+@property (nonatomic, assign) BOOL isPlayingFromUpNext;
 @property (nonatomic, assign) MTUpNextManifest *upNextManifest;
 @end
 
