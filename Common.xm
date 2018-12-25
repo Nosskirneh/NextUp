@@ -36,6 +36,11 @@ NSString *const kAPMManualUpdate = @"se.nosskirneh.nextup/APMManualUpdate";
 NSString *const kDZRManualUpdate = @"se.nosskirneh.nextup/DZRManualUpdate";
 NSString *const kPODManualUpdate = @"se.nosskirneh.nextup/PODManualUpdate";
 
+NSString *const kTitle = @"title";
+NSString *const kSubtitle = @"subtitle";
+NSString *const kSkipable = @"skipable";
+NSString *const kArtwork = @"artwork";
+
 
 /* Settings */
 NSString *const kEnableSpotify = @"EnableSpotify";

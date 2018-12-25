@@ -188,10 +188,10 @@
 - (void)updateLabels {
     NSDictionary *metadata = _metadataSaver.metadata;
     if (metadata) {
-        _mediaView.primaryString = metadata[@"trackTitle"];
-        _mediaView.secondaryString = metadata[@"artistTitle"];
-        _mediaView.artworkView.image = [UIImage imageWithData:metadata[@"artwork"]];
-        _mediaView.routingButton.hidden = metadata[@"skipable"] && ![metadata[@"skipable"] boolValue];
+        _mediaView.primaryString = metadata[kTitle];
+        _mediaView.secondaryString = metadata[kSubtitle];
+        _mediaView.artworkView.image = [UIImage imageWithData:metadata[kArtwork]];
+        _mediaView.routingButton.hidden = metadata[kSkipable] && ![metadata[kSkipable] boolValue];
     } else {
         _mediaView.primaryString = @"No next track available";
         _mediaView.secondaryString = nil;

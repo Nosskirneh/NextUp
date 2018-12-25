@@ -59,12 +59,12 @@ NUMetadataSaver *metadataSaver;
     - (NSDictionary *)serializeTrack:(MTPlayerItem *)item image:(UIImage *)image skipable:(BOOL)skipable {
         NSMutableDictionary *metadata = [NSMutableDictionary new];
 
-        metadata[@"trackTitle"] = item.title;
-        metadata[@"artistTitle"] = item.subtitle;
-        metadata[@"skipable"] = @(skipable);
+        metadata[kTitle] = item.title;
+        metadata[kSubtitle] = item.subtitle;
+        metadata[kSkipable] = @(skipable);
 
         if (image)
-            metadata[@"artwork"] = UIImagePNGRepresentation(image);
+            metadata[kArtwork] = UIImagePNGRepresentation(image);
 
         return metadata;
     }
@@ -211,17 +211,17 @@ NUMetadataSaver *metadataSaver;
         UIImage *artwork = image;
 
         if ([item isKindOfClass:%c(MPCModelGenericAVItem)])
-            metadata[@"trackTitle"] = [item mainTitle];
+            metadata[kTitle] = [item mainTitle];
         else if ([item isKindOfClass:%c(MPMediaItem)]) {
-            metadata[@"trackTitle"] = item.title;
+            metadata[kTitle] = item.title;
 
             if (!image)
                 artwork = [item.artwork imageWithSize:ARTWORK_SIZE];
         }
 
-        metadata[@"artistTitle"] = item.artist;
+        metadata[kSubtitle] = item.artist;
 
-        metadata[@"artwork"] = UIImagePNGRepresentation(artwork);
+        metadata[kArtwork] = UIImagePNGRepresentation(artwork);
         return metadata;
     }
 
@@ -329,8 +329,8 @@ NUMetadataSaver *metadataSaver;
         self.lastSentTrack = track;
 
         NSMutableDictionary *metadata = [NSMutableDictionary new];
-        metadata[@"trackTitle"] = [track trackTitle];
-        metadata[@"artistTitle"] = track.artistTitle;
+        metadata[kTitle] = [track trackTitle];
+        metadata[kSubtitle] = track.artistTitle;
 
         // Artwork
         CGSize imageSize = ARTWORK_SIZE;
@@ -342,17 +342,15 @@ NUMetadataSaver *metadataSaver;
                 if (img)
                     image = img;
 
-                metadata[@"artwork"] = UIImagePNGRepresentation(image);
+                metadata[kArtwork] = UIImagePNGRepresentation(image);
                 sendNextTrackMetadata(metadata, NUSpotifyApplication);
             }];
         }
     }
 
     %end
-
 %end
 // ---
-
 
 
 /* Deezer */
@@ -405,14 +403,14 @@ NUMetadataSaver *metadataSaver;
     %new
     - (NSDictionary *)serializeTrack:(DeezerTrack *)track image:(UIImage *)image {
         NSMutableDictionary *metadata = [NSMutableDictionary new];
-        metadata[@"trackTitle"] = track.title;
-        metadata[@"artistTitle"] = track.artistName;
+        metadata[kTitle] = track.title;
+        metadata[kSubtitle] = track.artistName;
         UIImage *artwork = image;
         // `nowPlayingArtwork` has to be fetched. It doesn't exist a method to do that
         // with a completionhandler, so I've implemented this in DeezerTrack below
         if (!artwork)
             artwork = [track.nowPlayingArtwork imageWithSize:ARTWORK_SIZE];
-        metadata[@"artwork"] = UIImagePNGRepresentation(artwork);
+        metadata[kArtwork] = UIImagePNGRepresentation(artwork);
         return metadata;
     }
 

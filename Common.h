@@ -46,6 +46,11 @@ extern NSString *const kAPMManualUpdate;
 extern NSString *const kDZRManualUpdate;
 extern NSString *const kPODManualUpdate;
 
+extern NSString *const kTitle;
+extern NSString *const kSubtitle;
+extern NSString *const kSkipable;
+extern NSString *const kArtwork;
+
 
 /* Settings */
 extern NSString *const kEnableSpotify;
