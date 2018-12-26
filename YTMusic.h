@@ -45,8 +45,10 @@
 
 
 @interface YTMQueueController
-@property(nonatomic) unsigned long long nowPlayingIndex;
-@property(readonly, nonatomic) YTIPlaylistPanelVideoRenderer *nextVideo;
+@property (nonatomic) unsigned long long nowPlayingIndex;
+@property (readonly, nonatomic) YTIPlaylistPanelVideoRenderer *nextVideo;
+@property (nonatomic, getter=isAutoExtendPlaybackQueueEnabled) BOOL autoExtendPlaybackQueueEnabled;
+- (unsigned long long)nextVideoIndex;
 
 - (void)fetchNextUp;
 - (NSDictionary *)serializeTrack:(YTIPlaylistPanelVideoRenderer *)item image:(UIImage *)image;
