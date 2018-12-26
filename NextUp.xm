@@ -882,12 +882,13 @@ NextUpManager *manager;
         if (self.routingButton.hidden)
             maxWidth += self.routingButton.frame.size.width;
 
-        maxWidth = fmin(frame.size.width, maxWidth);
-        frame.size.width = maxWidth;
+        float primaryMaxWidth = fmin(frame.size.width, maxWidth);
+        frame.size.width = primaryMaxWidth;
         self.primaryMarqueeView.frame = frame;
 
         frame = self.secondaryMarqueeView.frame;
-        frame.size.width = maxWidth;
+        float secondaryMaxWidth = fmin(frame.size.width, maxWidth);
+        frame.size.width = secondaryMaxWidth;
         self.secondaryMarqueeView.frame = frame;
 
         self.buttonBackground.hidden = YES;
