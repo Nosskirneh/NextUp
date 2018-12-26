@@ -16,6 +16,14 @@ NextUpManager *manager;
 
 %group YTMusic
 
+    void YTMSkipNext(notificationArguments) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:kYTMSkipNext object:nil];
+    }
+
+    void YTMManualUpdate(notificationArguments) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:kYTMManualUpdate object:nil];
+    }
+
     YTMAppDelegate *getYTMAppDelegate() {
         return (YTMAppDelegate *)[[UIApplication sharedApplication] delegate];
     }
@@ -25,6 +33,20 @@ NextUpManager *manager;
     }
 
     %hook YTMQueueController
+
+    - (void)commonInit {
+        %log;
+        %orig;
+
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(skipNext)
+                                                     name:kYTMSkipNext
+                                                   object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(fetchNextUp)
+                                                     name:kYTMManualUpdate
+                                                   object:nil];
+    }
 
     - (unsigned long long)addQueueItems:(NSArray *)items numItemsToReveal:(long long)reveal atIndex:(unsigned long long)index {
         unsigned long long orig = %orig;
@@ -77,7 +99,6 @@ NextUpManager *manager;
 
     %new
     - (void)fetchNextUp {
-        %log;
         YTIPlaylistPanelVideoRenderer *next = self.nextVideo;
 
         if (next && next.hasThumbnail && next.thumbnail.thumbnailsArray.count > 0) {
@@ -116,6 +137,38 @@ NextUpManager *manager;
             metadata[kArtwork] = UIImagePNGRepresentation(image);
 
         return metadata;
+    }
+
+    %new
+    - (void)skipNext {
+        if (self.nowPlayingIndex + 1 == self.queueCount) { // Automix
+            // TODO: This doesn't work; look into it some more
+            YTMAutomixController *automixController = MSHookIvar<YTMAutomixController *>(self, "_automixController");
+            // HBLogDebug(@"automix: %@", automixController);
+            NSIndexSet *set = [NSIndexSet indexSetWithIndex:self.nextVideoIndex];
+            [automixController removeItemsAtIndexes:set];
+            // NSMutableArray *items = MSHookIvar<NSMutableArray *>(automixController, "_automixItems");
+            // HBLogDebug(@"before: %lu", items.count);
+            // [items removeObjectAtIndex:self.nextVideoIndex];
+            // HBLogDebug(@"after: %lu", MSHookIvar<NSMutableArray *>(automixController, "_automixItems").count);
+            // // MSHookIvar<NSMutableArray *>(automixController, "_automixItems") = items;
+            // // HBLogDebug(@"after save count: %lu", MSHookIvar<NSMutableArray *>(automixController, "_automixItems").count);
+
+            HBLogDebug(@"done");
+        } else { // Normal
+            HBLogDebug(@"normal");
+            [self removeVideoAtIndex:self.nextVideoIndex];
+        }
+    }
+
+    %end
+
+
+    %hook YTMAutomixController
+
+    - (void)removeItemsAtIndexes:(id)arg1 {
+        %log;
+        %orig;
     }
 
     %end
@@ -1022,7 +1075,7 @@ NextUpManager *manager;
             return;
 
         %init(YTMusic)
-        subscribe(&PODSkipNext, kYTMSkipNext);
-        subscribe(&PODManualUpdate, kYTMManualUpdate);
+        subscribe(&YTMSkipNext, kYTMSkipNext);
+        subscribe(&YTMManualUpdate, kYTMManualUpdate);
     }
 }

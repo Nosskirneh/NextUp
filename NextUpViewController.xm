@@ -118,7 +118,7 @@
     else if (isAppCurrentMediaApp(kPodcastsBundleID))
         notify(kPODSkipNext);
     else if (isAppCurrentMediaApp(kYoutubeMusicBundleID))
-        notify(kPODSkipNext);
+        notify(kYTMSkipNext);
 }
 
 - (void)updateLabels {

@@ -44,11 +44,19 @@
 @end
 
 
-@interface YTMQueueController
+@interface YTMAutomixController : NSObject
+- (void)removeItemsAtIndexes:(id)arg1;
+@end
+
+@interface YTMQueueController {
+    YTMAutomixController *_automixController;
+}
 @property (nonatomic) unsigned long long nowPlayingIndex;
 @property (readonly, nonatomic) YTIPlaylistPanelVideoRenderer *nextVideo;
 @property (nonatomic, getter=isAutoExtendPlaybackQueueEnabled) BOOL autoExtendPlaybackQueueEnabled;
+@property (readonly, nonatomic) unsigned long long queueCount;
 - (unsigned long long)nextVideoIndex;
+- (void)removeVideoAtIndex:(unsigned long long)arg1;
 
 - (void)fetchNextUp;
 - (NSDictionary *)serializeTrack:(YTIPlaylistPanelVideoRenderer *)item image:(UIImage *)image;
