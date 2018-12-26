@@ -8,7 +8,8 @@ typedef enum {
     NUSpotifyApplication,
     NUDeezerApplication,
     NUMusicApplication,
-    NUPodcastsApplication
+    NUPodcastsApplication,
+    NUYoutubeMusicApplication
 } NUMediaApplication;
 
 #ifdef __cplusplus
@@ -29,6 +30,7 @@ extern NSString *const kSpotifyBundleID;
 extern NSString *const kDeezerBundleID;
 extern NSString *const kMusicBundleID;
 extern NSString *const kPodcastsBundleID;
+extern NSString *const kYoutubeMusicBundleID;
 extern NSString *const kSpringBoardBundleID;
 
 extern NSString *const kNextTrackMessage;
@@ -40,11 +42,13 @@ extern NSString *const kSPTSkipNext;
 extern NSString *const kAPMSkipNext;
 extern NSString *const kDZRSkipNext;
 extern NSString *const kPODSkipNext;
+extern NSString *const kYTMSkipNext;
 
 extern NSString *const kSPTManualUpdate;
 extern NSString *const kAPMManualUpdate;
 extern NSString *const kDZRManualUpdate;
 extern NSString *const kPODManualUpdate;
+extern NSString *const kYTMManualUpdate;
 
 extern NSString *const kTitle;
 extern NSString *const kSubtitle;
@@ -57,6 +61,7 @@ extern NSString *const kEnableSpotify;
 extern NSString *const kEnableMusic;
 extern NSString *const kEnableDeezer;
 extern NSString *const kEnablePodcasts;
+extern NSString *const kEnableYoutubeMusic;
 
 
 @interface UIImage (Private)

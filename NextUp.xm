@@ -5,6 +5,7 @@
 #import "Deezer.h"
 #import "Music.h"
 #import "Podcasts.h"
+#import "YTMusic.h"
 #import "Headers.h"
 #import "DRMOptions.mm"
 
@@ -12,6 +13,68 @@
 
 
 NextUpManager *manager;
+
+%group YTMusic
+
+    YTMAppDelegate *getYTMAppDelegate() {
+        return (YTMAppDelegate *)[[UIApplication sharedApplication] delegate];
+    }
+
+    GIMMe *gimme() {
+        return getYTMAppDelegate().gimme;
+    }
+
+    %hook YTMQueueController
+
+    - (void)addItemsFromPlaylistPanel:(id)arg1 response:(id)arg2 atIndex:(unsigned long long)arg3 notifyObservers:(BOOL)arg4 {
+        %orig;
+
+        [self fetchNextUp];
+    }
+
+    %new
+    - (NSDictionary *)serializeTrack:(YTIPlaylistPanelVideoRenderer *)item image:(UIImage *)image {
+        NSMutableDictionary *metadata = [NSMutableDictionary new];
+
+        if (item.hasTitle)
+            metadata[kTitle] = [item.title accessibilityLabel];
+
+        if (item.hasShortBylineText)
+            metadata[kSubtitle] = [item.shortBylineText accessibilityLabel];
+
+        if (image)
+            metadata[kArtwork] = UIImagePNGRepresentation(image);
+
+        return metadata;
+    }
+
+    %new
+    - (void)fetchNextUp {
+        YTIPlaylistPanelVideoRenderer *next = self.nextVideo;
+
+        if (next.hasThumbnail && next.thumbnail.thumbnailsArray.count > 0) {
+            NSArray *thumbnails = next.thumbnail.thumbnailsArray;
+            YTIThumbnailDetails_Thumbnail *pickedThumbnail;
+            // Find the closest to the size
+            for (YTIThumbnailDetails_Thumbnail *thumbnail in thumbnails) {
+                pickedThumbnail = thumbnail;
+                if (thumbnail.height >= ARTWORK_SIZE.height * [UIScreen mainScreen].scale)
+                    break;
+            }
+
+            NSString *URL = pickedThumbnail.URL;
+
+            YTImageServiceImpl *imageService = [gimme() instanceForType:%c(YTImageService)];
+            [imageService makeImageRequestWithURL:[NSURL URLWithString:URL] responseBlock:^(UIImage *image) {
+                NSDictionary *metadata = [self serializeTrack:next image:image];
+                sendNextTrackMetadata(metadata, NUYoutubeMusicApplication);
+            } errorBlock:nil];
+        }
+    }
+
+    %end
+%end
+
 
 /* Podcasts */
 %group Podcasts
@@ -451,6 +514,9 @@ NextUpManager *manager;
         } else if ([app.bundleIdentifier isEqualToString:kPodcastsBundleID]) {
             notify(kPODManualUpdate);
             setMediaAppAndSendShowNextUp(NUPodcastsApplication);
+        } else if ([app.bundleIdentifier isEqualToString:kYoutubeMusicBundleID]) {
+            notify(kYTMManualUpdate);
+            setMediaAppAndSendShowNextUp(NUYoutubeMusicApplication);
         } else {
             manager.mediaApplication = NUUnsupportedApplication;
             [[NSNotificationCenter defaultCenter] postNotificationName:kHideNextUp object:nil];
@@ -529,7 +595,6 @@ NextUpManager *manager;
     %property (nonatomic, retain) NextUpViewController *nextUpViewController;
     %property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
     %property (nonatomic, assign) BOOL shouldShowNextUp;
-    %property (nonatomic, assign) MediaControlsPanelViewController *panelViewController;
 
     - (void)layoutSubviews {
         %orig;
@@ -891,6 +956,13 @@ NextUpManager *manager;
         %init(Music);
         subscribe(&APMSkipNext, kAPMSkipNext);
         subscribe(&APMManualUpdate, kAPMManualUpdate);
+    } else if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:kDeezerBundleID]) {
+        if (preferences[kEnableDeezer] && ![preferences[kEnableDeezer] boolValue])
+            return;
+
+        %init(Deezer);
+        subscribe(&DZRSkipNext, kDZRSkipNext);
+        subscribe(&DZRManualUpdate, kDZRManualUpdate);
     } else if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:kPodcastsBundleID]) {
         if (preferences[kEnablePodcasts] && ![preferences[kEnablePodcasts] boolValue])
             return;
@@ -899,11 +971,11 @@ NextUpManager *manager;
         subscribe(&PODSkipNext, kPODSkipNext);
         subscribe(&PODManualUpdate, kPODManualUpdate);
     } else {
-        if (preferences[kEnableDeezer] && ![preferences[kEnableDeezer] boolValue])
+        if (preferences[kEnableYoutubeMusic] && ![preferences[kEnableYoutubeMusic] boolValue])
             return;
 
-        %init(Deezer);
-        subscribe(&DZRSkipNext, kDZRSkipNext);
-        subscribe(&DZRManualUpdate, kDZRManualUpdate);
+        %init(YTMusic)
+        subscribe(&PODSkipNext, kYTMSkipNext);
+        subscribe(&PODManualUpdate, kYTMManualUpdate);
     }
 }
