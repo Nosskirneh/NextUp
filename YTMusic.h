@@ -43,14 +43,7 @@
 @property (nonatomic, assign, readwrite) YTIFormattedString *shortBylineText;
 @end
 
-
-@interface YTMAutomixController : NSObject
-- (void)removeItemsAtIndexes:(id)arg1;
-@end
-
-@interface YTMQueueController {
-    YTMAutomixController *_automixController;
-}
+@interface YTMQueueController
 @property (nonatomic) unsigned long long nowPlayingIndex;
 @property (readonly, nonatomic) YTIPlaylistPanelVideoRenderer *nextVideo;
 @property (nonatomic, getter=isAutoExtendPlaybackQueueEnabled) BOOL autoExtendPlaybackQueueEnabled;

@@ -136,29 +136,15 @@ NextUpManager *manager;
         if (image)
             metadata[kArtwork] = UIImagePNGRepresentation(image);
 
+        if (self.nowPlayingIndex + 1 == self.queueCount)
+            metadata[kSkipable] = @NO;
+
         return metadata;
     }
 
     %new
     - (void)skipNext {
-        if (self.nowPlayingIndex + 1 == self.queueCount) { // Automix
-            // TODO: This doesn't work; look into it some more
-            YTMAutomixController *automixController = MSHookIvar<YTMAutomixController *>(self, "_automixController");
-            // HBLogDebug(@"automix: %@", automixController);
-            NSIndexSet *set = [NSIndexSet indexSetWithIndex:self.nextVideoIndex];
-            [automixController removeItemsAtIndexes:set];
-            // NSMutableArray *items = MSHookIvar<NSMutableArray *>(automixController, "_automixItems");
-            // HBLogDebug(@"before: %lu", items.count);
-            // [items removeObjectAtIndex:self.nextVideoIndex];
-            // HBLogDebug(@"after: %lu", MSHookIvar<NSMutableArray *>(automixController, "_automixItems").count);
-            // // MSHookIvar<NSMutableArray *>(automixController, "_automixItems") = items;
-            // // HBLogDebug(@"after save count: %lu", MSHookIvar<NSMutableArray *>(automixController, "_automixItems").count);
-
-            HBLogDebug(@"done");
-        } else { // Normal
-            HBLogDebug(@"normal");
-            [self removeVideoAtIndex:self.nextVideoIndex];
-        }
+        [self removeVideoAtIndex:self.nextVideoIndex];
     }
 
     %end
