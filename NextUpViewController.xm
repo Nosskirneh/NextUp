@@ -109,16 +109,8 @@
 - (void)skipTrack:(UIButton *)sender {
     [self.hapticGenerator impactOccurred];
 
-    if (isAppCurrentMediaApp(kSpotifyBundleID))
-        notify(kSPTSkipNext);
-    else if (isAppCurrentMediaApp(kMusicBundleID))
-        notify(kAPMSkipNext);
-    else if (isAppCurrentMediaApp(kDeezerBundleID))
-        notify(kDZRSkipNext);
-    else if (isAppCurrentMediaApp(kPodcastsBundleID))
-        notify(kPODSkipNext);
-    else if (isAppCurrentMediaApp(kYoutubeMusicBundleID))
-        notify(kYTMSkipNext);
+    NSString *skipNext = [NSString stringWithFormat:@"%@/%@/%@", NEXTUP_IDENTIFIER, kSkipNext, _manager.mediaApplication];
+    notify(skipNext);
 }
 
 - (void)updateLabels {

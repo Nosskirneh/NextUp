@@ -3,12 +3,12 @@
 #import <rocketbootstrap/rocketbootstrap.h>
 
 // Methods that updates changes to .plist
-void sendNextTrackMetadata(NSDictionary *metadata, NUMediaApplication app) {
+void sendNextTrackMetadata(NSDictionary *metadata, NSString *app) {
     CPDistributedMessagingCenter *c = [%c(CPDistributedMessagingCenter) centerNamed:NEXTUP_IDENTIFIER];
     rocketbootstrap_distributedmessagingcenter_apply(c);
 
     NSMutableDictionary *dict = [NSMutableDictionary new];
-	dict[@"mediaApplication"] = @(app);
+	dict[@"mediaApplication"] = app;
 
     if (metadata)
     	dict[@"metadata"] = metadata;
@@ -16,8 +16,8 @@ void sendNextTrackMetadata(NSDictionary *metadata, NUMediaApplication app) {
 }
 
 NSString *const kSpotifyBundleID = @"com.spotify.client";
-NSString *const kDeezerBundleID = @"com.deezer.Deezer";
 NSString *const kMusicBundleID = @"com.apple.Music";
+NSString *const kDeezerBundleID = @"com.deezer.Deezer";
 NSString *const kPodcastsBundleID = @"com.apple.podcasts";
 NSString *const kYoutubeMusicBundleID = @"com.google.ios.youtubemusic";
 NSString *const kSpringBoardBundleID = @"com.apple.springboard";
@@ -27,27 +27,22 @@ NSString *const kShowNextUp = @"se.nosskirneh.nextup/showNextUp";
 NSString *const kHideNextUp = @"se.nosskirneh.nextup/hideNextUp";
 NSString *const kUpdateLabels = @"se.nosskirneh.nextup/updateLabels";
 
-NSString *const kSPTSkipNext = @"se.nosskirneh.nextup/SPTSkipNext";
-NSString *const kAPMSkipNext = @"se.nosskirneh.nextup/APMSkipNext";
-NSString *const kDZRSkipNext = @"se.nosskirneh.nextup/DZRSkipNext";
-NSString *const kPODSkipNext = @"se.nosskirneh.nextup/PODSkipNext";
-NSString *const kYTMSkipNext = @"se.nosskirneh.nextup/YTMSkipNext";
+NSString *const kSkipNext = @"SkipNext";
+NSString *const kManualUpdate = @"ManualUpdate";
 
-NSString *const kSPTManualUpdate = @"se.nosskirneh.nextup/SPTManualUpdate";
-NSString *const kAPMManualUpdate = @"se.nosskirneh.nextup/APMManualUpdate";
-NSString *const kDZRManualUpdate = @"se.nosskirneh.nextup/DZRManualUpdate";
-NSString *const kPODManualUpdate = @"se.nosskirneh.nextup/PODManualUpdate";
-NSString *const kYTMManualUpdate = @"se.nosskirneh.nextup/YTMManualUpdate";
+NSString *const kSPTSkipNext = @"se.nosskirneh.nextup/SkipNext/com.spotify.client";
+NSString *const kAPMSkipNext = @"se.nosskirneh.nextup/SkipNext/com.apple.Music";
+NSString *const kDZRSkipNext = @"se.nosskirneh.nextup/SkipNext/com.deezer.Deezer";
+NSString *const kPODSkipNext = @"se.nosskirneh.nextup/SkipNext/com.apple.podcasts";
+NSString *const kYTMSkipNext = @"se.nosskirneh.nextup/SkipNext/com.google.ios.youtubemusic";
+
+NSString *const kSPTManualUpdate = @"se.nosskirneh.nextup/ManualUpdate/com.spotify.client";
+NSString *const kAPMManualUpdate = @"se.nosskirneh.nextup/ManualUpdate/com.apple.Music";
+NSString *const kDZRManualUpdate = @"se.nosskirneh.nextup/ManualUpdate/com.deezer.Deezer";
+NSString *const kPODManualUpdate = @"se.nosskirneh.nextup/ManualUpdate/com.apple.podcasts";
+NSString *const kYTMManualUpdate = @"se.nosskirneh.nextup/ManualUpdate/com.google.ios.youtubemusic";
 
 NSString *const kTitle = @"title";
 NSString *const kSubtitle = @"subtitle";
 NSString *const kSkipable = @"skipable";
 NSString *const kArtwork = @"artwork";
-
-
-/* Settings */
-NSString *const kEnableSpotify = @"EnableSpotify";
-NSString *const kEnableMusic = @"EnableMusic";
-NSString *const kEnableDeezer = @"EnableDeezer";
-NSString *const kEnablePodcasts = @"EnablePodcasts";
-NSString *const kEnableYoutubeMusic = @"EnableYoutubeMusic";

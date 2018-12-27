@@ -3,20 +3,11 @@
 #import <SpringBoard/SBMediaController.h>
 #define isAppCurrentMediaApp(x) [((SBMediaController *)[objc_getClass("SBMediaController") sharedInstance]).nowPlayingApplication.mainSceneID isEqualToString:x]
 
-typedef enum {
-    NUUnsupportedApplication,
-    NUSpotifyApplication,
-    NUDeezerApplication,
-    NUMusicApplication,
-    NUPodcastsApplication,
-    NUYoutubeMusicApplication
-} NUMediaApplication;
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void sendNextTrackMetadata(NSDictionary *metadata, NUMediaApplication app);
+void sendNextTrackMetadata(NSDictionary *metadata, NSString *app);
 
 #ifdef __cplusplus
 }
@@ -38,6 +29,9 @@ extern NSString *const kShowNextUp;
 extern NSString *const kHideNextUp;
 extern NSString *const kUpdateLabels;
 
+extern NSString *const kSkipNext;
+extern NSString *const kManualUpdate;
+
 extern NSString *const kSPTSkipNext;
 extern NSString *const kAPMSkipNext;
 extern NSString *const kDZRSkipNext;
@@ -54,14 +48,6 @@ extern NSString *const kTitle;
 extern NSString *const kSubtitle;
 extern NSString *const kSkipable;
 extern NSString *const kArtwork;
-
-
-/* Settings */
-extern NSString *const kEnableSpotify;
-extern NSString *const kEnableMusic;
-extern NSString *const kEnableDeezer;
-extern NSString *const kEnablePodcasts;
-extern NSString *const kEnableYoutubeMusic;
 
 
 @interface UIImage (Private)

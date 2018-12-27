@@ -35,7 +35,7 @@
             <key>icon</key>
             <string>spotify.png</string>
             <key>key</key>
-            <string>EnableSpotify</string>
+            <string>com.spotify.client</string>
             <key>id</key>
             <string>Spotify</string>
             <key>label</key>
@@ -50,7 +50,7 @@
             <key>default</key>
             <true/>
             <key>key</key>
-            <string>EnableMusic</string>
+            <string>com.apple.Music</string>
             <key>id</key>
             <string>Music</string>
             <key>label</key>
@@ -67,7 +67,7 @@
             <key>icon</key>
             <string>deezer.png</string>
             <key>key</key>
-            <string>EnableDeezer</string>
+            <string>com.deezer.Deezer</string>
             <key>id</key>
             <string>Deezer</string>
             <key>label</key>
@@ -84,7 +84,7 @@
             <key>icon</key>
             <string>podcasts.png</string>
             <key>key</key>
-            <string>EnablePodcasts</string>
+            <string>com.apple.podcasts</string>
             <key>id</key>
             <string>Podcasts</string>
             <key>label</key>
@@ -101,7 +101,7 @@
             <key>icon</key>
             <string>youtubemusic.png</string>
             <key>key</key>
-            <string>EnableYouTube</string>
+            <string>com.google.ios.youtubemusic</string>
             <key>id</key>
             <string>YouTube</string>
             <key>label</key>

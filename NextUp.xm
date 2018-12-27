@@ -116,10 +116,10 @@ NextUpManager *manager;
             YTImageServiceImpl *imageService = [gimme() instanceForType:%c(YTImageService)];
             [imageService makeImageRequestWithURL:[NSURL URLWithString:URL] responseBlock:^(UIImage *image) {
                 NSDictionary *metadata = [self serializeTrack:next image:image];
-                sendNextTrackMetadata(metadata, NUYoutubeMusicApplication);
+                sendNextTrackMetadata(metadata, kYoutubeMusicBundleID);
             } errorBlock:nil];
         } else {
-            sendNextTrackMetadata(nil, NUYoutubeMusicApplication);
+            sendNextTrackMetadata(nil, kYoutubeMusicBundleID);
         }
     }
 
@@ -240,7 +240,7 @@ NextUpManager *manager;
             item = [manifest objectAtIndex:nextIndex];
             [self fetchNextUpFromItem:item skipable:skipable];
         } else {
-            sendNextTrackMetadata(nil, NUPodcastsApplication);
+            sendNextTrackMetadata(nil, kPodcastsBundleID);
         }
         self.lastSentEpisode = item;
     }
@@ -255,7 +255,7 @@ NextUpManager *manager;
 
         [item retrieveArtwork:^(UIImage *image) {
             NSDictionary *metadata = [self serializeTrack:item image:image skipable:skipable];
-            sendNextTrackMetadata(metadata, NUPodcastsApplication);
+            sendNextTrackMetadata(metadata, kPodcastsBundleID);
         } withSize:ARTWORK_SIZE];
     }
 
@@ -378,7 +378,7 @@ NextUpManager *manager;
 
         [catalog requestImageWithCompletionHandler:^(UIImage *image) {
             NSDictionary *metadata = [self serializeTrack:item image:image];
-            sendNextTrackMetadata(metadata, NUMusicApplication);
+            sendNextTrackMetadata(metadata, kMusicBundleID);
         }];
     }
 
@@ -487,7 +487,7 @@ NextUpManager *manager;
                     image = img;
 
                 metadata[kArtwork] = UIImagePNGRepresentation(image);
-                sendNextTrackMetadata(metadata, NUSpotifyApplication);
+                sendNextTrackMetadata(metadata, kSpotifyBundleID);
             }];
         }
     }
@@ -527,7 +527,7 @@ NextUpManager *manager;
         DeezerTrack *track = self.tracks[self.currentTrackIndex + 1];
         [track fetchNowPlayingArtworkWithCompletion:^(id image) {
             NSDictionary *metadata = [self serializeTrack:track image:image];
-            sendNextTrackMetadata(metadata, NUDeezerApplication);
+            sendNextTrackMetadata(metadata, kDeezerBundleID);
         }];
     }
 
@@ -579,34 +579,31 @@ NextUpManager *manager;
 /* Adding the widget */
 %group SpringBoard
     /* Listen on changes of now playing app */
-    void setMediaAppAndSendShowNextUp(NUMediaApplication app) {
-        manager.mediaApplication = app;
-        [[NSNotificationCenter defaultCenter] postNotificationName:kShowNextUp object:nil];
+    %hook SBMediaController
+    %property (nonatomic, retain) NSDictionary *nextUpPrefs;
+
+    - (id)init {
+        SBMediaController *orig = %orig;
+        orig.nextUpPrefs = [NSDictionary dictionaryWithContentsOfFile:kPrefPath];
+
+        return orig;
     }
 
-    %hook SBMediaController
+    %new
+    - (BOOL)isValidApplicationID:(NSString *)bundleID {
+        return !self.nextUpPrefs[bundleID] || [self.nextUpPrefs[bundleID] boolValue];
+    }
 
     - (void)_setNowPlayingApplication:(SBApplication *)app {
-        if ([app.bundleIdentifier isEqualToString:kSpotifyBundleID]) {
-            notify(kSPTManualUpdate);
-            setMediaAppAndSendShowNextUp(NUSpotifyApplication);
-        } else if ([app.bundleIdentifier isEqualToString:kMusicBundleID]) {
-            notify(kAPMManualUpdate);
-            setMediaAppAndSendShowNextUp(NUMusicApplication);
-        } else if ([app.bundleIdentifier isEqualToString:kDeezerBundleID]) {
-            notify(kDZRManualUpdate);
-            setMediaAppAndSendShowNextUp(NUDeezerApplication);
-        } else if ([app.bundleIdentifier isEqualToString:kPodcastsBundleID]) {
-            notify(kPODManualUpdate);
-            setMediaAppAndSendShowNextUp(NUPodcastsApplication);
-        } else if ([app.bundleIdentifier isEqualToString:kYoutubeMusicBundleID]) {
-            notify(kYTMManualUpdate);
-            setMediaAppAndSendShowNextUp(NUYoutubeMusicApplication);
+        NSString *bundleID = app.bundleIdentifier;
+        if ([manager.enabledApps containsObject:app.bundleIdentifier] && [self isValidApplicationID:app.bundleIdentifier]) {
+            [manager setMediaApplication:bundleID];
+            [[NSNotificationCenter defaultCenter] postNotificationName:kShowNextUp object:nil];
         } else {
-            manager.mediaApplication = NUUnsupportedApplication;
+            [manager setMediaApplication:nil];
             [[NSNotificationCenter defaultCenter] postNotificationName:kHideNextUp object:nil];
         }
-        
+
         %orig;
     }
 
@@ -1023,41 +1020,42 @@ NextUpManager *manager;
 
     NSDictionary *preferences = [NSDictionary dictionaryWithContentsOfFile:kPrefPath];
 
-    if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:kSpringBoardBundleID]) {
+    NSString *bundleID = [NSBundle mainBundle].bundleIdentifier;
+    if ([bundleID isEqualToString:kSpringBoardBundleID]) {
         %init(SpringBoard);
         %init(ColorFlow);
         %init(CustomViews);
         manager = [[NextUpManager alloc] init];
-    } else if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:kSpotifyBundleID]) {
-        if (preferences[kEnableSpotify] && ![preferences[kEnableSpotify] boolValue])
+    } else if ([bundleID isEqualToString:kSpotifyBundleID]) {
+        if (preferences[bundleID] && ![preferences[bundleID] boolValue])
             return;
 
         %init(Spotify);
         subscribe(&SPTSkipNext, kSPTSkipNext);
         subscribe(&SPTManualUpdate, kSPTManualUpdate);
-    } else if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:kMusicBundleID]) {
-        if (preferences[kEnableMusic] && ![preferences[kEnableMusic] boolValue])
+    } else if ([bundleID isEqualToString:kMusicBundleID]) {
+        if (preferences[bundleID] && ![preferences[bundleID] boolValue])
             return;
 
         %init(Music);
         subscribe(&APMSkipNext, kAPMSkipNext);
         subscribe(&APMManualUpdate, kAPMManualUpdate);
-    } else if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:kDeezerBundleID]) {
-        if (preferences[kEnableDeezer] && ![preferences[kEnableDeezer] boolValue])
+    } else if ([bundleID isEqualToString:kDeezerBundleID]) {
+        if (preferences[bundleID] && ![preferences[bundleID] boolValue])
             return;
 
         %init(Deezer);
         subscribe(&DZRSkipNext, kDZRSkipNext);
         subscribe(&DZRManualUpdate, kDZRManualUpdate);
-    } else if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:kPodcastsBundleID]) {
-        if (preferences[kEnablePodcasts] && ![preferences[kEnablePodcasts] boolValue])
+    } else if ([bundleID isEqualToString:kPodcastsBundleID]) {
+        if (preferences[bundleID] && ![preferences[bundleID] boolValue])
             return;
 
         %init(Podcasts)
         subscribe(&PODSkipNext, kPODSkipNext);
         subscribe(&PODManualUpdate, kPODManualUpdate);
-    } else {
-        if (preferences[kEnableYoutubeMusic] && ![preferences[kEnableYoutubeMusic] boolValue])
+    } else if ([bundleID isEqualToString:kYoutubeMusicBundleID]) {
+        if (preferences[bundleID] && ![preferences[bundleID] boolValue])
             return;
 
         %init(YTMusic)

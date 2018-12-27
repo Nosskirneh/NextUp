@@ -1,5 +1,11 @@
 #import "NextUpManager.h"
 
+
+@interface SBMediaController (Addition)
+@property (nonatomic, retain) NSDictionary *nextUpPrefs;
+- (BOOL)isValidApplicationID:(NSString *)bundleID;
+@end
+
 /* Common */
 @interface CFWColorInfo : NSObject
 @property(nonatomic, retain) UIColor *backgroundColor;

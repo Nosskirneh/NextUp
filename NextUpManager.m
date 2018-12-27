@@ -13,14 +13,19 @@
     [c runServerOnCurrentThread];
     [c registerForMessageName:kNextTrackMessage target:self selector:@selector(handleIncomingMessage:withUserInfo:)];
 
+    _enabledApps = [NSSet setWithObjects:kSpotifyBundleID,
+                                         kMusicBundleID,
+                                         kDeezerBundleID,
+                                         kPodcastsBundleID,
+                                         kYoutubeMusicBundleID, nil];
+
     return self;
 }
 
 - (void)handleIncomingMessage:(NSString *)name withUserInfo:(NSDictionary *)dict {
     // If Spotify is running in background and changed track on a Connect device,
     // but Deezer is playing music at the device: do nothing
-    if ([dict[@"mediaApplication"] intValue] != self.mediaApplication &&
-        self.mediaApplication != NUUnsupportedApplication)
+    if (self.mediaApplication && ![dict[@"mediaApplication"] isEqualToString:self.mediaApplication])
         return;
 
     self.metadata = dict[@"metadata"];
@@ -28,13 +33,16 @@
                                                         object:nil];
 }
 
-- (void)setMediaApplication:(NUMediaApplication)app {
+- (void)setMediaApplication:(NSString *)app {
     _mediaApplication = app;
 
-    if (app == NUUnsupportedApplication)
-        self.metadata = nil;
+    self.metadata = nil;
     [[NSNotificationCenter defaultCenter] postNotificationName:kUpdateLabels
                                                         object:nil];
+
+    // Refetch for the new app
+    NSString *manualUpdate = [NSString stringWithFormat:@"%@/%@/%@", NEXTUP_IDENTIFIER, kManualUpdate, app];
+    notify(manualUpdate);
 }
 
 @end
