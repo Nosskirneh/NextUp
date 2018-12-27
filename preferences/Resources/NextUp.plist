@@ -91,6 +91,23 @@
             <string>Enable for Podcasts</string>
         </dict>
 
+        <dict>
+            <key>cell</key>
+            <string>PSSwitchCell</string>
+            <key>cellClass</key>
+            <string>NextUpSwitchTableCell</string>
+            <key>default</key>
+            <true/>
+            <key>icon</key>
+            <string>youtubemusic.png</string>
+            <key>key</key>
+            <string>EnableYouTube</string>
+            <key>id</key>
+            <string>YouTube</string>
+            <key>label</key>
+            <string>Enable for YouTube Music</string>
+        </dict>
+
 
         <!-- Fill out -->
         <dict>
