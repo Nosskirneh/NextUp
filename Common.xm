@@ -3,12 +3,12 @@
 #import <rocketbootstrap/rocketbootstrap.h>
 
 // Methods that updates changes to .plist
-void sendNextTrackMetadata(NSDictionary *metadata, NSString *app) {
+void sendNextTrackMetadata(NSDictionary *metadata) {
     CPDistributedMessagingCenter *c = [%c(CPDistributedMessagingCenter) centerNamed:NEXTUP_IDENTIFIER];
     rocketbootstrap_distributedmessagingcenter_apply(c);
 
     NSMutableDictionary *dict = [NSMutableDictionary new];
-	dict[@"mediaApplication"] = app;
+	dict[@"mediaApplication"] = [[NSBundle mainBundle] bundleIdentifier];
 
     if (metadata)
     	dict[@"metadata"] = metadata;

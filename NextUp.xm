@@ -49,8 +49,8 @@ NextUpManager *manager;
             return;
 
         [self.imageLoader loadImageFrom:item.artworkURL successCompletion:^(UIImage *image) {
-            NSDictionary *metadata = [self serializeTrack:item image:image skipable:NO];
-            sendNextTrackMetadata(metadata, kSoundCloudBundleID);
+            NSDictionary *metadata = [self serializeTrack:item image:image skipable:YES];
+            sendNextTrackMetadata(metadata);
         } failureCompletion:nil];
     }
 
@@ -174,10 +174,10 @@ NextUpManager *manager;
             YTImageServiceImpl *imageService = [gimme() instanceForType:%c(YTImageService)];
             [imageService makeImageRequestWithURL:[NSURL URLWithString:URL] responseBlock:^(UIImage *image) {
                 NSDictionary *metadata = [self serializeTrack:next image:image];
-                sendNextTrackMetadata(metadata, kYoutubeMusicBundleID);
+                sendNextTrackMetadata(metadata);
             } errorBlock:nil];
         } else {
-            sendNextTrackMetadata(nil, kYoutubeMusicBundleID);
+            sendNextTrackMetadata(nil);
         }
     }
 
@@ -289,7 +289,7 @@ NextUpManager *manager;
             item = [manifest objectAtIndex:nextIndex];
             [self fetchNextUpFromItem:item skipable:skipable];
         } else {
-            sendNextTrackMetadata(nil, kPodcastsBundleID);
+            sendNextTrackMetadata(nil);
         }
         self.lastSentEpisode = item;
     }
@@ -304,7 +304,7 @@ NextUpManager *manager;
 
         [item retrieveArtwork:^(UIImage *image) {
             NSDictionary *metadata = [self serializeTrack:item image:image skipable:skipable];
-            sendNextTrackMetadata(metadata, kPodcastsBundleID);
+            sendNextTrackMetadata(metadata);
         } withSize:ARTWORK_SIZE];
     }
 
@@ -427,7 +427,7 @@ NextUpManager *manager;
 
         [catalog requestImageWithCompletionHandler:^(UIImage *image) {
             NSDictionary *metadata = [self serializeTrack:item image:image];
-            sendNextTrackMetadata(metadata, kMusicBundleID);
+            sendNextTrackMetadata(metadata);
         }];
     }
 
@@ -535,7 +535,7 @@ NextUpManager *manager;
                     image = img;
 
                 metadata[kArtwork] = UIImagePNGRepresentation(image);
-                sendNextTrackMetadata(metadata, kSpotifyBundleID);
+                sendNextTrackMetadata(metadata);
             }];
         }
     }
@@ -575,7 +575,7 @@ NextUpManager *manager;
         DeezerTrack *track = self.tracks[self.currentTrackIndex + 1];
         [track fetchNowPlayingArtworkWithCompletion:^(id image) {
             NSDictionary *metadata = [self serializeTrack:track image:image];
-            sendNextTrackMetadata(metadata, kDeezerBundleID);
+            sendNextTrackMetadata(metadata);
         }];
     }
 

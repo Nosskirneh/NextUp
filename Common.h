@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 
-void sendNextTrackMetadata(NSDictionary *metadata, NSString *app);
+void sendNextTrackMetadata(NSDictionary *metadata);
 
 #ifdef __cplusplus
 }
