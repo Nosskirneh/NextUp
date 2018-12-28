@@ -1056,19 +1056,15 @@ NextUpManager *manager;
         case CheckNoLicense:
             if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:kSpringBoardBundleID])
                 %init(Welcome);
-            break;
+            return;
         case CheckInvalidLicense:
-            break;
+            return;
         case CheckValidLicense:
-            goto init;
             break;
         case CheckUDIDsDoNotMatch:
-            break;
+            return;
     }
-    return;
     // ---
-
-    init:
 
     NSDictionary *preferences = [NSDictionary dictionaryWithContentsOfFile:kPrefPath];
 
