@@ -108,6 +108,23 @@
             <string>Enable for YouTube Music</string>
         </dict>
 
+        <dict>
+            <key>cell</key>
+            <string>PSSwitchCell</string>
+            <key>cellClass</key>
+            <string>NextUpSwitchTableCell</string>
+            <key>default</key>
+            <true/>
+            <key>icon</key>
+            <string>soundcloud.png</string>
+            <key>key</key>
+            <string>com.soundcloud.TouchApp</string>
+            <key>id</key>
+            <string>SoundCloud</string>
+            <key>label</key>
+            <string>Enable for SoundCloud</string>
+        </dict>
+
 
         <!-- Fill out -->
         <dict>
