@@ -1078,46 +1078,37 @@ NextUpManager *manager;
         %init(ColorFlow);
         %init(CustomViews);
         manager = [[NextUpManager alloc] init];
-    } else if ([bundleID isEqualToString:kSpotifyBundleID]) {
-        if (preferences[bundleID] && ![preferences[bundleID] boolValue])
-            return;
-
-        %init(Spotify);
-        subscribe(&SPTSkipNext, kSPTSkipNext);
-        subscribe(&SPTManualUpdate, kSPTManualUpdate);
-    } else if ([bundleID isEqualToString:kMusicBundleID]) {
-        if (preferences[bundleID] && ![preferences[bundleID] boolValue])
-            return;
-
-        %init(Music);
-        subscribe(&APMSkipNext, kAPMSkipNext);
-        subscribe(&APMManualUpdate, kAPMManualUpdate);
-    } else if ([bundleID isEqualToString:kDeezerBundleID]) {
-        if (preferences[bundleID] && ![preferences[bundleID] boolValue])
-            return;
-
-        %init(Deezer);
-        subscribe(&DZRSkipNext, kDZRSkipNext);
-        subscribe(&DZRManualUpdate, kDZRManualUpdate);
-    } else if ([bundleID isEqualToString:kPodcastsBundleID]) {
-        if (preferences[bundleID] && ![preferences[bundleID] boolValue])
-            return;
-
-        %init(Podcasts)
-        subscribe(&PODSkipNext, kPODSkipNext);
-        subscribe(&PODManualUpdate, kPODManualUpdate);
-    } else if ([bundleID isEqualToString:kYoutubeMusicBundleID]) {
-        if (preferences[bundleID] && ![preferences[bundleID] boolValue])
-            return;
-
-        %init(YTMusic)
-        subscribe(&YTMSkipNext, kYTMSkipNext);
-        subscribe(&YTMManualUpdate, kYTMManualUpdate);
     } else {
         if (preferences[bundleID] && ![preferences[bundleID] boolValue])
             return;
 
-        %init(SoundCloud)
-        subscribe(&SDCManualUpdate, kSDCManualUpdate);
+        if ([bundleID isEqualToString:kSpotifyBundleID]) {
+            %init(Spotify);
+            subscribe(&SPTSkipNext, kSPTSkipNext);
+            subscribe(&SPTManualUpdate, kSPTManualUpdate);
+        } else if ([bundleID isEqualToString:kMusicBundleID]) {
+            %init(Music);
+            subscribe(&APMSkipNext, kAPMSkipNext);
+            subscribe(&APMManualUpdate, kAPMManualUpdate);
+        } else if ([bundleID isEqualToString:kDeezerBundleID]) {
+            %init(Deezer);
+            subscribe(&DZRSkipNext, kDZRSkipNext);
+            subscribe(&DZRManualUpdate, kDZRManualUpdate);
+        } else if ([bundleID isEqualToString:kPodcastsBundleID]) {
+            %init(Podcasts)
+            subscribe(&PODSkipNext, kPODSkipNext);
+            subscribe(&PODManualUpdate, kPODManualUpdate);
+        } else if ([bundleID isEqualToString:kYoutubeMusicBundleID]) {
+            %init(YTMusic)
+            subscribe(&YTMSkipNext, kYTMSkipNext);
+            subscribe(&YTMManualUpdate, kYTMManualUpdate);
+        } else if ([bundleID isEqualToString:kSoundCloudBundleID]) {
+            %init(SoundCloud)
+            subscribe(&SDCManualUpdate, kSDCManualUpdate);
+        } else {
+            %init(PlayMusic);
+            subscribe(&GPMSkipNext, kGPMSkipNext);
+            subscribe(&GPMManualUpdate, kGPMManualUpdate);
+        }
     }
 }
