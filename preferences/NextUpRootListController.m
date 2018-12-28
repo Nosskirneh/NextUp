@@ -59,7 +59,8 @@
 
     // Add license specifier
     NSMutableArray *mspecs = (NSMutableArray *)[_specifiers mutableCopy];
-    _specifiers = addDRMSpecifiers(mspecs, self, licensePath$bs(), package$bs(), licenseFooterText$bs(), trialFooterText$bs());
+    _specifiers = addDRMSpecifiers(mspecs, self, licensePath$bs(), package$bs(), licenseFooterText$bs(),
+                                   trialFooterText$bs(), price$bs(), currency$bs());
 
     return _specifiers;
 }
