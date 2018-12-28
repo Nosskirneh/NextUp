@@ -13,7 +13,7 @@
 
 - (void)manuallyUpdate;
 - (void)fetchNextUp;
-- (NSDictionary *)serializeTrack:(Track *)track image:(UIImage *)image skipable:(BOOL)skipable;
+- (NSDictionary *)serializeTrack:(Track *)track image:(UIImage *)image;
 - (void)skipNext;
 @end
 

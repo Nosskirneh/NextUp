@@ -62,8 +62,8 @@ NextUpManager *manager;
 
     %new
     - (void)fetchNextUp {
-        if (![self hasNext])
-            return;
+        if (!self.hasNext)
+            return sendNextTrackMetadata(nil);
 
         Track *track = self.tracks[self.currentTrackIndex + 1];
         if ([track isEqual:self.lastSentTrack])
@@ -73,18 +73,17 @@ NextUpManager *manager;
 
         NSURL *artworkURL = [NSURL URLWithString:track.albumArtURLString];
         [getImageFetcher() fetchImageWithURL:artworkURL size:ARTWORK_SIZE quality:1 operationSequence:[%c(GPMOperationSequence) new] completionHandler:^(UIImage *image) {
-            NSDictionary *metadata = [self serializeTrack:track image:image skipable:self.tracks.count > self.currentTrackIndex + 2];
+            NSDictionary *metadata = [self serializeTrack:track image:image];
             sendNextTrackMetadata(metadata);
         }];
     }
 
     %new
-    - (NSDictionary *)serializeTrack:(Track *)track image:(UIImage *)image skipable:(BOOL)skipable {
+    - (NSDictionary *)serializeTrack:(Track *)track image:(UIImage *)image {
         NSMutableDictionary *metadata = [NSMutableDictionary new];
 
         metadata[kTitle] = track.title;
         metadata[kSubtitle] = track.albumArtistString;
-        metadata[kSkipable] = @(skipable);
 
         if (image)
             metadata[kArtwork] = UIImagePNGRepresentation(image);
