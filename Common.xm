@@ -36,7 +36,6 @@ NSString *const kAPMSkipNext = @"se.nosskirneh.nextup/skipNext/com.apple.Music";
 NSString *const kDZRSkipNext = @"se.nosskirneh.nextup/skipNext/com.deezer.Deezer";
 NSString *const kPODSkipNext = @"se.nosskirneh.nextup/skipNext/com.apple.podcasts";
 NSString *const kYTMSkipNext = @"se.nosskirneh.nextup/skipNext/com.google.ios.youtubemusic";
-NSString *const kSDCSkipNext = @"se.nosskirneh.nextup/skipNext/com.soundcloud.TouchApp";
 
 NSString *const kSPTManualUpdate = @"se.nosskirneh.nextup/manualUpdate/com.spotify.client";
 NSString *const kAPMManualUpdate = @"se.nosskirneh.nextup/manualUpdate/com.apple.Music";

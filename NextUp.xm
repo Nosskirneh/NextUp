@@ -15,9 +15,6 @@ NextUpManager *manager;
 
 /* SoundCloud */
 %group SoundCloud
-    void SDCSkipNext(notificationArguments) {
-    }
-
     void SDCManualUpdate(notificationArguments) {
         [[%c(PlaybackService) sharedInstance] fetchNextUp];
     }
@@ -49,7 +46,7 @@ NextUpManager *manager;
             return;
 
         [self.imageLoader loadImageFrom:item.artworkURL successCompletion:^(UIImage *image) {
-            NSDictionary *metadata = [self serializeTrack:item image:image skipable:YES];
+            NSDictionary *metadata = [self serializeTrack:item image:image skipable:NO];
             sendNextTrackMetadata(metadata);
         } failureCompletion:nil];
     }
@@ -1116,7 +1113,6 @@ NextUpManager *manager;
             return;
 
         %init(SoundCloud)
-        subscribe(&SDCSkipNext, kSDCSkipNext);
         subscribe(&SDCManualUpdate, kSDCManualUpdate);
     }
 }
