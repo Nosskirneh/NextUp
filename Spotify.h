@@ -12,7 +12,7 @@
 @end
 
 @interface SPTPlayerState : NSObject
-@property(retain, nonatomic) NSArray *future;
+@property (retain, nonatomic) NSArray *future;
 @end
 
 @interface SPTPlayerImpl : NSObject

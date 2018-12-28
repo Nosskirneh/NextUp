@@ -499,8 +499,13 @@ NextUpManager *manager;
     %new
     - (void)fetchNextUpForState:(SPTPlayerState *)state {
         NSArray<SPTPlayerTrack *> *next = state.future;
-        if (next.count > 0 && ![next[0] isEqual:self.lastSentTrack])
-            [self sendNextUpMetadata:next[0]];
+        if (next.count > 0) {
+            if (![next[0] isEqual:self.lastSentTrack])
+                [self sendNextUpMetadata:next[0]];
+            return;
+        }
+        
+        sendNextTrackMetadata(nil);
     }
 
     %new
@@ -962,7 +967,7 @@ NextUpManager *manager;
     %subclass NULabel : UILabel
 
     - (void)setAlpha:(CGFloat)alpha {
-        %orig(0.75);
+        %orig(0.63);
     }
 
     %end
