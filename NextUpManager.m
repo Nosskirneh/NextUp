@@ -18,7 +18,8 @@
                                          kDeezerBundleID,
                                          kPodcastsBundleID,
                                          kYoutubeMusicBundleID,
-                                         kSoundCloudBundleID, nil];
+                                         kSoundCloudBundleID,
+                                         kPlayMusicBundleID, nil];
 
     return self;
 }
