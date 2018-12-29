@@ -48,6 +48,23 @@
             <key>default</key>
             <true/>
             <key>icon</key>
+            <string>tidal.png</string>
+            <key>key</key>
+            <string>com.aspiro.TIDAL</string>
+            <key>id</key>
+            <string>TIDAL</string>
+            <key>label</key>
+            <string>Enable for TIDAL</string>
+        </dict>
+
+        <dict>
+            <key>cell</key>
+            <string>PSSwitchCell</string>
+            <key>cellClass</key>
+            <string>NextUpSwitchTableCell</string>
+            <key>default</key>
+            <true/>
+            <key>icon</key>
             <string>spotify.png</string>
             <key>key</key>
             <string>com.spotify.client</string>
