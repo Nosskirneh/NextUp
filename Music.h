@@ -26,15 +26,3 @@ typedef MPArtworkCatalog *(^block)(void);
 - (void)fetchNextUpItem:(id)item withArtworkCatalog:(block)artworkBlock;
 - (void)skipNext;
 @end
-
-@interface MPModelObjectMediaItem : MPMediaItem
-@property (nonatomic, readonly) id modelObject;
-@end
-
-@interface MPModelSong : NSObject
-- (id)valueForModelKey:(id)aa;
-@end
-
-@interface SBMediaController ()
-- (void)handleNextUpModelObjectMediaItem:(MPMediaItem *)item;
-@end

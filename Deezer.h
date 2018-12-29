@@ -14,7 +14,6 @@
 @property (nonatomic, strong, readwrite) MPMediaItemArtwork *nowPlayingArtwork;
 @property (nonatomic, strong, readwrite) NSURL *coverURL50_50;
 - (void)fetchNowPlayingArtworkWithCompletion:(id)completion;
-- (void)fetchNowPlayingArtwork;
 - (NSArray *)illustrations;
 @end
 
@@ -24,7 +23,6 @@
 - (NSDictionary *)serializeTrack:(DeezerTrack *)track image:(UIImage *)image;
 - (void)removePlayableAtIndex:(NSUInteger)index;
 - (void)fetchNextUp;
-- (void)fetchArtworkForFutureNextUp;
 - (void)skipNext;
 @end
 
