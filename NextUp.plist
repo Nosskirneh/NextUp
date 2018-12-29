@@ -1,1 +1,1 @@
-{ Filter = { Bundles = ( "com.apple.springboard", "com.spotify.client", "com.deezer.Deezer", "com.apple.Music", "com.apple.podcasts", "com.google.ios.youtubemusic", "com.soundcloud.TouchApp", "com.google.PlayMusic" ); }; }
+{ Filter = { Bundles = ( "com.apple.springboard", "com.spotify.client", "com.deezer.Deezer", "com.apple.Music", "com.apple.podcasts", "com.google.ios.youtubemusic", "com.soundcloud.TouchApp", "com.google.PlayMusic", "com.aspiro.TIDAL" ); }; }

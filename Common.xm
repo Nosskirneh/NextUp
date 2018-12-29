@@ -22,6 +22,7 @@ NSString *const kPodcastsBundleID = @"com.apple.podcasts";
 NSString *const kYoutubeMusicBundleID = @"com.google.ios.youtubemusic";
 NSString *const kSoundCloudBundleID = @"com.soundcloud.TouchApp";
 NSString *const kPlayMusicBundleID = @"com.google.PlayMusic";
+NSString *const kTIDALBundleID = @"com.aspiro.TIDAL";
 NSString *const kSpringBoardBundleID = @"com.apple.springboard";
 
 NSString *const kNextTrackMessage = @"se.nosskirneh.nextup/nextTrack";
@@ -38,6 +39,7 @@ NSString *const kDZRSkipNext = @"se.nosskirneh.nextup/skipNext/com.deezer.Deezer
 NSString *const kPODSkipNext = @"se.nosskirneh.nextup/skipNext/com.apple.podcasts";
 NSString *const kYTMSkipNext = @"se.nosskirneh.nextup/skipNext/com.google.ios.youtubemusic";
 NSString *const kGPMSkipNext = @"se.nosskirneh.nextup/skipNext/com.google.PlayMusic";
+NSString *const kTDLSkipNext = @"se.nosskirneh.nextup/skipNext/com.aspiro.TIDAL";
 
 NSString *const kSPTManualUpdate = @"se.nosskirneh.nextup/manualUpdate/com.spotify.client";
 NSString *const kAPMManualUpdate = @"se.nosskirneh.nextup/manualUpdate/com.apple.Music";
@@ -46,6 +48,7 @@ NSString *const kPODManualUpdate = @"se.nosskirneh.nextup/manualUpdate/com.apple
 NSString *const kYTMManualUpdate = @"se.nosskirneh.nextup/manualUpdate/com.google.ios.youtubemusic";
 NSString *const kSDCManualUpdate = @"se.nosskirneh.nextup/manualUpdate/com.soundcloud.TouchApp";
 NSString *const kGPMManualUpdate = @"se.nosskirneh.nextup/manualUpdate/com.google.PlayMusic";
+NSString *const kTDLManualUpdate = @"se.nosskirneh.nextup/manualUpdate/com.aspiro.TIDAL";
 
 NSString *const kTitle = @"title";
 NSString *const kSubtitle = @"subtitle";

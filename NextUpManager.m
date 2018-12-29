@@ -19,7 +19,8 @@
                                          kPodcastsBundleID,
                                          kYoutubeMusicBundleID,
                                          kSoundCloudBundleID,
-                                         kPlayMusicBundleID, nil];
+                                         kPlayMusicBundleID,
+                                         kTIDALBundleID, nil];
 
     return self;
 }
