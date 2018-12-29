@@ -32,14 +32,12 @@
             <string>NextUpSwitchTableCell</string>
             <key>default</key>
             <true/>
-            <key>icon</key>
-            <string>spotify.png</string>
             <key>key</key>
-            <string>com.spotify.client</string>
+            <string>com.apple.Music</string>
             <key>id</key>
-            <string>Spotify</string>
+            <string>Music</string>
             <key>label</key>
-            <string>Enable for Spotify</string>
+            <string>Enable for Music</string>
         </dict>
 
         <dict>
@@ -49,12 +47,14 @@
             <string>NextUpSwitchTableCell</string>
             <key>default</key>
             <true/>
+            <key>icon</key>
+            <string>spotify.png</string>
             <key>key</key>
-            <string>com.apple.Music</string>
+            <string>com.spotify.client</string>
             <key>id</key>
-            <string>Music</string>
+            <string>Spotify</string>
             <key>label</key>
-            <string>Enable for Music</string>
+            <string>Enable for Spotify</string>
         </dict>
 
         <dict>
@@ -99,13 +99,13 @@
             <key>default</key>
             <true/>
             <key>icon</key>
-            <string>youtubemusic.png</string>
+            <string>soundcloud.png</string>
             <key>key</key>
-            <string>com.google.ios.youtubemusic</string>
+            <string>com.soundcloud.TouchApp</string>
             <key>id</key>
-            <string>YouTube</string>
+            <string>SoundCloud</string>
             <key>label</key>
-            <string>Enable for YouTube Music</string>
+            <string>Enable for SoundCloud</string>
         </dict>
 
         <dict>
@@ -116,13 +116,30 @@
             <key>default</key>
             <true/>
             <key>icon</key>
-            <string>soundcloud.png</string>
+            <string>playmusic.png</string>
             <key>key</key>
-            <string>com.soundcloud.TouchApp</string>
+            <string>com.google.PlayMusic</string>
             <key>id</key>
-            <string>SoundCloud</string>
+            <string>PlayMusic</string>
             <key>label</key>
-            <string>Enable for SoundCloud</string>
+            <string>Enable for Google Music</string>
+        </dict>
+
+        <dict>
+            <key>cell</key>
+            <string>PSSwitchCell</string>
+            <key>cellClass</key>
+            <string>NextUpSwitchTableCell</string>
+            <key>default</key>
+            <true/>
+            <key>icon</key>
+            <string>youtubemusic.png</string>
+            <key>key</key>
+            <string>com.google.ios.youtubemusic</string>
+            <key>id</key>
+            <string>YouTube</string>
+            <key>label</key>
+            <string>Enable for YouTube Music</string>
         </dict>
 
 
