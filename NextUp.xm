@@ -9,6 +9,7 @@
 #import "SoundCloud.h"
 #import "PlayMusic.h"
 #import "TIDAL.h"
+#import "Anghami.h"
 #import "Headers.h"
 #import "DRMOptions.mm"
 
@@ -16,6 +17,91 @@
 NextUpManager *manager;
 
 
+/* Anghami */
+%group Anghami
+    ANGPlayQueue *getQueue() {
+        return [%c(PlayQueueSingleton) currentPlayQueue];
+    }
+
+    void ANGSkipNext(notificationArguments) {
+        [getQueue() skipNext];
+    }
+
+    void ANGManualUpdate(notificationArguments) {
+        [getQueue() manuallyUpdate];
+    }
+
+    %hook ANGPlayQueue
+    %property (nonatomic, retain) ANGSong *lastSentTrack;
+
+    - (void)setIsShuffled:(BOOL)shuffle keepSameSong:(BOOL)keep {
+        %orig;
+
+        [self fetchNextUp];
+    }
+
+    // This seems to be called on all usable methods in PlayQueueSingleton (move, add, clear etc)
+    - (BOOL)setCurrentIndex:(unsigned long long)index userAction:(BOOL)userAction report:(BOOL)report {
+        BOOL orig = %orig;
+        [self fetchNextUp];
+
+        return orig;
+    }
+
+    %new
+    - (void)manuallyUpdate {
+        self.lastSentTrack = nil;
+        [self fetchNextUp];
+    }
+
+    %new
+    - (void)fetchNextUp {
+        if (!self.nextSong)
+            return sendNextTrackMetadata(nil);
+
+        ANGSong *item = self.nextSong;
+
+        if ([item isEqual:self.lastSentTrack])
+            return;
+
+        self.lastSentTrack = item;
+
+
+        ANGImageDownloadSpec *spec = [item imageDownloadSpecWithSize:ARTWORK_SIZE.width];
+        ANGImageDownloader *imageDownloader = [%c(ANGImageDownloader) sharedInstance];
+        [imageDownloader getImage:spec callback:^(void) {
+            BOOL thumbnail = YES;
+            UIImage *image = [imageDownloader imageFromCacheForSpec:spec thumbnail:&thumbnail];
+            NSDictionary *metadata = [self serializeTrack:item image:image];
+            sendNextTrackMetadata(metadata);
+        }];
+    }
+
+    %new
+    - (NSDictionary *)serializeTrack:(ANGSong *)item image:(UIImage *)image {
+        NSMutableDictionary *metadata = [NSMutableDictionary new];
+
+        metadata[kTitle] = item.title;
+        metadata[kSubtitle] = item.artistName;
+
+        if (image)
+            metadata[kArtwork] = UIImagePNGRepresentation(image);
+
+        return metadata;
+    }
+
+    %new
+    - (void)skipNext {
+        if (self.nextSong)
+            [%c(PlayQueueSingleton) removeSongFromQueue:self.nextSong];
+    }
+
+    %end
+%end
+// ---
+
+
+/* TIDAL */
 %group TIDAL
     void TDLSkipNext(notificationArguments) {
         [[%c(_TtC4WiMP16PlayQueueManager) sharedInstance] skipNext];
@@ -92,6 +178,7 @@ NextUpManager *manager;
 
     %end
 %end
+// ---
 
 
 /* Google Music */
@@ -176,8 +263,6 @@ NextUpManager *manager;
     }
 
     %end
-
-
 %end
 
 
@@ -1273,10 +1358,15 @@ NextUpManager *manager;
             %init(PlayMusic);
             subscribe(&GPMSkipNext, kGPMSkipNext);
             subscribe(&GPMManualUpdate, kGPMManualUpdate);
-        } else {
+        } else if ([bundleID isEqualToString:kTIDALBundleID]) {
             %init(TIDAL);
             subscribe(&TDLSkipNext, kTDLSkipNext);
             subscribe(&TDLManualUpdate, kTDLManualUpdate);
+        } else {
+            HBLogDebug(@"init Anghami");
+            %init(Anghami);
+            subscribe(&ANGSkipNext, kANGSkipNext);
+            subscribe(&ANGManualUpdate, kANGManualUpdate);
         }
     }
 }

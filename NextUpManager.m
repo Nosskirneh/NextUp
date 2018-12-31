@@ -20,7 +20,8 @@
                                          kYoutubeMusicBundleID,
                                          kSoundCloudBundleID,
                                          kPlayMusicBundleID,
-                                         kTIDALBundleID, nil];
+                                         kTIDALBundleID,
+                                         kAnghamiBundleID, nil];
 
     return self;
 }

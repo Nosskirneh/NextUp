@@ -26,6 +26,7 @@ extern NSString *const kYoutubeMusicBundleID;
 extern NSString *const kSoundCloudBundleID;
 extern NSString *const kPlayMusicBundleID;
 extern NSString *const kTIDALBundleID;
+extern NSString *const kAnghamiBundleID;
 extern NSString *const kSpringBoardBundleID;
 
 extern NSString *const kNextTrackMessage;
@@ -43,6 +44,7 @@ extern NSString *const kPODSkipNext;
 extern NSString *const kYTMSkipNext;
 extern NSString *const kGPMSkipNext;
 extern NSString *const kTDLSkipNext;
+extern NSString *const kANGSkipNext;
 
 extern NSString *const kSPTManualUpdate;
 extern NSString *const kAPMManualUpdate;
@@ -52,6 +54,7 @@ extern NSString *const kYTMManualUpdate;
 extern NSString *const kSDCManualUpdate;
 extern NSString *const kGPMManualUpdate;
 extern NSString *const kTDLManualUpdate;
+extern NSString *const kANGManualUpdate;
 
 extern NSString *const kTitle;
 extern NSString *const kSubtitle;
