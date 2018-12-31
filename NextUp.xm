@@ -1265,7 +1265,7 @@ NextUpManager *manager;
         %orig;
 
         CGRect frame = self.primaryMarqueeView.frame;
-        float maxWidth = self.routingButton.frame.origin.x - self.artworkView.frame.origin.x - self.artworkView.frame.size.width - 15;
+        float maxWidth = fabs(self.routingButton.frame.origin.x - self.artworkView.frame.origin.x - self.artworkView.frame.size.width - 15);
         if (self.routingButton.hidden)
             maxWidth += self.routingButton.frame.size.width;
 

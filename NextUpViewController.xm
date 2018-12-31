@@ -87,7 +87,11 @@
     self.headerLabel.translatesAutoresizingMaskIntoConstraints = NO;
     [self.headerLabel.topAnchor constraintEqualToAnchor:self.contentView.topAnchor].active = YES;
     [self.headerLabel.bottomAnchor constraintEqualToAnchor:self.contentView.topAnchor constant:20].active = YES;
-    [self.headerLabel.leftAnchor constraintEqualToAnchor:self.contentView.leftAnchor constant:15].active = YES;
+    // Left to Right language, such as Arabic
+    if ([UIApplication sharedApplication].userInterfaceLayoutDirection == UIUserInterfaceLayoutDirectionRightToLeft)
+        [self.headerLabel.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor constant:-15].active = YES;
+    else
+        [self.headerLabel.leftAnchor constraintEqualToAnchor:self.contentView.leftAnchor constant:15].active = YES;
 
     // Media view constraints
     [_mediaView.topAnchor constraintEqualToAnchor:self.headerLabel.bottomAnchor].active = YES;
