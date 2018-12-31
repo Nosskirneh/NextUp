@@ -1,5 +1,6 @@
 .DS_Store
 .theos/
+.stamp
 packages/
 .cydiaRepoUpload.log
 DRM*

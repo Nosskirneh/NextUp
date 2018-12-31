@@ -1,3 +1,5 @@
+#import <MediaPlayer/MediaPlayer.h>
+
 @interface MPNowPlayingInfoCenter (Addition)
 + (id)infoCenterForPlayerID:(id)arg1;
 @end
@@ -36,4 +38,5 @@
 - (void)fetchNextUp;
 - (void)fetchNextUpFromItem:(MTPlayerItem *)item skipable:(BOOL)skipable;
 - (MTCompositeManifest *)getManifest;
+- (void)skipNext;
 @end

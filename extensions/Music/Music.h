@@ -1,3 +1,5 @@
+#import <MediaPlayer/MediaPlayer.h>
+
 @interface NUMediaItem : MPMediaItem
 - (NSString *)mainTitle;
 - (id)artworkCatalogBlock;

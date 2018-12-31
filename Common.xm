@@ -8,25 +8,30 @@ void sendNextTrackMetadata(NSDictionary *metadata) {
     rocketbootstrap_distributedmessagingcenter_apply(c);
 
     NSMutableDictionary *dict = [NSMutableDictionary new];
-	dict[@"mediaApplication"] = [[NSBundle mainBundle] bundleIdentifier];
+    dict[@"app"] = [[NSBundle mainBundle] bundleIdentifier];
 
     if (metadata)
-    	dict[@"metadata"] = metadata;
+        dict[@"metadata"] = metadata;
+    HBLogDebug(@"sending metadata: %@", metadata);
     [c sendMessageName:kNextTrackMessage userInfo:dict];
 }
 
-NSString *const kSpotifyBundleID = @"com.spotify.client";
-NSString *const kMusicBundleID = @"com.apple.Music";
-NSString *const kDeezerBundleID = @"com.deezer.Deezer";
-NSString *const kPodcastsBundleID = @"com.apple.podcasts";
-NSString *const kYoutubeMusicBundleID = @"com.google.ios.youtubemusic";
-NSString *const kSoundCloudBundleID = @"com.soundcloud.TouchApp";
-NSString *const kPlayMusicBundleID = @"com.google.PlayMusic";
-NSString *const kTIDALBundleID = @"com.aspiro.TIDAL";
-NSString *const kAnghamiBundleID = @"com.anghami.anghami";
-NSString *const kSpringBoardBundleID = @"com.apple.springboard";
+void registerApp() {
+    CPDistributedMessagingCenter *c = [%c(CPDistributedMessagingCenter) centerNamed:NEXTUP_IDENTIFIER];
+    rocketbootstrap_distributedmessagingcenter_apply(c);
 
+    [c sendMessageName:kRegisterApp userInfo:@{
+        @"app": [[NSBundle mainBundle] bundleIdentifier]
+    }];
+}
+
+NSString *const kHasSeenTrialEnded = @"hasSeenTrialEnded";
+
+NSString *const kRegisterApp = @"se.nosskirneh.nextup/registerApp";
 NSString *const kNextTrackMessage = @"se.nosskirneh.nextup/nextTrack";
+NSString *const kApp = @"app";
+NSString *const kMetadata = @"metadata";
+
 NSString *const kShowNextUp = @"se.nosskirneh.nextup/showNextUp";
 NSString *const kHideNextUp = @"se.nosskirneh.nextup/hideNextUp";
 NSString *const kUpdateLabels = @"se.nosskirneh.nextup/updateLabels";

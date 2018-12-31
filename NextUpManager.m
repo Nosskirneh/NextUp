@@ -11,36 +11,34 @@
     CPDistributedMessagingCenter *c = [CPDistributedMessagingCenter centerNamed:NEXTUP_IDENTIFIER];
     rocketbootstrap_distributedmessagingcenter_apply(c);
     [c runServerOnCurrentThread];
+    [c registerForMessageName:kRegisterApp target:self selector:@selector(handleIncomingMessage:withUserInfo:)];
     [c registerForMessageName:kNextTrackMessage target:self selector:@selector(handleIncomingMessage:withUserInfo:)];
 
-    _enabledApps = [NSSet setWithObjects:kSpotifyBundleID,
-                                         kMusicBundleID,
-                                         kDeezerBundleID,
-                                         kPodcastsBundleID,
-                                         kYoutubeMusicBundleID,
-                                         kSoundCloudBundleID,
-                                         kPlayMusicBundleID,
-                                         kTIDALBundleID,
-                                         kAnghamiBundleID, nil];
+    _enabledApps = [NSMutableSet new];
 
     return self;
 }
 
 - (void)handleIncomingMessage:(NSString *)name withUserInfo:(NSDictionary *)dict {
-    // If Spotify is running in background and changed track on a Connect device,
-    // but Deezer is playing music at the device: do nothing
-    if (self.mediaApplication && ![dict[@"mediaApplication"] isEqualToString:self.mediaApplication])
-        return;
+    if ([name isEqualToString:kRegisterApp]) {
+        [_enabledApps addObject:dict[kApp]];
+    } else {
+        HBLogDebug(@"handleIncomingMessage: %@", dict[@"metadata"]);
+        // If Spotify is running in background and changed track on a Connect device,
+        // but Deezer is playing music at the device: do nothing
+        if (self.mediaApplication && ![dict[kApp] isEqualToString:self.mediaApplication])
+            return;
 
-    self.metadata = dict[@"metadata"];
-    [[NSNotificationCenter defaultCenter] postNotificationName:kUpdateLabels
-                                                        object:nil];
+        _metadata = dict[@"metadata"];
+        [[NSNotificationCenter defaultCenter] postNotificationName:kUpdateLabels
+                                                            object:nil];
+    }
 }
 
 - (void)setMediaApplication:(NSString *)app {
     _mediaApplication = app;
 
-    self.metadata = nil;
+    _metadata = nil;
     [[NSNotificationCenter defaultCenter] postNotificationName:kUpdateLabels
                                                         object:nil];
 

@@ -9,6 +9,7 @@ extern "C" {
 #endif
 
 void sendNextTrackMetadata(NSDictionary *metadata);
+void registerApp();
 
 #ifdef __cplusplus
 }
@@ -18,18 +19,13 @@ void sendNextTrackMetadata(NSDictionary *metadata);
 #define NEXTUP_IDENTIFIER @"se.nosskirneh.nextup"
 #define kPrefPath [NSString stringWithFormat:@"%@/Library/Preferences/%@.plist", NSHomeDirectory(), NEXTUP_IDENTIFIER]
 
-extern NSString *const kSpotifyBundleID;
-extern NSString *const kDeezerBundleID;
-extern NSString *const kMusicBundleID;
-extern NSString *const kPodcastsBundleID;
-extern NSString *const kYoutubeMusicBundleID;
-extern NSString *const kSoundCloudBundleID;
-extern NSString *const kPlayMusicBundleID;
-extern NSString *const kTIDALBundleID;
-extern NSString *const kAnghamiBundleID;
-extern NSString *const kSpringBoardBundleID;
+extern NSString *const kHasSeenTrialEnded;
 
+extern NSString *const kRegisterApp;
 extern NSString *const kNextTrackMessage;
+extern NSString *const kApp;
+extern NSString *const kMetadata;
+
 extern NSString *const kShowNextUp;
 extern NSString *const kHideNextUp;
 extern NSString *const kUpdateLabels;

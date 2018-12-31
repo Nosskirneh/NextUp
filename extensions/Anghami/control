@@ -1,0 +1,9 @@
+Package: se.nosskirneh.nextup.anghami
+Name: NextUp Anghami Extension
+Depends: mobilesubstrate, se.nosskirneh.nextup (>> 1.0)
+Version: 1.0
+Architecture: iphoneos-arm
+Description: See and change next track in Anghami
+Maintainer: Andreas Henriksson
+Author: Andreas Henriksson
+Section: Tweaks
