@@ -23,7 +23,6 @@
     if ([name isEqualToString:kRegisterApp]) {
         [_enabledApps addObject:dict[kApp]];
     } else {
-        HBLogDebug(@"handleIncomingMessage: %@", dict[@"metadata"]);
         // If Spotify is running in background and changed track on a Connect device,
         // but Deezer is playing music at the device: do nothing
         if (self.mediaApplication && ![dict[kApp] isEqualToString:self.mediaApplication])

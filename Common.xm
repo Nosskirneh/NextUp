@@ -12,7 +12,6 @@ void sendNextTrackMetadata(NSDictionary *metadata) {
 
     if (metadata)
         dict[@"metadata"] = metadata;
-    HBLogDebug(@"sending metadata: %@", metadata);
     [c sendMessageName:kNextTrackMessage userInfo:dict];
 }
 
