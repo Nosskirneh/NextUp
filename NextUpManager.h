@@ -7,4 +7,5 @@
 @property (nonatomic, readonly) NSDictionary *metadata;
 @property (nonatomic, assign, readwrite) NSString *mediaApplication;
 @property (nonatomic, assign, readwrite) BOOL controlCenterExpanded;
+@property (nonatomic, assign, readwrite) BOOL trialEnded;
 @end

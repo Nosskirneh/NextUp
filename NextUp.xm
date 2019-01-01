@@ -26,7 +26,7 @@ NextUpManager *manager;
 
     - (void)_setNowPlayingApplication:(SBApplication *)app {
         NSString *bundleID = app.bundleIdentifier;
-        if ([manager.enabledApps containsObject:app.bundleIdentifier] && [self isValidApplicationID:app.bundleIdentifier]) {
+        if ([manager.enabledApps containsObject:app.bundleIdentifier] && [self isValidApplicationID:app.bundleIdentifier] && !manager.trialEnded) {
             [manager setMediaApplication:bundleID];
             [[NSNotificationCenter defaultCenter] postNotificationName:kShowNextUp object:nil];
         } else {
@@ -429,6 +429,53 @@ NextUpManager *manager;
 %end
 
 
+// These two groups down below has to be separate as theos otherwise complains
+// about double inited groups (even though it's two different switch cases...)
+%group CheckTrialEnded
+%hook SBLockScreenManager
+
+- (BOOL)_finishUIUnlockFromSource:(int)arg1 withOptions:(id)arg2 {
+    BOOL orig = %orig;
+    UIViewController *root = [[UIApplication sharedApplication] keyWindow].rootViewController;
+
+    if ([root isKindOfClass:%c(SBHomeScreenViewController)] && check_lic(licensePath$bs(), package$bs()) == CheckInvalidTrialLicense) {
+        NSDictionary *preferences = [NSDictionary dictionaryWithContentsOfFile:kPrefPath];
+        if (!preferences[kHasSeenTrialEnded]) {
+            manager.trialEnded = YES;
+            [[NSNotificationCenter defaultCenter] postNotificationName:kHideNextUp object:nil];
+            OBFS_UIALERT(root, packageShown$bs(), TrialEndedMsg$bs(), OK$bs());
+        }
+    }
+
+    return orig;
+}
+
+%end
+%end
+
+%group TrialEnded
+%hook SBLockScreenManager
+
+- (BOOL)_finishUIUnlockFromSource:(int)arg1 withOptions:(id)arg2 {
+    BOOL orig = %orig;
+    UIViewController *root = [[UIApplication sharedApplication] keyWindow].rootViewController;
+
+    if ([root isKindOfClass:%c(SBHomeScreenViewController)]) {
+        NSMutableDictionary *preferences = [NSMutableDictionary dictionaryWithContentsOfFile:kPrefPath];
+        if (!preferences[kHasSeenTrialEnded]) {
+            preferences[kHasSeenTrialEnded] = @YES;
+            [preferences writeToFile:kPrefPath atomically:NO];
+            OBFS_UIALERT(root, packageShown$bs(), TrialEndedMsg$bs(), OK$bs());
+        }
+    }
+
+    return orig;
+}
+
+%end
+%end
+
+
 %ctor {
 
     // License check – if no license found, present message. If no valid license found, do not init
@@ -436,11 +483,19 @@ NextUpManager *manager;
         case CheckNoLicense:
             %init(Welcome);
             return;
+        case CheckInvalidTrialLicense:
+            %init(TrialEnded);
+            return;
+        case CheckValidTrialLicense:
+            %init(CheckTrialEnded);
+            break;
         case CheckInvalidLicense:
             return;
         case CheckValidLicense:
             break;
         case CheckUDIDsDoNotMatch:
+            return;
+        default:
             return;
     }
     // ---
