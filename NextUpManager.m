@@ -5,9 +5,7 @@
 
 @implementation NextUpManager
 
-- (id)init {
-    self = [super init];
-
+- (void)setup {
     CPDistributedMessagingCenter *c = [CPDistributedMessagingCenter centerNamed:NEXTUP_IDENTIFIER];
     rocketbootstrap_distributedmessagingcenter_apply(c);
     [c runServerOnCurrentThread];
@@ -15,8 +13,6 @@
     [c registerForMessageName:kNextTrackMessage target:self selector:@selector(handleIncomingMessage:withUserInfo:)];
 
     _enabledApps = [NSMutableSet new];
-
-    return self;
 }
 
 - (void)handleIncomingMessage:(NSString *)name withUserInfo:(NSDictionary *)dict {

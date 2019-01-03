@@ -8,4 +8,5 @@
 @property (nonatomic, assign, readwrite) NSString *mediaApplication;
 @property (nonatomic, assign, readwrite) BOOL controlCenterExpanded;
 @property (nonatomic, assign, readwrite) BOOL trialEnded;
+- (void)setup;
 @end

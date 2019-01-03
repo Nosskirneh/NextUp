@@ -448,8 +448,7 @@ NextUpManager *manager;
     UIViewController *root = [[UIApplication sharedApplication] keyWindow].rootViewController;
 
     if ([root isKindOfClass:%c(SBHomeScreenViewController)] && check_lic(licensePath$bs(), package$bs()) == CheckInvalidTrialLicense) {
-        NSDictionary *preferences = [NSDictionary dictionaryWithContentsOfFile:kPrefPath];
-        if (!preferences[kHasSeenTrialEnded]) {
+        if (!manager.trialEnded) {
             manager.trialEnded = YES;
             [[NSNotificationCenter defaultCenter] postNotificationName:kHideNextUp object:nil];
             OBFS_UIALERT(root, packageShown$bs(), TrialEndedMsg$bs(), OK$bs());
@@ -470,10 +469,9 @@ NextUpManager *manager;
     UIViewController *root = [[UIApplication sharedApplication] keyWindow].rootViewController;
 
     if ([root isKindOfClass:%c(SBHomeScreenViewController)]) {
-        NSMutableDictionary *preferences = [NSMutableDictionary dictionaryWithContentsOfFile:kPrefPath];
-        if (!preferences[kHasSeenTrialEnded]) {
-            preferences[kHasSeenTrialEnded] = @YES;
-            [preferences writeToFile:kPrefPath atomically:NO];
+        if (!manager.trialEnded) {
+            manager.trialEnded = YES;
+            [[NSNotificationCenter defaultCenter] postNotificationName:kHideNextUp object:nil];
             OBFS_UIALERT(root, packageShown$bs(), TrialEndedMsg$bs(), OK$bs());
         }
     }
@@ -486,6 +484,7 @@ NextUpManager *manager;
 
 
 %ctor {
+    manager = [[NextUpManager alloc] init];
 
     // License check – if no license found, present message. If no valid license found, do not init
     switch (check_lic(licensePath$bs(), package$bs())) {
@@ -508,9 +507,9 @@ NextUpManager *manager;
             return;
     }
     // ---
+    [manager setup];
 
     %init(SpringBoard);
     %init(ColorFlow);
     %init(CustomViews);
-    manager = [[NextUpManager alloc] init];
 }
