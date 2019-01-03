@@ -99,6 +99,23 @@
             <key>default</key>
             <true/>
             <key>icon</key>
+            <string>anghami.png</string>
+            <key>key</key>
+            <string>com.anghami.anghami</string>
+            <key>id</key>
+            <string>Anghami</string>
+            <key>label</key>
+            <string>Enable for Anghami</string>
+        </dict>
+
+        <dict>
+            <key>cell</key>
+            <string>PSSwitchCell</string>
+            <key>cellClass</key>
+            <string>NextUpSwitchTableCell</string>
+            <key>default</key>
+            <true/>
+            <key>icon</key>
             <string>podcasts.png</string>
             <key>key</key>
             <string>com.apple.podcasts</string>
