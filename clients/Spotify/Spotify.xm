@@ -58,6 +58,7 @@ SPTQueueViewModelImplementation *getQueueImplementation() {
 %property (nonatomic, retain) SPTPlayerTrack *lastSentTrack;
 
 - (void)player:(SPTPlayerImpl *)player stateDidChange:(SPTPlayerState *)newState fromState:(SPTPlayerState *)oldState {
+    HBLogDebug(@"stateDidChange");
     %orig;
 
     [self fetchNextUpForState:newState];
@@ -107,6 +108,16 @@ SPTQueueViewModelImplementation *getQueueImplementation() {
             sendNextTrackMetadata(metadata);
         }];
     }
+}
+
+%end
+
+%hook  SPTGaiaBackgroundController
+
+- (void)player:(SPTPlayerImpl *)player stateDidChange:(SPTPlayerState *)newState fromState:(SPTPlayerState *)oldState {
+    %orig;
+
+    [getQueueImplementation() fetchNextUpForState:newState];
 }
 
 %end

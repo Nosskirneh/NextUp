@@ -1,9 +1,0 @@
-Package: se.nosskirneh.nextup.soundcloud
-Name: NextUp SoundCloud Extension
-Depends: mobilesubstrate, se.nosskirneh.nextup (>> 1.0)
-Version: 1.0
-Architecture: iphoneos-arm
-Description: See next track in SoundCloud
-Maintainer: Andreas Henriksson
-Author: Andreas Henriksson
-Section: Tweaks
