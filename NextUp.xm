@@ -390,6 +390,13 @@ NextUpManager *manager;
     - (void)layoutSubviews {
         %orig;
 
+        float x = self.artworkView.frame.origin.x + self.artworkView.frame.size.width + 12;
+        if (CGRectIsEmpty(self.routingButton.frame)) { // Frame will not be set on iOS 11.2.x
+            self.routingButton.frame = CGRectMake(self.frame.size.width - 24 * 2,
+                                                  self.artworkView.frame.origin.y + self.artworkView.frame.size.height / 2 - 24 / 2,
+                                                  24, 24);
+        }
+
         CGRect frame = self.primaryMarqueeView.frame;
         float maxWidth = fabs(self.routingButton.frame.origin.x - self.artworkView.frame.origin.x - self.artworkView.frame.size.width - 15);
         if (self.routingButton.hidden)
@@ -397,10 +404,12 @@ NextUpManager *manager;
 
         float primaryMaxWidth = fmin(frame.size.width, maxWidth);
         frame.size.width = primaryMaxWidth;
+        frame.origin.x = x;
         self.primaryMarqueeView.frame = frame;
 
         frame = self.secondaryMarqueeView.frame;
         float secondaryMaxWidth = fmin(frame.size.width, maxWidth);
+        frame.origin.x = x;
         frame.size.width = secondaryMaxWidth;
         self.secondaryMarqueeView.frame = frame;
 
