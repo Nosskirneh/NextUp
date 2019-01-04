@@ -20,7 +20,7 @@
 @interface DZRMixQueuer : NSObject
 @property (nonatomic, assign, readwrite) NSUInteger currentTrackIndex;
 @property (nonatomic, strong) NSArray<DeezerTrack *> *tracks;
-- (void)fetchMoreTracks;
+- (void)fetchMoreTracksIfNeededAfterSelectTrackAtIndex:(NSUInteger)index;
 - (void)fetchNextUp;
 - (NSDictionary *)serializeTrack:(DeezerTrack *)track image:(UIImage *)image;
 - (void)skipNext;
