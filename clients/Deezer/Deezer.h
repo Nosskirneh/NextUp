@@ -26,6 +26,9 @@
 - (void)skipNext;
 @end
 
+@interface DZRMyMusicShuffleQueuer : DZRMixQueuer
+@end
+
 @interface DZRAudioPlayer : NSObject
 @property (nonatomic, strong, readwrite) DZRMixQueuer *queuer;
 + (DZRAudioPlayer *)sharedPlayer;

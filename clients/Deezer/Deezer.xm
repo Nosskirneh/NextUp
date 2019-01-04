@@ -14,6 +14,19 @@ DZRMixQueuer *getMixQueuer() {
     return [%c(DZRAudioPlayer) sharedPlayer].queuer;
 }
 
+// Changing from a playlist to Flow doesn't automatically call setCurrentTrackIndex.
+// This will make it fetch tracks when starting Flow.
+
+%hook DZRMyMusicShuffleQueuer
+
+- (void)setTracks:(NSArray *)tracks {
+    %orig;
+
+    [self fetchNextUp];
+}
+
+%end
+
 %hook DZRMixQueuer
 
 - (void)setCurrentTrackIndex:(NSUInteger)index {
