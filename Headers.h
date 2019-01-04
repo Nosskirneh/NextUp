@@ -62,6 +62,7 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 
 @interface NextUpMediaHeaderView : MediaControlsHeaderView
 @property (nonatomic, retain) NUSkipButton *routingButton;
+- (CGRect)rectForMaxWidth:(CGRect)frame maxWidth:(CGFloat)maxWidth originX:(CGFloat)originX;
 @end
 
 

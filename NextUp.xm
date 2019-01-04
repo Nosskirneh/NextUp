@@ -387,30 +387,49 @@ NextUpManager *manager;
         return orig;
     }
 
+    %new
+    - (CGRect)rectForMaxWidth:(CGRect)frame maxWidth:(CGFloat)maxWidth originX:(CGFloat)originX {
+        if (maxWidth < frame.size.width) {
+            if ([UIApplication sharedApplication].userInterfaceLayoutDirection == UIUserInterfaceLayoutDirectionRightToLeft)
+                frame.origin.x += frame.size.width - maxWidth;
+            frame.size.width = maxWidth;
+        }
+
+        if (frame.origin.x == 0)
+            frame.origin.x = originX;
+        return frame;
+    }
+
     - (void)layoutSubviews {
         %orig;
 
-        float x = self.artworkView.frame.origin.x + self.artworkView.frame.size.width + 12;
         if (CGRectIsEmpty(self.routingButton.frame)) { // Frame will not be set on iOS 11.2.x
             self.routingButton.frame = CGRectMake(self.frame.size.width - 24 * 2,
                                                   self.artworkView.frame.origin.y + self.artworkView.frame.size.height / 2 - 24 / 2,
                                                   24, 24);
         }
 
-        CGRect frame = self.primaryMarqueeView.frame;
-        float maxWidth = fabs(self.routingButton.frame.origin.x - self.artworkView.frame.origin.x - self.artworkView.frame.size.width - 15);
+        float maxWidth;
+        float originX;
+        if ([UIApplication sharedApplication].userInterfaceLayoutDirection == UIUserInterfaceLayoutDirectionRightToLeft) {
+            maxWidth = self.artworkView.frame.origin.x - self.routingButton.frame.origin.x - self.routingButton.frame.size.width - 15;
+            originX = self.routingButton.frame.origin.x + self.routingButton.frame.size.width + 8;
+        } else {
+            maxWidth = self.routingButton.frame.origin.x - self.artworkView.frame.origin.x - self.artworkView.frame.size.width - 15;
+            originX = self.artworkView.frame.origin.x + self.artworkView.frame.size.width + 12;
+        }
+
         if (self.routingButton.hidden)
             maxWidth += self.routingButton.frame.size.width;
 
-        float primaryMaxWidth = fmin(frame.size.width, maxWidth);
-        frame.size.width = primaryMaxWidth;
-        frame.origin.x = x;
+        // Primary label
+        CGRect frame = self.primaryMarqueeView.frame;
+        frame = [self rectForMaxWidth:frame maxWidth:maxWidth originX:originX];
         self.primaryMarqueeView.frame = frame;
 
+        // Secondary label
         frame = self.secondaryMarqueeView.frame;
-        float secondaryMaxWidth = fmin(frame.size.width, maxWidth);
-        frame.origin.x = x;
-        frame.size.width = secondaryMaxWidth;
+        frame = [self rectForMaxWidth:frame maxWidth:maxWidth originX:originX];
         self.secondaryMarqueeView.frame = frame;
 
         self.buttonBackground.hidden = YES;
