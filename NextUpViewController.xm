@@ -115,6 +115,8 @@
 
     NSString *skipNext = [NSString stringWithFormat:@"%@/%@/%@", NEXTUP_IDENTIFIER, kSkipNext, _manager.mediaApplication];
     notify(skipNext);
+
+    [[%c(SBIdleTimerGlobalCoordinator) sharedInstance] resetIdleTimer];
 }
 
 - (void)updateLabels {

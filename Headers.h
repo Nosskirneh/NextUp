@@ -1,12 +1,18 @@
 #import "NextUpManager.h"
 
-
+/* Common */
 @interface SBMediaController (Addition)
 @property (nonatomic, retain) NSDictionary *nextUpPrefs;
 - (BOOL)isValidApplicationID:(NSString *)bundleID;
 @end
 
-/* Common */
+
+@interface SBIdleTimerGlobalCoordinator
++ (id)sharedInstance;
+- (void)resetIdleTimer;
+@end
+
+
 @interface CFWColorInfo : NSObject
 @property(nonatomic, retain) UIColor *backgroundColor;
 @property(nonatomic, retain) UIColor *primaryColor;
