@@ -40,6 +40,8 @@ DZRMixQueuer *getMixQueuer() {
     [newTracks removeObjectAtIndex:self.currentTrackIndex + 1];
     self.tracks = newTracks;
 
+    [self fetchMoreTracks];
+
     [self fetchNextUp];
 }
 
