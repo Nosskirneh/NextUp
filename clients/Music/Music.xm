@@ -30,9 +30,17 @@ void APMManualUpdate(notificationArguments) {
     [self fetchNextUp];
 }
 
-- (void)queueFeederDidInvalidateRealShuffleType:(id)queueFeeder {
+- (void)queueFeederDidInvalidateRealShuffleType:(MPCModelQueueFeeder *)queueFeeder {
     %orig;
     [self fetchNextUp];
+}
+
+- (void)addPlaybackContext:(id)context toQueueWithInsertionType:(long long)type completionHandler:(queueFeederBlock)completion {
+    queueFeederBlock block = ^(MPCModelQueueFeeder *queueFeeder) {
+        completion(queueFeeder);
+        [self fetchNextUp];
+    };
+    %orig(context, type, block);
 }
 
 %new

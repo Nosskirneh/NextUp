@@ -28,3 +28,9 @@ typedef MPArtworkCatalog *(^block)(void);
 - (void)fetchNextUpItem:(id)item withArtworkCatalog:(block)artworkBlock;
 - (void)skipNext;
 @end
+
+
+@interface MPCModelQueueFeeder : NSObject
+@end
+
+typedef void (^queueFeederBlock)(MPCModelQueueFeeder *queueFeeder);
