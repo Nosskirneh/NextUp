@@ -43,6 +43,20 @@ void APMManualUpdate(notificationArguments) {
     %orig(context, type, block);
 }
 
+- (void)moveItemAtPlaybackIndex:(long long)from toPlaybackIndex:(long long)to intoHardQueue:(BOOL)hardQueue {
+    %orig;
+    long nextIndex = [self currentIndex] + 1;
+    if (from == nextIndex || to == nextIndex)
+        [self fetchNextUp];
+}
+
+- (void)removeItemAtPlaybackIndex:(long long)index {
+    %orig;
+    long nextIndex = [self currentIndex] + 1;
+    if (index == nextIndex)
+        [self fetchNextUp];
+}
+
 %new
 - (void)fetchNextUp {
     NUMediaItem *next = [self metadataItemForPlaylistIndex:[self currentIndex] + 1];
