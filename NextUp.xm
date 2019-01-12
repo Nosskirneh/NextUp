@@ -267,7 +267,7 @@ NextUpManager *manager;
             BOOL noctisEnabled = NO;
             if (%c(NoctisSystemController)) {
                 NSDictionary *noctisPrefs = [NSDictionary dictionaryWithContentsOfFile:@"/var/mobile/Library/Preferences/com.laughingquoll.noctisxiprefs.settings.plist"];
-                noctisEnabled = !noctisPrefs || [noctisPrefs[@"enableMedia"] boolValue];
+                noctisEnabled = !noctisPrefs || !noctisPrefs[@"enableMedia"] || [noctisPrefs[@"enableMedia"] boolValue];
                 self.nextUpViewController.noctisEnabled = noctisEnabled;
             }
 
