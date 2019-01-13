@@ -3,14 +3,14 @@
 
 
 void DZRSkipNext(notificationArguments) {
-    [getMixQueuer() skipNext];
+    [getQueuer() skipNext];
 }
 
 void DZRManualUpdate(notificationArguments) {
-    [getMixQueuer() fetchNextUp];
+    [getQueuer() fetchNextUp];
 }
 
-DZRMixQueuer *getMixQueuer() {
+DZRPlaybackQueuer *getQueuer() {
     return [%c(DZRAudioPlayer) sharedPlayer].queuer;
 }
 
@@ -27,7 +27,7 @@ DZRMixQueuer *getMixQueuer() {
 
 %end
 
-%hook DZRMixQueuer
+%hook DZRPlaybackQueuer
 
 - (void)setCurrentTrackIndex:(NSUInteger)index {
     %orig;
@@ -35,13 +35,59 @@ DZRMixQueuer *getMixQueuer() {
     [self fetchNextUp];
 }
 
+- (void)resetTrackIndex {
+    %orig;
+
+    [self fetchNextUp];
+}
+
+- (void)clearQueue {
+    %orig;
+
+    [self fetchNextUp];
+}
+
+- (void)replacePlayables:(id)arg1 shuffledTracksIDs:(id)arg2 currentTrackIndex:(unsigned long long)index {
+    %orig;
+
+    if (index == self.currentTrackIndex + 1)
+        [self fetchNextUp];
+}
+
+- (void)removePlayableAtIndex:(unsigned long long)index {
+    %orig;
+
+    if (index == self.currentTrackIndex + 1)
+        [self fetchNextUp];
+}
+
+- (void)movePlayableAtIndex:(unsigned long long)from toIndex:(unsigned long long)to {
+    %orig;
+
+    if (from == self.currentTrackIndex + 1 || to == self.currentTrackIndex + 1)
+        [self fetchNextUp];
+}
+
+- (void)insertPlayables:(id)arg1 atIndex:(unsigned long long)index {
+    %orig;
+
+    if (index == self.currentTrackIndex + 1)
+        [self fetchNextUp];
+}
+
+- (void)addPlayables:(id)arg1 {
+    %orig;
+
+    [self fetchNextUp];
+}
+
 %new
 - (void)fetchNextUp {
-    if (self.tracks.count <= self.currentTrackIndex + 1)
+    if ([self.tracks count] <= self.currentTrackIndex + 1)
         return;
 
     DeezerTrack *track = self.tracks[self.currentTrackIndex + 1];
-    [track fetchNowPlayingArtworkWithCompletion:^(id image) {
+    [track fetchNowPlayingArtworkWithCompletion:^(UIImage *image) {
         NSDictionary *metadata = [self serializeTrack:track image:image];
         sendNextTrackMetadata(metadata);
     }];
@@ -49,13 +95,7 @@ DZRMixQueuer *getMixQueuer() {
 
 %new
 - (void)skipNext {
-    NSMutableArray *newTracks = [self.tracks mutableCopy];
-    [newTracks removeObjectAtIndex:self.currentTrackIndex + 1];
-    self.tracks = newTracks;
-
-    [self fetchMoreTracksIfNeededAfterSelectTrackAtIndex:self.currentTrackIndex];
-
-    [self fetchNextUp];
+    [self removePlayableAtIndex:self.currentTrackIndex + 1];
 }
 
 %new
@@ -63,12 +103,12 @@ DZRMixQueuer *getMixQueuer() {
     NSMutableDictionary *metadata = [NSMutableDictionary new];
     metadata[kTitle] = track.title;
     metadata[kSubtitle] = track.artistName;
-    UIImage *artwork = image;
     // `nowPlayingArtwork` has to be fetched. It doesn't exist a method to do that
     // with a completionhandler, so I've implemented this in DeezerTrack below
-    if (!artwork)
-        artwork = [track.nowPlayingArtwork imageWithSize:ARTWORK_SIZE];
-    metadata[kArtwork] = UIImagePNGRepresentation(artwork);
+    if (!image)
+        image = [track.nowPlayingArtwork imageWithSize:ARTWORK_SIZE];
+
+    metadata[kArtwork] = UIImagePNGRepresentation(image);
     return metadata;
 }
 

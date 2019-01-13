@@ -17,20 +17,23 @@
 - (NSArray *)illustrations;
 @end
 
-@interface DZRMixQueuer : NSObject
-@property (nonatomic, assign, readwrite) NSUInteger currentTrackIndex;
-@property (nonatomic, strong) NSArray<DeezerTrack *> *tracks;
-- (void)fetchMoreTracksIfNeededAfterSelectTrackAtIndex:(NSUInteger)index;
+
+@interface DZRPlaybackQueuer : NSObject
+@property(nonatomic) unsigned long long currentTrackIndex;
+@property(readonly, nonatomic) NSArray *tracks;
+- (void)removeTrackAtIndex:(unsigned long long)arg1;
+- (void)removePlayableAtIndex:(unsigned long long)arg1;
+
 - (void)fetchNextUp;
 - (NSDictionary *)serializeTrack:(DeezerTrack *)track image:(UIImage *)image;
 - (void)skipNext;
 @end
 
-@interface DZRMyMusicShuffleQueuer : DZRMixQueuer
+@interface DZRMyMusicShuffleQueuer : DZRPlaybackQueuer
 @end
 
 @interface DZRAudioPlayer : NSObject
-@property (nonatomic, strong, readwrite) DZRMixQueuer *queuer;
+@property (nonatomic, strong, readwrite) DZRPlaybackQueuer *queuer;
 + (DZRAudioPlayer *)sharedPlayer;
 @end
 
@@ -38,7 +41,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-    DZRMixQueuer *getMixQueuer();
+    DZRPlaybackQueuer *getQueuer();
 #ifdef __cplusplus
 }
 #endif
