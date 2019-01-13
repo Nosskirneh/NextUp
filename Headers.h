@@ -73,6 +73,7 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 
 
 @interface NextUpViewController : UIViewController
+@property (nonatomic, retain) NSBundle *bundle;
 @property (nonatomic, retain) UIImpactFeedbackGenerator *hapticGenerator;
 @property (nonatomic, retain) UIStackView *view;
 @property (nonatomic, retain) UIView *contentView;

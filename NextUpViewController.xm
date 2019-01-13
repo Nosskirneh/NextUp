@@ -1,7 +1,6 @@
 #import "Headers.h"
 #import "Common.h"
 
-
 @implementation NextUpViewController
 
 @dynamic view;
@@ -24,6 +23,7 @@
                                                    object:nil];
 
         self.hapticGenerator = [[%c(UIImpactFeedbackGenerator) alloc] initWithStyle:UIImpactFeedbackStyleMedium];
+        self.bundle = [NSBundle bundleWithPath:@"/Library/Application Support/NextUp.bundle"];
     }
 
     return self;
@@ -74,7 +74,7 @@
     self.headerLabel.textColor = self.noctisEnabled ? UIColor.whiteColor : UIColor.blackColor;
     self.headerLabel.numberOfLines = 0;
     self.headerLabel.alpha = 0.64;
-    self.headerLabel.text = @"Next up";
+    self.headerLabel.text = [self.bundle localizedStringForKey:@"NEXT_UP" value:nil table:nil];
     [self.contentView addSubview:self.headerLabel];
 
     int horizontalPadding = -8;
