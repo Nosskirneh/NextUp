@@ -58,7 +58,6 @@ SPTQueueViewModelImplementation *getQueueImplementation() {
 %property (nonatomic, retain) SPTPlayerTrack *lastSentTrack;
 
 - (void)player:(SPTPlayerImpl *)player stateDidChange:(SPTPlayerState *)newState fromState:(SPTPlayerState *)oldState {
-    HBLogDebug(@"stateDidChange");
     %orig;
 
     [self fetchNextUpForState:newState];
