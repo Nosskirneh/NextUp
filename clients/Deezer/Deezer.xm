@@ -95,7 +95,14 @@ DZRPlaybackQueuer *getQueuer() {
 
 %new
 - (void)skipNext {
-    [self removePlayableAtIndex:self.currentTrackIndex + 1];
+    NSMutableArray *newTracks = [self.tracks mutableCopy];
+    [newTracks removeObjectAtIndex:self.currentTrackIndex + 1];
+    MSHookIvar<NSArray *>(self, "_tracks") = newTracks;
+
+    if ([self respondsToSelector:@selector(fetchMoreTracksIfNeededAfterSelectTrackAtIndex:)])
+        [((DZRMixQueuer *)self) fetchMoreTracksIfNeededAfterSelectTrackAtIndex:self.currentTrackIndex];
+
+    [self fetchNextUp];
 }
 
 %new

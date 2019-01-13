@@ -20,16 +20,18 @@
 
 @interface DZRPlaybackQueuer : NSObject
 @property(nonatomic) unsigned long long currentTrackIndex;
-@property(readonly, nonatomic) NSArray *tracks;
-- (void)removeTrackAtIndex:(unsigned long long)arg1;
-- (void)removePlayableAtIndex:(unsigned long long)arg1;
+@property(readonly, nonatomic) NSArray<DeezerTrack *> *tracks;
 
 - (void)fetchNextUp;
 - (NSDictionary *)serializeTrack:(DeezerTrack *)track image:(UIImage *)image;
 - (void)skipNext;
 @end
 
-@interface DZRMyMusicShuffleQueuer : DZRPlaybackQueuer
+@interface DZRMixQueuer : DZRPlaybackQueuer
+- (void)fetchMoreTracksIfNeededAfterSelectTrackAtIndex:(NSUInteger)index;
+@end
+
+@interface DZRMyMusicShuffleQueuer : DZRMixQueuer
 @end
 
 @interface DZRAudioPlayer : NSObject
