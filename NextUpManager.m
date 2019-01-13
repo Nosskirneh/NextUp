@@ -24,7 +24,7 @@
         if (self.mediaApplication && ![dict[kApp] isEqualToString:self.mediaApplication])
             return;
 
-        _metadata = dict[@"metadata"];
+        _metadata = dict[kMetadata];
         [[NSNotificationCenter defaultCenter] postNotificationName:kUpdateLabels
                                                             object:nil];
     }
