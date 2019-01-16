@@ -13,6 +13,7 @@
     [c registerForMessageName:kNextTrackMessage target:self selector:@selector(handleIncomingMessage:withUserInfo:)];
 
     _enabledApps = [NSMutableSet new];
+    [self reloadPreferences];
 }
 
 - (void)handleIncomingMessage:(NSString *)name withUserInfo:(NSDictionary *)dict {
@@ -40,6 +41,10 @@
     // Refetch for the new app
     NSString *manualUpdate = [NSString stringWithFormat:@"%@/%@/%@", NEXTUP_IDENTIFIER, kManualUpdate, app];
     notify(manualUpdate);
+}
+
+- (void)reloadPreferences {
+    _preferences = [NSDictionary dictionaryWithContentsOfFile:kPrefPath];
 }
 
 @end

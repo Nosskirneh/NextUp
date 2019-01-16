@@ -40,6 +40,8 @@ NSString *const kSubtitle = @"subtitle";
 NSString *const kSkipable = @"skipable";
 NSString *const kArtwork = @"artwork";
 
+NSString *const kHideXButtons = @"hideXButtons";
+
 
 void sendNextTrackMetadata(NSDictionary *metadata) {
     CPDistributedMessagingCenter *c = [%c(CPDistributedMessagingCenter) centerNamed:NEXTUP_IDENTIFIER];

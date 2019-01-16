@@ -123,12 +123,17 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 
 
 /* Lockscreen */
-@protocol SBDashBoardAdjunctItemHosting
+@interface SBDashBoardViewController : UIViewController
+- (BOOL)isShowingMediaControls;
 @end
 
-@interface SBDashBoardAdjunctItemView: UIView
-@property (nonatomic, weak) UIViewController<SBDashBoardAdjunctItemHosting> *contentHost;
-- (void)_layoutContentHost;
+@interface SBDashBoardQuickActionsViewController : UIViewController
+@property (assign, nonatomic) SBDashBoardViewController *dashBoardViewController;
+@end
+
+@interface SBDashBoardQuickActionsView : UIView
+@property (nonatomic, retain) SBDashBoardQuickActionsViewController *delegate;
+@property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
 @end
 
 

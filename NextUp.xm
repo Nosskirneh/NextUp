@@ -2,26 +2,23 @@
 #import "Common.h"
 #import "Headers.h"
 #import "DRMOptions.mm"
+#import "notify.h"
 
 
 NextUpManager *manager;
 
 /* Adding the widget */
 %group SpringBoard
+    void preferencesChanged(notificationArguments) {
+        [manager reloadPreferences];
+    }
+
     /* Listen on changes of now playing app */
     %hook SBMediaController
-    %property (nonatomic, retain) NSDictionary *nextUpPrefs;
-
-    - (id)init {
-        SBMediaController *orig = %orig;
-        orig.nextUpPrefs = [NSDictionary dictionaryWithContentsOfFile:kPrefPath];
-
-        return orig;
-    }
 
     %new
     - (BOOL)isValidApplicationID:(NSString *)bundleID {
-        return !self.nextUpPrefs[bundleID] || [self.nextUpPrefs[bundleID] boolValue];
+        return !manager.preferences[bundleID] || [manager.preferences[bundleID] boolValue];
     }
 
     - (void)_setNowPlayingApplication:(SBApplication *)app {
@@ -135,6 +132,7 @@ NextUpManager *manager;
 
     %new
     - (void)showNextUp {
+        %log;
         self.shouldShowNextUp = YES;
         [self layoutSubviews];
     }
@@ -311,6 +309,49 @@ NextUpManager *manager;
     }
 
     %end
+
+    /* Hide iPhone X buttons */
+    %hook SBDashBoardQuickActionsView
+
+    %property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
+
+    - (id)initWithFrame:(CGRect)frame delegate:(id)delegate {
+        SBDashBoardQuickActionsView *orig = %orig;
+
+        [[NSNotificationCenter defaultCenter] addObserver:orig
+                                                 selector:@selector(showNextUp)
+                                                     name:kShowNextUp
+                                                   object:nil];
+
+        [[NSNotificationCenter defaultCenter] addObserver:orig
+                                                 selector:@selector(hideNextUp)
+                                                     name:kHideNextUp
+                                                   object:nil];
+
+        return orig;
+    }
+
+    %new
+    - (void)showNextUp {
+        self.showingNextUp = YES;
+        [self setAlpha:0];
+    }
+
+    %new
+    - (void)hideNextUp {
+        self.showingNextUp = NO;
+    }
+
+    - (void)setAlpha:(CGFloat)alpha {
+        if ([self isShowingNextUp] &&
+            [self.delegate.dashBoardViewController isShowingMediaControls] &&
+            [manager.preferences[kHideXButtons] boolValue])
+            return %orig(0.0);
+        %orig;
+    }
+
+    %end
+
     // ---
 %end
 // ---
@@ -531,4 +572,6 @@ NextUpManager *manager;
     %init(SpringBoard);
     %init(ColorFlow);
     %init(CustomViews);
+
+    subscribe(preferencesChanged, kPrefChanged);
 }

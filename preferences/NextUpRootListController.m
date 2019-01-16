@@ -8,6 +8,7 @@
 
 #define NextUpColor [UIColor colorWithRed:0.00 green:0.65 blue:1.00 alpha:1.0] // #00A5FF
 #define preferencesFrameworkPath @"/System/Library/PrivateFrameworks/Preferences.framework"
+#define kPostNotification @"PostNotification"
 
 @interface NextUpRootListController : PSListController <PFStatusBarAlertDelegate, PayPalPaymentDelegate> {
     UIWindow *settingsView;
@@ -82,6 +83,11 @@
 
     [preferences setObject:value forKey:key];
     [preferences writeToFile:kPrefPath atomically:YES];
+    
+    if (specifier.properties[kPostNotification]) {
+        CFStringRef post = (CFStringRef)CFBridgingRetain(specifier.properties[kPostNotification]);
+        notify(post);
+    }
 }
 
 - (void)respring:(id)sender {

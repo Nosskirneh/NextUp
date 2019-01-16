@@ -18,6 +18,7 @@ void registerApp();
 
 #define NEXTUP_IDENTIFIER @"se.nosskirneh.nextup"
 #define kPrefPath [NSString stringWithFormat:@"%@/Library/Preferences/%@.plist", NSHomeDirectory(), NEXTUP_IDENTIFIER]
+#define kPrefChanged [NSString stringWithFormat:@"%@/preferencesChanged", NEXTUP_IDENTIFIER]
 
 extern NSString *const kHasSeenTrialEnded;
 
@@ -56,6 +57,8 @@ extern NSString *const kTitle;
 extern NSString *const kSubtitle;
 extern NSString *const kSkipable;
 extern NSString *const kArtwork;
+
+extern NSString *const kHideXButtons;
 
 
 @interface UIImage (Private)

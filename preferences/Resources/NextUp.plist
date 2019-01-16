@@ -177,6 +177,34 @@
         </dict>
 
 
+        <!-- Settings -->
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>label</key>
+            <string>Settings</string>
+            <key>footerAlignment</key>
+            <integer>0</integer>
+            <key>footerText</key>
+            <string>Useful when also using ColorFlow 4 with the extended media artwork view. Will only hide the buttons when the media controls are visible. Toggling this does not require a respring.</string>
+        </dict>
+
+        <dict>
+            <key>cell</key>
+            <string>PSSwitchCell</string>
+            <key>cellClass</key>
+            <string>NextUpSwitchTableCell</string>
+            <key>default</key>
+            <false/>
+            <key>key</key>
+            <string>hideXButtons</string>
+            <key>label</key>
+            <string>Hide iPhone X buttons</string>
+            <key>PostNotification</key>
+            <string>se.nosskirneh.nextup/preferencesChanged</string>
+        </dict>
+
+
         <!-- Fill out -->
         <dict>
             <key>cell</key>
