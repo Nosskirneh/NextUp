@@ -164,17 +164,6 @@ NextUpManager *manager;
         return orig;
     }
 
-    // Fixes bug when quickly showing the widget again where it would be cut off
-    - (void)viewDidLayoutSubviews {
-        %orig;
-
-        UIView *itemView = MSHookIvar<UIView *>(self, "_nowPlayingControlsItem");
-        CGRect frame = itemView.frame;
-        frame.size.height += frame.origin.y;
-        frame.origin.y = 0;
-        itemView.frame = frame;
-    }
-
     %new
     - (SBDashBoardMediaControlsViewController *)mediaControlsController {
         SBDashBoardNowPlayingController *nowPlayingController = [self valueForKey:@"_nowPlayingController"];
