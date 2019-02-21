@@ -110,6 +110,14 @@ void APMManualUpdate(notificationArguments) {
 - (void)fetchNextUpItem:(MPMediaItem *)item withArtworkCatalog:(block)artworkBlock {
     MPArtworkCatalog *catalog = artworkBlock();
 
+    // Local track with no artwork?
+    if (!catalog) {
+        UIImage *image = [%c(MPPlaceholderArtwork) noArtPlaceholderImageForMediaType:1];
+        NSDictionary *metadata = [self serializeTrack:item image:image];
+        sendNextTrackMetadata(metadata);
+        return;
+    }
+
     [catalog setFittingSize:ARTWORK_SIZE];
     catalog.destinationScale = [UIScreen mainScreen].scale;
 

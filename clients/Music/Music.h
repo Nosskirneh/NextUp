@@ -1,5 +1,10 @@
 #import <MediaPlayer/MediaPlayer.h>
 
+@interface MPPlaceholderArtwork : NSObject
++ (UIImage *)noArtPlaceholderImageForMediaType:(unsigned int)type;
+@end
+
+
 @interface NUMediaItem : MPMediaItem
 - (NSString *)mainTitle;
 - (id)artworkCatalogBlock;
