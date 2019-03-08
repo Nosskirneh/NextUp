@@ -36,7 +36,6 @@
         self.navigationItem.rightBarButtonItem = respringButton;
 
         _payPalConfig = initPayPal();
-
         self.successView.hidden = YES;
     }
 
@@ -121,7 +120,7 @@
     [super viewDidLoad];
 
     if (!self.statusAlert) {
-        self.statusAlert = [[PFStatusBarAlert alloc] initWithMessage:@"NextUp – Tap to Respring"
+        self.statusAlert = [[PFStatusBarAlert alloc] initWithMessage:nil
                                                         notification:nil
                                                               action:@selector(respring:)
                                                               target:self];
