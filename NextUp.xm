@@ -81,6 +81,7 @@ NextUpManager *manager;
             containerView.nextUpViewController.cornerRadius = 15;
             containerView.nextUpViewController.manager = manager;
             containerView.nextUpViewController.controlCenter = YES;
+            containerView.nextUpViewController.textColor = UIColor.whiteColor;
 
             self.nextUpInitialized = YES;
         }
@@ -377,7 +378,6 @@ NextUpManager *manager;
     %subclass NUSkipButton : UIButton
     %end
 
-
     %subclass NextUpMediaHeaderView : MediaControlsHeaderView
 
     // Override routing button
@@ -445,7 +445,6 @@ NextUpManager *manager;
     }
 
     - (void)_updateStyle {
-        %log;
         %orig;
 
         self.primaryLabel.alpha = self.textAlpha;
