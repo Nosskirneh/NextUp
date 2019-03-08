@@ -15,10 +15,10 @@
 }
 @property (nonatomic, strong) PFStatusBarAlert *statusAlert;
 
-@property(nonatomic, strong, readwrite) UIButton *payNowButton;
-@property(nonatomic, strong, readwrite) UIView *successView;
-@property(nonatomic, strong, readwrite) PayPalConfiguration *payPalConfig;
-@property(nonatomic, strong, readwrite) NSString *resultText;
+@property (nonatomic, strong, readwrite) UIButton *payNowButton;
+@property (nonatomic, strong, readwrite) UIView *successView;
+@property (nonatomic, strong, readwrite) PayPalConfiguration *payPalConfig;
+@property (nonatomic, strong, readwrite) NSString *resultText;
 @end
 
 #define kIconImage @"iconImage"
@@ -60,8 +60,7 @@
 
     // Add license specifier
     NSMutableArray *mspecs = (NSMutableArray *)[_specifiers mutableCopy];
-    _specifiers = addDRMSpecifiers(mspecs, self, licensePath$bs(), package$bs(), licenseFooterText$bs(),
-                                   trialFooterText$bs(), price$bs(), currency$bs());
+    _specifiers = addDRMSpecifiers(mspecs, self, licensePath$bs(), package$bs(), licenseFooterText$bs(), trialFooterText$bs());
 
     return _specifiers;
 }
@@ -97,7 +96,7 @@
 }
 
 - (void)activate {
-    activate(licensePath$bs(), package$bs(), version$bs(), self);
+    activate(licensePath$bs(), package$bs(), self);
 }
 
 - (void)paypalEmailTextFieldChanged:(UITextField *)textField {
@@ -115,7 +114,7 @@
 }
 
 - (void)trial {
-    trial(licensePath$bs(), package$bs(), version$bs(), self);
+    trial(licensePath$bs(), package$bs(), self);
 }
 
 - (void)viewDidLoad {
@@ -159,7 +158,9 @@
 - (void)purchase {
     self.resultText = nil;
 
-    showPaymentViewController(packageShown$bs(), price$bs(), currency$bs(), SKU$bs(), self.payPalConfig, self);
+    fetchPrice(package$bs(), self, ^(NSString *price) {
+        showPaymentViewController(packageShown$bs(), OBFS_UTF8(price), SKU$bs(), self.payPalConfig, self);
+    });
 }
 
 - (void)payPalPaymentViewController:(PayPalPaymentViewController *)paymentViewController didCompletePayment:(PayPalPayment *)completedPayment {
@@ -167,7 +168,7 @@
     [self showSuccess];
 
     [self dismissViewControllerAnimated:YES completion:^{
-        storePaymentAndActivate(completedPayment, licensePath$bs(), package$bs(), version$bs(), self);
+        storePaymentAndActivate(completedPayment, licensePath$bs(), package$bs(), self);
     }];
 }
 
