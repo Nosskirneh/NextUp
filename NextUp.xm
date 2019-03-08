@@ -132,7 +132,6 @@ NextUpManager *manager;
 
     %new
     - (void)showNextUp {
-        %log;
         self.shouldShowNextUp = YES;
         [self layoutSubviews];
     }
@@ -251,15 +250,17 @@ NextUpManager *manager;
         if(![self isNextUpInitialized]) {
             self.nextUpViewController = [[%c(NextUpViewController) alloc] init];
 
-            BOOL noctisEnabled = NO;
+            MediaControlsPanelViewController *panelViewController = MSHookIvar<MediaControlsPanelViewController *>(self, "_mediaControlsPanelViewController");
+            self.nextUpViewController.style = panelViewController.style;
+
             if (%c(NoctisSystemController)) {
                 NSDictionary *noctisPrefs = [NSDictionary dictionaryWithContentsOfFile:@"/var/mobile/Library/Preferences/com.laughingquoll.noctisxiprefs.settings.plist"];
-                noctisEnabled = !noctisPrefs || !noctisPrefs[@"enableMedia"] || [noctisPrefs[@"enableMedia"] boolValue];
-                self.nextUpViewController.noctisEnabled = noctisEnabled;
+                if (!noctisPrefs || !noctisPrefs[@"enableMedia"] || [noctisPrefs[@"enableMedia"] boolValue]) {
+                    self.nextUpViewController.textColor = UIColor.whiteColor;
+                    self.nextUpViewController.style = 2;
+                }
             }
 
-            MediaControlsPanelViewController *panelViewController = MSHookIvar<MediaControlsPanelViewController *>(self, "_mediaControlsPanelViewController");
-            self.nextUpViewController.style = noctisEnabled ? 2 : panelViewController.style;
             self.nextUpViewController.cornerRadius = 15;
             self.nextUpViewController.manager = manager;
 
@@ -360,8 +361,8 @@ NextUpManager *manager;
     - (void)cfw_revert {
         %orig;
 
-        self.nextUpViewController.mediaView.routingButton.tintColor = UIColor.whiteColor;
-        self.nextUpViewController.headerLabel.textColor = UIColor.whiteColor;
+        self.nextUpViewController.mediaView.routingButton.tintColor = self.nextUpViewController.textColor;
+        self.nextUpViewController.headerLabel.textColor = self.nextUpViewController.textColor;
         [self.nextUpViewController.mediaView cfw_revert];
     }
     %end
@@ -373,24 +374,7 @@ NextUpManager *manager;
 %group CustomViews
     #define DIGITAL_TOUCH_BUNDLE [NSBundle bundleWithPath:@"/System/Library/PrivateFrameworks/DigitalTouchShared.framework"]
 
-    %subclass NULabel : UILabel
-
-    - (void)setAlpha:(CGFloat)alpha {
-        %orig(0.63);
-    }
-
-    %end
-
     %subclass NUSkipButton : UIButton
-
-    - (void)setUserInteractionEnabled:(BOOL)enabled {
-        %orig(YES);
-    }
-
-    - (void)setAlpha:(CGFloat)alpha {
-        %orig(0.95);
-    }
-
     %end
 
 
@@ -398,8 +382,8 @@ NextUpManager *manager;
 
     // Override routing button
     %property (nonatomic, retain) NUSkipButton *routingButton;
-    %property (nonatomic, retain) NULabel *primaryLabel;
-    %property (nonatomic, retain) NULabel *secondaryLabel;
+    %property (nonatomic, retain) UIColor *textColor;
+    %property (nonatomic, retain) CGFloat textAlpha;
 
     - (id)initWithFrame:(CGRect)arg1 {
         NextUpMediaHeaderView *orig = %orig;
@@ -408,11 +392,6 @@ NextUpManager *manager;
         UIImage *image = [UIImage imageNamed:@"Cancel.png" inBundle:DIGITAL_TOUCH_BUNDLE];
         [orig.routingButton setImage:image forState:UIControlStateNormal];
         [orig addSubview:orig.routingButton];
-
-        orig.primaryLabel = [[%c(NULabel) alloc] initWithFrame:CGRectZero];
-        orig.secondaryLabel = [[%c(NULabel) alloc] initWithFrame:CGRectZero];
-        [orig.primaryMarqueeView.contentView addSubview:orig.primaryLabel];
-        [orig.secondaryMarqueeView.contentView addSubview:orig.secondaryLabel];
 
         return orig;
     }
@@ -463,6 +442,23 @@ NextUpManager *manager;
         self.secondaryMarqueeView.frame = frame;
 
         self.buttonBackground.hidden = YES;
+    }
+
+    - (void)_updateStyle {
+        %log;
+        %orig;
+
+        self.primaryLabel.alpha = self.textAlpha;
+        self.secondaryLabel.alpha = self.textAlpha;
+
+        // Do not color the labels if ColorFlow is active
+        if (![self respondsToSelector:@selector(cfw_colorize:)]) {
+            self.primaryLabel.textColor = self.textColor;
+            self.secondaryLabel.textColor = self.textColor;
+        }
+
+        self.routingButton.alpha = 0.95;
+        self.routingButton.userInteractionEnabled = YES;
     }
 
     %end
@@ -546,12 +542,10 @@ NextUpManager *manager;
         case CheckValidTrialLicense:
             %init(CheckTrialEnded);
             break;
-        case CheckInvalidLicense:
-            return;
         case CheckValidLicense:
             break;
+        case CheckInvalidLicense:
         case CheckUDIDsDoNotMatch:
-            return;
         default:
             return;
     }
@@ -559,7 +553,8 @@ NextUpManager *manager;
     [manager setup];
 
     %init(SpringBoard);
-    %init(ColorFlow);
+    if ([%c(SBDashBoardMediaControlsViewController) instancesRespondToSelector:@selector(cfw_colorize:)])
+        %init(ColorFlow);
     %init(CustomViews);
 
     subscribe(preferencesChanged, kPrefChanged);

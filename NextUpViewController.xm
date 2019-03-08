@@ -22,6 +22,8 @@
                                                      name:kHideNextUp
                                                    object:nil];
 
+        self.textAlpha = 0.63f;
+        self.textColor = UIColor.blackColor;
         self.hapticGenerator = [[%c(UIImpactFeedbackGenerator) alloc] initWithStyle:UIImpactFeedbackStyleMedium];
         self.bundle = [NSBundle bundleWithPath:@"/Library/Application Support/NextUp.bundle"];
     }
@@ -55,6 +57,8 @@
 
     self.mediaView = [[%c(NextUpMediaHeaderView) alloc] initWithFrame:CGRectZero];
     self.mediaView.style = self.style;
+    self.mediaView.textAlpha = self.textAlpha;
+    self.mediaView.textColor = self.textColor;
 
     if ([_mediaView respondsToSelector:@selector(setShouldEnableMarquee:)])
         [_mediaView setShouldEnableMarquee:YES];
@@ -71,7 +75,7 @@
     self.headerLabel = [[UILabel alloc] init];
     self.headerLabel.backgroundColor = UIColor.clearColor;
     self.headerLabel.textAlignment = NSTextAlignmentLeft;
-    self.headerLabel.textColor = self.noctisEnabled ? UIColor.whiteColor : UIColor.blackColor;
+    self.headerLabel.textColor = self.textColor;
     self.headerLabel.numberOfLines = 0;
     self.headerLabel.alpha = 0.64;
     self.headerLabel.text = [self.bundle localizedStringForKey:@"NEXT_UP" value:nil table:nil];

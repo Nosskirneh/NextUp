@@ -7,7 +7,6 @@ BUNDLE_NAME = NextUpPrefs
 NextUpPrefs_FILES = NextUpRootListController.m ../../DRM/PFStatusBarAlert/PFStatusBarAlert.mm
 NextUpPrefs_CFLAGS = -fobjc-arc
 NextUpPrefs_INSTALL_PATH = /Library/PreferenceBundles
-NextUpPrefs_FRAMEWORKS = UIKit
 NextUpPrefs_PRIVATE_FRAMEWORKS = Preferences
 NextUpPrefs_OBJ_FILES = $(THEOS)/lib/libPayPalMobile.a
 NextUpPrefs_FRAMEWORKS = Accelerate, AudioToolbox, AVFoundation, CoreLocation, CoreMedia, \
