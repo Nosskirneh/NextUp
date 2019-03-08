@@ -22,8 +22,8 @@
                                                      name:kHideNextUp
                                                    object:nil];
 
-        self.textAlpha = 0.63f;
-        self.textColor = UIColor.blackColor;
+        self.textAlpha = 1.0f;
+        self.textColor = UIColor.whiteColor;
         self.hapticGenerator = [[%c(UIImpactFeedbackGenerator) alloc] initWithStyle:UIImpactFeedbackStyleMedium];
         self.bundle = [NSBundle bundleWithPath:@"/Library/Application Support/NextUp.bundle"];
     }

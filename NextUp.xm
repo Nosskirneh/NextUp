@@ -81,7 +81,6 @@ NextUpManager *manager;
             containerView.nextUpViewController.cornerRadius = 15;
             containerView.nextUpViewController.manager = manager;
             containerView.nextUpViewController.controlCenter = YES;
-            containerView.nextUpViewController.textColor = UIColor.whiteColor;
 
             self.nextUpInitialized = YES;
         }
@@ -172,19 +171,8 @@ NextUpManager *manager;
 
     %new
     - (void)showNextUp {
-        SBDashBoardMediaControlsViewController *mediaControlsController = [self mediaControlsController];
-
         // Mark NextUp as should be visible
-        mediaControlsController.shouldShowNextUp = YES;
-
-        if (mediaControlsController.showingNextUp)
-            return;
-
-        // Reload the widget
-        MSHookIvar<NSInteger>(self, "_nowPlayingState") = 0;
-        [self _updateMediaControlsVisibilityAnimated:NO];
-        MSHookIvar<NSInteger>(self, "_nowPlayingState") = 2;
-        [self _updateMediaControlsVisibilityAnimated:YES];
+        [self mediaControlsController].shouldShowNextUp = YES;
 
         // Not restoring width and height here since we want
         // to do it when the animation is complete
@@ -192,17 +180,8 @@ NextUpManager *manager;
 
     %new
     - (void)hideNextUp {
-        SBDashBoardMediaControlsViewController *mediaControlsController = [self mediaControlsController];
-
         // Mark NextUp as should not be visible
-        mediaControlsController.shouldShowNextUp = NO;
-
-        if (!mediaControlsController.showingNextUp)
-            return;
-
-        // Reload the widget
-        MSHookIvar<NSInteger>(self, "_nowPlayingState") = 0;
-        [self _updateMediaControlsVisibilityAnimated:YES];
+        [self mediaControlsController].shouldShowNextUp = NO;
     }
 
     // Restore width and height (touches don't work otherwise)
@@ -253,14 +232,6 @@ NextUpManager *manager;
 
             MediaControlsPanelViewController *panelViewController = MSHookIvar<MediaControlsPanelViewController *>(self, "_mediaControlsPanelViewController");
             self.nextUpViewController.style = panelViewController.style;
-
-            if (%c(NoctisSystemController)) {
-                NSDictionary *noctisPrefs = [NSDictionary dictionaryWithContentsOfFile:@"/var/mobile/Library/Preferences/com.laughingquoll.noctisxiprefs.settings.plist"];
-                if (!noctisPrefs || !noctisPrefs[@"enableMedia"] || [noctisPrefs[@"enableMedia"] boolValue]) {
-                    self.nextUpViewController.textColor = UIColor.whiteColor;
-                    self.nextUpViewController.style = 2;
-                }
-            }
 
             self.nextUpViewController.cornerRadius = 15;
             self.nextUpViewController.manager = manager;
@@ -376,6 +347,8 @@ NextUpManager *manager;
     #define DIGITAL_TOUCH_BUNDLE [NSBundle bundleWithPath:@"/System/Library/PrivateFrameworks/DigitalTouchShared.framework"]
 
     %subclass NUSkipButton : UIButton
+    // This property is needed in iOS 12 as the default routing button has it
+    %property (nonatomic, assign) NSInteger currentMode;
     %end
 
     %subclass NextUpMediaHeaderView : MediaControlsHeaderView
@@ -388,7 +361,7 @@ NextUpManager *manager;
     - (id)initWithFrame:(CGRect)arg1 {
         NextUpMediaHeaderView *orig = %orig;
 
-        orig.routingButton = [%c(NUSkipButton) buttonWithType:UIButtonTypeSystem];
+        orig.routingButton = [%c(NUSkipButton) buttonWithType:UIButtonTypeCustom];
         UIImage *image = [UIImage imageNamed:@"Cancel.png" inBundle:DIGITAL_TOUCH_BUNDLE];
         [orig.routingButton setImage:image forState:UIControlStateNormal];
         [orig addSubview:orig.routingButton];
@@ -440,8 +413,6 @@ NextUpManager *manager;
         frame = self.secondaryMarqueeView.frame;
         frame = [self rectForMaxWidth:frame maxWidth:maxWidth originX:originX];
         self.secondaryMarqueeView.frame = frame;
-
-        self.buttonBackground.hidden = YES;
     }
 
     - (void)_updateStyle {
