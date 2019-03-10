@@ -46,17 +46,6 @@
     if (!_specifiers)
         _specifiers = [self loadSpecifiersFromPlistName:@"NextUp" target:self];
 
-    for (PSSpecifier *spec in _specifiers) {
-        UIImage *image;
-        if ([spec.identifier isEqualToString:@"Music"] || [spec.identifier isEqualToString:@"Mail"]) {
-            NSString *imageName = [NSString stringWithFormat:@"%@.png", spec.identifier];
-            image = [UIImage imageNamed:imageName inBundle:[NSBundle bundleWithPath:preferencesFrameworkPath]];
-        }
-
-        if (image)
-            [spec setProperty:image forKey:kIconImage];
-    }
-
     // Add license specifier
     NSMutableArray *mspecs = (NSMutableArray *)[_specifiers mutableCopy];
     _specifiers = addDRMSpecifiers(mspecs, self, licensePath$bs(), package$bs(), licenseFooterText$bs(), trialFooterText$bs());
@@ -95,7 +84,11 @@
 }
 
 - (void)activate {
-    activate(licensePath$bs(), package$bs(), self);
+    presentDidYouBuyQuestion(YES, package$bs(), nextup$bs(), nextUpDisplayName$bs(), YES, self, ^(BOOL choice, const NSString *email) {
+        if (choice)
+            return activateWithUpgradePackage(licensePath$bs(), package$bs(), email, choice ? nextup$bs() : nil, self);
+        activate(licensePath$bs(), package$bs(), self);
+    });
 }
 
 - (void)paypalEmailTextFieldChanged:(UITextField *)textField {
@@ -225,7 +218,7 @@
         [_label setAdjustsFontSizeToFitWidth:YES];
         [_label setFont:[UIFont fontWithName:@"HelveticaNeue-UltraLight" size:48]];
         
-        NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc] initWithString:@"NextUp"];
+        NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc] initWithString:@"NextUp 2"];
         
         [_label setAttributedText:attributedString];
         [_label setTextAlignment:NSTextAlignmentCenter];

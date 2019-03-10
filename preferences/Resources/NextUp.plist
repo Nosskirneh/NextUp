@@ -221,7 +221,7 @@
             <key>footerAlignment</key>
             <integer>1</integer>
             <key>footerText</key>
-            <string>© 2018 Andreas Henriksson</string>
+            <string>© 2018 - 2019 Andreas Henriksson</string>
         </dict>
         <dict>
             <key>cell</key>
@@ -238,6 +238,6 @@
 	</array>
 
 	<key>title</key>
-	<string>NextUp</string>
+	<string>NextUp 2</string>
 </dict>
 </plist>
