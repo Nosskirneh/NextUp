@@ -437,61 +437,49 @@ NextUpManager *manager;
 
 
 %group Welcome
-%hook SBLockScreenManager
+%hook SBCoverSheetPresentationManager
 
-- (BOOL)_finishUIUnlockFromSource:(int)arg1 withOptions:(id)arg2 {
-    BOOL orig = %orig;
-    UIViewController *root = [[UIApplication sharedApplication] keyWindow].rootViewController;
-
-    if ([root isKindOfClass:%c(SBHomeScreenViewController)])
-        OBFS_UIALERT(root, packageShown$bs(), WelcomeMsg$bs(), OK$bs());
-
-    return orig;
+- (void)_cleanupDismissalTransition {
+    %orig;
+    showSpringBoardDismissAlert(packageShown$bs(), WelcomeMsg$bs());
 }
 
 %end
 %end
 
+void showTrialEndedMessage() {
+    showSpringBoardDismissAlert(packageShown$bs(), TrialEndedMsg$bs());
+}
 
 // These two groups down below has to be separate as theos otherwise complains
 // about double inited groups (even though it's two different switch cases...)
 %group CheckTrialEnded
-%hook SBLockScreenManager
+%hook SBCoverSheetPresentationManager
 
-- (BOOL)_finishUIUnlockFromSource:(int)arg1 withOptions:(id)arg2 {
-    BOOL orig = %orig;
-    UIViewController *root = [[UIApplication sharedApplication] keyWindow].rootViewController;
+- (void)_cleanupDismissalTransition {
+    %orig;
 
-    if ([root isKindOfClass:%c(SBHomeScreenViewController)] && check_lic(licensePath$bs(), package$bs()) == CheckInvalidTrialLicense) {
-        if (!manager.trialEnded) {
-            manager.trialEnded = YES;
-            [[NSNotificationCenter defaultCenter] postNotificationName:kHideNextUp object:nil];
-            OBFS_UIALERT(root, packageShown$bs(), TrialEndedMsg$bs(), OK$bs());
-        }
+    if (!manager.trialEnded && check_lic(licensePath$bs(), package$bs()) == CheckInvalidTrialLicense) {
+        [manager setTrialEnded];
+        [[NSNotificationCenter defaultCenter] postNotificationName:kHideNextUp object:nil];
+        showTrialEndedMessage();
     }
-
-    return orig;
 }
 
 %end
 %end
 
 %group TrialEnded
-%hook SBLockScreenManager
+%hook SBCoverSheetPresentationManager
 
-- (BOOL)_finishUIUnlockFromSource:(int)arg1 withOptions:(id)arg2 {
-    BOOL orig = %orig;
-    UIViewController *root = [[UIApplication sharedApplication] keyWindow].rootViewController;
+- (void)_cleanupDismissalTransition {
+    %orig;
 
-    if ([root isKindOfClass:%c(SBHomeScreenViewController)]) {
-        if (!manager.trialEnded) {
-            manager.trialEnded = YES;
-            [[NSNotificationCenter defaultCenter] postNotificationName:kHideNextUp object:nil];
-            OBFS_UIALERT(root, packageShown$bs(), TrialEndedMsg$bs(), OK$bs());
-        }
+    if (!manager.trialEnded) {
+        [manager setTrialEnded];
+        [[NSNotificationCenter defaultCenter] postNotificationName:kHideNextUp object:nil];
+        showTrialEndedMessage();
     }
-
-    return orig;
 }
 
 %end
