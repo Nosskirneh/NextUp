@@ -34,8 +34,8 @@
             <true/>
             <key>key</key>
             <string>com.apple.Music</string>
-            <key>id</key>
-            <string>Music</string>
+            <key>icon</key>
+            <string>music.png</string>
             <key>label</key>
             <string>Enable for Music</string>
         </dict>
@@ -214,8 +214,8 @@
             <string>NextUpColorButtonCell</string>
             <key>action</key>
             <string>sendEmail</string>
-            <key>id</key>
-            <string>Mail</string>
+            <key>icon</key>
+            <string>mail.png</string>
             <key>label</key>
             <string>Email me</string>
         </dict>
