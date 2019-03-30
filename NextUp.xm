@@ -383,7 +383,7 @@ NextUpManager *manager;
     // Override routing button
     %property (nonatomic, retain) NUSkipButton *routingButton;
     %property (nonatomic, retain) UIColor *textColor;
-    %property (nonatomic, retain) CGFloat textAlpha;
+    %property (nonatomic, assign) CGFloat textAlpha;
 
     - (id)initWithFrame:(CGRect)arg1 {
         NextUpMediaHeaderView *orig = %orig;
