@@ -61,6 +61,8 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 
 
 @interface NUSkipButton : UIButton
+@property (nonatomic, retain) CAShapeLayer *clear;
+@property (nonatomic, assign) CGFloat size;
 @end
 
 @interface NextUpMediaHeaderView : MediaControlsHeaderView
@@ -68,6 +70,7 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @property (nonatomic, retain) UIColor *textColor;
 @property (nonatomic, assign) CGFloat textAlpha;
 - (CGRect)rectForMaxWidth:(CGRect)frame maxWidth:(CGFloat)maxWidth originX:(CGFloat)originX;
+- (void)updateTextColor:(UIColor *)color;
 @end
 
 

@@ -47,4 +47,8 @@
     _preferences = [NSDictionary dictionaryWithContentsOfFile:kPrefPath];
 }
 
+- (void)setTrialEnded {
+    _trialEnded = YES;
+}
+
 @end

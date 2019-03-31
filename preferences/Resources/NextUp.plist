@@ -51,8 +51,6 @@
             <string>tidal.png</string>
             <key>key</key>
             <string>com.aspiro.TIDAL</string>
-            <key>id</key>
-            <string>TIDAL</string>
             <key>label</key>
             <string>Enable for TIDAL</string>
         </dict>
@@ -68,8 +66,6 @@
             <string>spotify.png</string>
             <key>key</key>
             <string>com.spotify.client</string>
-            <key>id</key>
-            <string>Spotify</string>
             <key>label</key>
             <string>Enable for Spotify</string>
         </dict>
@@ -85,8 +81,6 @@
             <string>deezer.png</string>
             <key>key</key>
             <string>com.deezer.Deezer</string>
-            <key>id</key>
-            <string>Deezer</string>
             <key>label</key>
             <string>Enable for Deezer</string>
         </dict>
@@ -102,8 +96,6 @@
             <string>anghami.png</string>
             <key>key</key>
             <string>com.anghami.anghami</string>
-            <key>id</key>
-            <string>Anghami</string>
             <key>label</key>
             <string>Enable for Anghami</string>
         </dict>
@@ -119,8 +111,6 @@
             <string>podcasts.png</string>
             <key>key</key>
             <string>com.apple.podcasts</string>
-            <key>id</key>
-            <string>Podcasts</string>
             <key>label</key>
             <string>Enable for Podcasts</string>
         </dict>
@@ -136,8 +126,6 @@
             <string>soundcloud.png</string>
             <key>key</key>
             <string>com.soundcloud.TouchApp</string>
-            <key>id</key>
-            <string>SoundCloud</string>
             <key>label</key>
             <string>Enable for SoundCloud</string>
         </dict>
@@ -153,8 +141,6 @@
             <string>playmusic.png</string>
             <key>key</key>
             <string>com.google.PlayMusic</string>
-            <key>id</key>
-            <string>PlayMusic</string>
             <key>label</key>
             <string>Enable for Google Music</string>
         </dict>
@@ -170,8 +156,6 @@
             <string>youtubemusic.png</string>
             <key>key</key>
             <string>com.google.ios.youtubemusic</string>
-            <key>id</key>
-            <string>YouTube</string>
             <key>label</key>
             <string>Enable for YouTube Music</string>
         </dict>

@@ -15,7 +15,6 @@
 }
 @property (nonatomic, strong) PFStatusBarAlert *statusAlert;
 
-@property (nonatomic, strong, readwrite) UIButton *payNowButton;
 @property (nonatomic, strong, readwrite) UIView *successView;
 @property (nonatomic, strong, readwrite) PayPalConfiguration *payPalConfig;
 @property (nonatomic, strong, readwrite) NSString *resultText;

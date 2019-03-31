@@ -43,11 +43,13 @@
 @property (nonatomic, assign, readwrite) YTIFormattedString *shortBylineText;
 @end
 
-@interface YTMQueueController
+@interface YTMQueueController : NSObject
 @property (nonatomic) unsigned long long nowPlayingIndex;
-@property (readonly, nonatomic) YTIPlaylistPanelVideoRenderer *nextVideo;
+@property (readonly, nonatomic) YTIPlaylistPanelVideoRenderer *nextVideo; // Earlier version
 @property (nonatomic, getter=isAutoExtendPlaybackQueueEnabled) BOOL autoExtendPlaybackQueueEnabled;
 @property (readonly, nonatomic) unsigned long long queueCount;
+- (YTIPlaylistPanelVideoRenderer *)nextVideoWithAutoplay:(BOOL)autoplay;
+- (BOOL)hasAutoplayVideo;
 - (unsigned long long)nextVideoIndex;
 - (void)removeVideoAtIndex:(unsigned long long)arg1;
 
