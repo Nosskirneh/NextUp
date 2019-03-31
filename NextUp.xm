@@ -373,9 +373,18 @@ NextUpManager *manager;
 
 /* Custom views */
 %group CustomViews
-    #define DIGITAL_TOUCH_BUNDLE [NSBundle bundleWithPath:@"/System/Library/PrivateFrameworks/DigitalTouchShared.framework"]
-
     %subclass NUSkipButton : UIButton
+
+    %property (nonatomic, retain) CAShapeLayer *clear;
+    %property (nonatomic, assign) CGFloat size;
+
+    - (void)setFrame:(CGRect)frame {
+        frame.origin.x += frame.size.width - self.size;
+        frame.origin.y += (frame.size.height - self.size) / 2;
+        frame.size.width = self.size;
+        frame.size.height = self.size;
+        %orig;
+    }
     %end
 
     %subclass NextUpMediaHeaderView : MediaControlsHeaderView
@@ -386,14 +395,71 @@ NextUpManager *manager;
     %property (nonatomic, assign) CGFloat textAlpha;
 
     - (id)initWithFrame:(CGRect)arg1 {
-        NextUpMediaHeaderView *orig = %orig;
+        self = %orig;
 
-        orig.routingButton = [%c(NUSkipButton) buttonWithType:UIButtonTypeSystem];
-        UIImage *image = [UIImage imageNamed:@"Cancel.png" inBundle:DIGITAL_TOUCH_BUNDLE];
-        [orig.routingButton setImage:image forState:UIControlStateNormal];
-        [orig addSubview:orig.routingButton];
+        float size = 26.0;
 
-        return orig;
+        self.routingButton = [%c(NUSkipButton) buttonWithType:UIButtonTypeCustom];
+        self.routingButton.size = size;
+        self.routingButton.backgroundColor = [UIColor.grayColor colorWithAlphaComponent:0.5];
+        self.routingButton.layer.cornerRadius = size / 2;
+        
+        float ratio = 1/3.;
+        float crossSize = size * ratio;
+        float offset = (size - crossSize) / 2;
+
+        float startPoint = offset;
+        float endPoint = offset + crossSize;
+        
+        UIBezierPath *firstLinePath = [UIBezierPath bezierPath];
+        [firstLinePath moveToPoint:CGPointMake(startPoint, startPoint)];
+        [firstLinePath addLineToPoint:CGPointMake(endPoint, endPoint)];
+        
+        UIBezierPath *secondLinePath = [UIBezierPath bezierPath];
+        [secondLinePath moveToPoint:CGPointMake(endPoint, startPoint)];
+        [secondLinePath addLineToPoint:CGPointMake(startPoint, endPoint)];
+        
+        [firstLinePath appendPath:secondLinePath];
+        
+        float lineWidthAndRadius = size * 0.0875;
+        
+        CAShapeLayer *clear = [CAShapeLayer layer];
+        clear.frame = CGRectMake(0, 0, size, size);
+        clear.lineCap = kCALineCapRound;
+        clear.path = firstLinePath.CGPath;
+        clear.fillColor = nil;
+        clear.lineWidth = lineWidthAndRadius;
+        clear.cornerRadius = lineWidthAndRadius;
+        clear.opacity = 1.0;
+        [clear setMasksToBounds:YES];
+        
+        [self.routingButton.layer addSublayer:clear];
+        self.routingButton.clear = clear;
+
+        [self addSubview:self.routingButton];
+
+        return self;
+    }
+
+    %new
+    - (void)updateTextColor:(UIColor *)color {
+        self.textColor = color;
+
+        self.routingButton.clear.strokeColor = color.CGColor;
+    }
+
+    - (void)cfw_colorize:(CFWColorInfo *)colorInfo {
+        %orig;
+
+        self.routingButton.clear.strokeColor = colorInfo.secondaryColor.CGColor;
+        self.routingButton.backgroundColor = colorInfo.primaryColor;
+    }
+
+    - (void)cfw_revert {
+        %orig;
+
+        self.routingButton.clear.strokeColor = self.textColor.CGColor;
+        self.routingButton.backgroundColor = [UIColor.grayColor colorWithAlphaComponent:0.5];
     }
 
     %new
