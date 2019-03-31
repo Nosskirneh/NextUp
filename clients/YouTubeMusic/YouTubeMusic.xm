@@ -84,7 +84,12 @@ GIMMe *gimme() {
 
 %new
 - (void)fetchNextUp {
-    YTIPlaylistPanelVideoRenderer *next = self.nextVideo;
+    YTIPlaylistPanelVideoRenderer *next;
+
+    if ([self respondsToSelector:@selector(nextVideo)]) // Earlier YouTube Music version
+        next = self.nextVideo;
+    else
+        next = [self nextVideoWithAutoplay:[self hasAutoplayVideo]];
 
     if (next && next.hasThumbnail && next.thumbnail.thumbnailsArray.count > 0) {
         NSArray *thumbnails = next.thumbnail.thumbnailsArray;
