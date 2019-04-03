@@ -34,7 +34,11 @@ void VOXManualUpdate(notificationArguments) {
 
 %new
 - (void)skipNext {
-    %log;
+    VoxPlayableItem *next = [self nextPlayableItem];
+    if (!next)
+        return;
+
+    [self removeItem:next];
 }
 
 %new
@@ -57,16 +61,13 @@ void VOXManualUpdate(notificationArguments) {
 %new
 - (NSDictionary *)serializeTrack:(VoxPlayableItem *)item image:(UIImage *)image {
     NSMutableDictionary *metadata = [NSMutableDictionary new];
-
     metadata[kTitle] = item.name;
     metadata[kSubtitle] = item.artist;
 
     if (image)
         metadata[kArtwork] = UIImagePNGRepresentation(image);
 
-    // if (self.nowPlayingIndex + 1 == self.queueCount)
-        metadata[kSkipable] = @YES;
-
+    metadata[kSkipable] = @YES;
     return metadata;
 }
 
