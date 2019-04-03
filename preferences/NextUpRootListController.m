@@ -97,7 +97,16 @@
     activate(licensePath$bs(), package$bs(), self);
 }
 
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
+    [self determineUnlockOKButton:textField];
+    return YES;
+}
+
 - (void)paypalEmailTextFieldChanged:(UITextField *)textField {
+    [self determineUnlockOKButton:textField];
+}
+
+- (void)determineUnlockOKButton:(UITextField *)textField {
     UIAlertController *alertController = (UIAlertController *)self.presentedViewController;
     if (alertController) {
         UIAlertAction *okAction = alertController.actions.lastObject;

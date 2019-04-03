@@ -379,7 +379,7 @@ NextUpManager *manager;
     %property (nonatomic, assign) CGFloat size;
 
     - (void)setFrame:(CGRect)frame {
-        frame.origin.x += frame.size.width - self.size;
+        frame.origin.x += (frame.size.width - self.size) / 2;
         frame.origin.y += (frame.size.height - self.size) / 2;
         frame.size.width = self.size;
         frame.size.height = self.size;
