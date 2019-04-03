@@ -45,6 +45,7 @@
 - (void)enableUpdates;
 - (SPTQueueViewModelDataSource *)removeTracks:(NSSet *)arg1;
 - (void)sendNextUpMetadata:(SPTPlayerTrack *)track;
+- (void)fetchNextUp;
 - (void)fetchNextUpForState:(SPTPlayerState *)state;
 - (void)skipNext;
 @end
