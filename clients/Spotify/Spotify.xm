@@ -10,9 +10,7 @@ void SPTManualUpdate(notificationArguments) {
     SPTQueueViewModelImplementation *queueViewModel = getQueueImplementation();
     if (!queueViewModel)
         return;
-    SPTPlayerImpl *player = MSHookIvar<SPTPlayerImpl *>(queueViewModel, "_player");
-    queueViewModel.lastSentTrack = nil;
-    [queueViewModel fetchNextUpForState:player.state];
+    [queueViewModel fetchNextUp];
 }
 
 SpotifyApplication *getSpotifyApplication() {
@@ -64,6 +62,13 @@ SPTQueueViewModelImplementation *getQueueImplementation() {
 }
 
 %new
+- (void)fetchNextUp {
+    SPTPlayerImpl *player = MSHookIvar<SPTPlayerImpl *>(self, "_player");
+    self.lastSentTrack = nil;
+    [self fetchNextUpForState:player.state];
+}
+
+%new
 - (void)fetchNextUpForState:(SPTPlayerState *)state {
     NSArray<SPTPlayerTrack *> *next = state.future;
     if (next.count > 0) {
@@ -77,7 +82,7 @@ SPTQueueViewModelImplementation *getQueueImplementation() {
 
 %new
 - (void)skipNext {
-    if (!self.dataSource.futureTracks)
+    if (!self.dataSource.futureTracks || self.dataSource.futureTracks.count == 0)
         return;
 
     SPTQueueTrackImplementation *track = self.dataSource.futureTracks[0];
