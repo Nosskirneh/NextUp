@@ -78,7 +78,6 @@ NextUpManager *manager;
                                                        object:nil];
 
             containerView.nextUpViewController = [[%c(NextUpViewController) alloc] init];
-            containerView.nextUpViewController.cornerRadius = 15;
             containerView.nextUpViewController.manager = manager;
             containerView.nextUpViewController.controlCenter = YES;
 
@@ -233,7 +232,6 @@ NextUpManager *manager;
             MediaControlsPanelViewController *panelViewController = MSHookIvar<MediaControlsPanelViewController *>(self, "_mediaControlsPanelViewController");
             self.nextUpViewController.style = panelViewController.style;
 
-            self.nextUpViewController.cornerRadius = 15;
             self.nextUpViewController.manager = manager;
 
             self.nextUpInitialized = YES;
@@ -325,7 +323,6 @@ NextUpManager *manager;
     - (void)cfw_colorize:(CFWColorInfo *)colorInfo {
         %orig;
 
-        self.nextUpViewController.mediaView.routingButton.tintColor = colorInfo.primaryColor;
         self.nextUpViewController.headerLabel.textColor = colorInfo.primaryColor;
         [self.nextUpViewController.mediaView cfw_colorize:colorInfo];
     }
@@ -333,8 +330,7 @@ NextUpManager *manager;
     - (void)cfw_revert {
         %orig;
 
-        self.nextUpViewController.mediaView.routingButton.tintColor = self.nextUpViewController.textColor;
-        self.nextUpViewController.headerLabel.textColor = self.nextUpViewController.textColor;
+        self.nextUpViewController.headerLabel.textColor = self.nextUpViewController.mediaView.textColor;
         [self.nextUpViewController.mediaView cfw_revert];
     }
     %end
@@ -366,6 +362,7 @@ NextUpManager *manager;
     %property (nonatomic, retain) NUSkipButton *routingButton;
     %property (nonatomic, retain) UIColor *textColor;
     %property (nonatomic, assign) CGFloat textAlpha;
+    %property (nonatomic, retain) UIColor *skipBackgroundColor;
 
     - (id)initWithFrame:(CGRect)arg1 {
         self = %orig;
@@ -374,7 +371,6 @@ NextUpManager *manager;
 
         self.routingButton = [%c(NUSkipButton) buttonWithType:UIButtonTypeCustom];
         self.routingButton.size = size;
-        self.routingButton.backgroundColor = [UIColor.grayColor colorWithAlphaComponent:0.5];
         self.routingButton.layer.cornerRadius = size / 2;
         
         float ratio = 1/3.;
@@ -415,6 +411,13 @@ NextUpManager *manager;
     }
 
     %new
+    - (void)updateSkipBackgroundColor:(UIColor *)color {
+        self.skipBackgroundColor = color;
+
+        self.routingButton.backgroundColor = color;
+    }
+
+    %new
     - (void)updateTextColor:(UIColor *)color {
         self.textColor = color;
 
@@ -432,7 +435,7 @@ NextUpManager *manager;
         %orig;
 
         self.routingButton.clear.strokeColor = self.textColor.CGColor;
-        self.routingButton.backgroundColor = [UIColor.grayColor colorWithAlphaComponent:0.5];
+        self.routingButton.backgroundColor = self.skipBackgroundColor;
     }
 
     %new
