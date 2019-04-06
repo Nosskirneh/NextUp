@@ -1,7 +1,11 @@
 #import "Headers.h"
 #import "Common.h"
 
-@implementation NextUpViewController
+@implementation NextUpViewController {
+    UIColor *_textColor;
+    CGFloat _textAlpha;
+    UIColor *_skipBackgroundColor;
+}
 
 @dynamic view;
 
@@ -22,8 +26,9 @@
                                                      name:kHideNextUp
                                                    object:nil];
 
-        self.textAlpha = 0.63f;
-        self.textColor = UIColor.blackColor;
+        _textAlpha = 0.63f;
+        _textColor = UIColor.blackColor;
+        _skipBackgroundColor = [UIColor.grayColor colorWithAlphaComponent:0.5];
         self.hapticGenerator = [[%c(UIImpactFeedbackGenerator) alloc] initWithStyle:UIImpactFeedbackStyleMedium];
         self.bundle = [NSBundle bundleWithPath:@"/Library/Application Support/NextUp.bundle"];
     }
@@ -57,8 +62,9 @@
 
     self.mediaView = [[%c(NextUpMediaHeaderView) alloc] initWithFrame:CGRectZero];
     self.mediaView.style = self.style;
-    self.mediaView.textAlpha = self.textAlpha;
-    [self.mediaView updateTextColor:self.textColor];
+    self.mediaView.textAlpha = _textAlpha;
+    [self.mediaView updateTextColor:_textColor];
+    [self.mediaView updateSkipBackgroundColor:_skipBackgroundColor];
 
     if ([_mediaView respondsToSelector:@selector(setShouldEnableMarquee:)])
         [_mediaView setShouldEnableMarquee:YES];
@@ -75,7 +81,7 @@
     self.headerLabel = [[UILabel alloc] init];
     self.headerLabel.backgroundColor = UIColor.clearColor;
     self.headerLabel.textAlignment = NSTextAlignmentLeft;
-    self.headerLabel.textColor = self.textColor;
+    self.headerLabel.textColor = _textColor;
     self.headerLabel.numberOfLines = 0;
     self.headerLabel.alpha = 0.64;
     self.headerLabel.text = [self.bundle localizedStringForKey:@"NEXT_UP" value:nil table:nil];

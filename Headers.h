@@ -69,8 +69,10 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @property (nonatomic, retain) NUSkipButton *routingButton;
 @property (nonatomic, retain) UIColor *textColor;
 @property (nonatomic, assign) CGFloat textAlpha;
+@property (nonatomic, retain) UIColor *skipBackgroundColor;
 - (CGRect)rectForMaxWidth:(CGRect)frame maxWidth:(CGFloat)maxWidth originX:(CGFloat)originX;
 - (void)updateTextColor:(UIColor *)color;
+- (void)updateSkipBackgroundColor:(UIColor *)color;
 @end
 
 
@@ -83,11 +85,7 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @property (nonatomic, retain) UILabel *headerLabel;
 @property (nonatomic, retain) NextUpMediaHeaderView *mediaView;
 @property (nonatomic, assign) BOOL showsHeader;
-@property (nonatomic, retain) UIColor *textColor;
-@property (nonatomic, assign) CGFloat textAlpha;
 @property (nonatomic, assign) BOOL controlCenter;
-@property (nonatomic, assign) int background;
-@property (nonatomic, assign) CGFloat cornerRadius;
 @property (assign, nonatomic) long long style;
 @end
 // ---
