@@ -191,9 +191,11 @@ NextUpManager *manager;
     %new
     - (void)hideNextUp {
         // Mark NextUp as should not be visible
-        [self mediaControlsController].shouldShowNextUp = NO;
+        SBDashBoardMediaControlsViewController *mediaControlsViewController = [self mediaControlsController];
+        mediaControlsViewController.shouldShowNextUp = NO;
 
-        [self reloadMediaWidget];
+        if (mediaControlsViewController.showingNextUp)
+            [self reloadMediaWidget];
     }
 
     %new
