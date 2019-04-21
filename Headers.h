@@ -103,7 +103,7 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 
 @interface MediaControlsContainerView : UIView
 @property (assign, nonatomic) long long style;
-@property (nonatomic, retain) NextUpViewController *nextUpViewController;
+@property (nonatomic, retain) UIView *nextUpView;
 @property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
 @property (nonatomic, assign) BOOL shouldShowNextUp;
 - (void)addNextUpView;
@@ -117,6 +117,7 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 
 @interface MediaControlsPanelViewController : UIViewController
 @property (nonatomic, retain) id delegate;
+@property (nonatomic, retain) NextUpViewController *nextUpViewController;
 @property (nonatomic, retain) MediaControlsParentContainerView *parentContainerView;
 @property (assign, nonatomic) long long style;
 
@@ -143,7 +144,6 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 
 
 @interface SBDashBoardMediaControlsViewController : UIViewController
-@property (nonatomic, retain) NextUpViewController *nextUpViewController;
 @property (nonatomic, assign) BOOL nextUpNeedPostFix;
 @property (nonatomic, assign) BOOL shouldShowNextUp;
 @property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
@@ -152,6 +152,7 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 - (void)initNextUp;
 - (void)addNextUpView;
 - (void)removeNextUpView;
+- (MediaControlsPanelViewController *)panelViewController;
 @end
 
 
@@ -161,7 +162,7 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 - (void)_updateMediaControlsVisibilityAnimated:(BOOL)arg;
 - (void)_prepareNowPlayingControlsView;
 - (void)nowPlayingController:(id)controller didChangeToState:(NSInteger)state;
-- (SBDashBoardMediaControlsViewController *)mediaControlsController;
+- (SBDashBoardMediaControlsViewController *)mediaControlsViewController;
 - (void)nextUpViewWasAdded;
 @end
 

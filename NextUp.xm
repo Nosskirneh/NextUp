@@ -41,30 +41,29 @@ NextUpManager *manager;
 
     %end
 
-    /* Control Center */
+    /* Both */
     %hook MediaControlsPanelViewController
 
+    %property (nonatomic, retain) NextUpViewController *nextUpViewController;
     %property (nonatomic, assign, getter=isNextUpInitialized) BOOL nextUpInitialized;
 
     - (void)setDelegate:(id)delegate {
         %orig;
 
-        if ([self NU_isControlCenter])
-            [self initNextUp];
-    }
-
-    - (void)setStyle:(int)style {
-        %orig;
-
-        if ([self NU_isControlCenter]) {
-            MediaControlsContainerView *containerView = self.parentContainerView.mediaControlsContainerView;
-            containerView.nextUpViewController.style = style;
-        }
+        // This has to be done in `setDelegate` as it seems like the only way to know if its CC/LS is by comparing the delegate class.
+        // Not ideal, but it works. Thus, we have to use `setDelegate` as it's executed after `viewDidLoad`.
+        [self initNextUp];
     }
 
     %new
     - (BOOL)NU_isControlCenter {
         return ([self.delegate class] == %c(MediaControlsEndpointsViewController));
+    }
+
+    - (void)setStyle:(int)style {
+        %orig;
+
+        self.nextUpViewController.style = style;
     }
 
     %new
@@ -82,17 +81,22 @@ NextUpManager *manager;
                                                          name:kHideNextUp
                                                        object:nil];
 
-            containerView.nextUpViewController = [[%c(NextUpViewController) alloc] init];
-            containerView.nextUpViewController.manager = manager;
-            containerView.nextUpViewController.controlCenter = YES;
-            containerView.nextUpViewController.textColor = UIColor.whiteColor;
+            self.nextUpViewController = [[%c(NextUpViewController) alloc] init];
+            self.nextUpViewController.manager = manager;
+            self.nextUpViewController.controlCenter = [self NU_isControlCenter];
+            containerView.nextUpView = self.nextUpViewController.view;
 
             self.nextUpInitialized = YES;
         }
     }
 
     %end
+    // ---
 
+    // The remaining parts (CC/LS) is for changing the heights/y-coordinates of their respective views.
+    // Can't be done in the panelViewController as they are fundamentally different views.
+
+    /* Control Center */
     %hook CCUIContentModuleContainerViewController
 
     - (void)setExpanded:(BOOL)expanded {
@@ -106,7 +110,7 @@ NextUpManager *manager;
 
     %hook MediaControlsContainerView
 
-    %property (nonatomic, retain) NextUpViewController *nextUpViewController;
+    %property (nonatomic, retain) UIView *nextUpView;
     %property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
     %property (nonatomic, assign) BOOL shouldShowNextUp;
 
@@ -118,10 +122,10 @@ NextUpManager *manager;
             frame.size.height = 101.0;
             self.frame = frame;
 
-            self.nextUpViewController.view.frame = CGRectMake(self.frame.origin.x,
-                                                              self.frame.origin.y + self.frame.size.height,
-                                                              self.frame.size.width,
-                                                              105);
+            self.nextUpView.frame = CGRectMake(self.frame.origin.x,
+                                               self.frame.origin.y + self.frame.size.height,
+                                               self.frame.size.width,
+                                               105);
 
             if (!self.showingNextUp)
                 [self addNextUpView];
@@ -130,8 +134,7 @@ NextUpManager *manager;
 
     %new
     - (void)addNextUpView {
-        [self.superview addSubview:self.nextUpViewController.view];
-
+        [self.superview addSubview:self.nextUpView];
         self.showingNextUp = YES;
     }
 
@@ -157,33 +160,32 @@ NextUpManager *manager;
     %hook SBDashBoardNotificationAdjunctListViewController
 
     - (id)init {
-        id orig = %orig;
-        [[NSNotificationCenter defaultCenter] addObserver:orig
+        self = %orig;
+        [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(showNextUp)
                                                      name:kShowNextUp
                                                    object:nil];
 
-        [[NSNotificationCenter defaultCenter] addObserver:orig
+        [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(hideNextUp)
                                                      name:kHideNextUp
                                                    object:nil];
-        return orig;
+        return self;
     }
 
     %new
-    - (SBDashBoardMediaControlsViewController *)mediaControlsController {
+    - (SBDashBoardMediaControlsViewController *)mediaControlsViewController {
         SBDashBoardNowPlayingController *nowPlayingController = [self valueForKey:@"_nowPlayingController"];
         return nowPlayingController.controlsViewController;
     }
 
     %new
     - (void)showNextUp {
-        SBDashBoardMediaControlsViewController *mediaControlsController = [self mediaControlsController];
-
         // Mark NextUp as should be visible
-        mediaControlsController.shouldShowNextUp = YES;
+        SBDashBoardMediaControlsViewController *mediaControlsViewController = [self mediaControlsViewController];
+        mediaControlsViewController.shouldShowNextUp = YES;
 
-        if (mediaControlsController.showingNextUp)
+        if (mediaControlsViewController.showingNextUp)
             return;
 
         // Reload the widget
@@ -191,19 +193,15 @@ NextUpManager *manager;
         [self _updateMediaControlsVisibilityAnimated:NO];
         MSHookIvar<NSInteger>(self, "_nowPlayingState") = 2;
         [self _updateMediaControlsVisibilityAnimated:YES];
-
-        // Not restoring width and height here since we want
-        // to do it when the animation is complete
     }
 
     %new
     - (void)hideNextUp {
-        SBDashBoardMediaControlsViewController *mediaControlsController = [self mediaControlsController];
-
         // Mark NextUp as should not be visible
-        mediaControlsController.shouldShowNextUp = NO;
+        SBDashBoardMediaControlsViewController *mediaControlsViewController = [self mediaControlsViewController];
+        mediaControlsViewController.shouldShowNextUp = NO;
 
-        if (!mediaControlsController.showingNextUp)
+        if (!mediaControlsViewController.showingNextUp)
             return;
 
         // Reload the widget
@@ -211,32 +209,14 @@ NextUpManager *manager;
         [self _updateMediaControlsVisibilityAnimated:YES];
     }
 
-    // Restore width and height (touches don't work otherwise)
-    %new
-    - (void)nextUpViewWasAdded {
-        SBDashBoardMediaControlsViewController *mediaControlsController = [self mediaControlsController];
-
-        CGRect frame = mediaControlsController.view.frame;
-        frame.size.width = self.view.frame.size.width;
-        frame.size.height = self.view.frame.size.height;
-        mediaControlsController.view.frame = frame;
-    }
-
     %end
 
 
     %hook SBDashBoardMediaControlsViewController
-    %property (nonatomic, retain) NextUpViewController *nextUpViewController;
     %property (nonatomic, assign) BOOL nextUpNeedPostFix;
     %property (nonatomic, assign) BOOL shouldShowNextUp;
     %property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
     %property (nonatomic, assign, getter=isNextUpInitialized) BOOL nextUpInitialized;
-
-    - (void)viewDidLoad {
-        %orig;
-
-        [self initNextUp];
-    }
 
     - (CGSize)preferredContentSize {
         CGSize orig = %orig;
@@ -253,54 +233,28 @@ NextUpManager *manager;
     }
 
     %new
-    - (void)initNextUp {
-        if(![self isNextUpInitialized]) {
-            self.nextUpViewController = [[%c(NextUpViewController) alloc] init];
-
-            MediaControlsPanelViewController *panelViewController = MSHookIvar<MediaControlsPanelViewController *>(self, "_mediaControlsPanelViewController");
-            self.nextUpViewController.style = panelViewController.style;
-
-            if (%c(NoctisSystemController)) {
-                NSDictionary *noctisPrefs = [NSDictionary dictionaryWithContentsOfFile:@"/var/mobile/Library/Preferences/com.laughingquoll.noctisxiprefs.settings.plist"];
-                if (!noctisPrefs || !noctisPrefs[@"enableMedia"] || [noctisPrefs[@"enableMedia"] boolValue]) {
-                    self.nextUpViewController.textColor = UIColor.whiteColor;
-                    self.nextUpViewController.style = 2;
-                }
-            }
-
-            self.nextUpViewController.manager = manager;
-
-            self.nextUpInitialized = YES;
-        }
-    }
-
-    - (void)handleEvent:(SBDashBoardEvent *)event {
-        %orig;
-
-        if (event.type == 18 && self.nextUpNeedPostFix) { // SignificantUserInteraction
-            self.nextUpNeedPostFix = NO;
-            [self.nextUpViewController viewDidAppear:YES];
-            [[self _presenter] nextUpViewWasAdded];
-        }
+    - (MediaControlsPanelViewController *)panelViewController {
+        return MSHookIvar<MediaControlsPanelViewController *>(self, "_mediaControlsPanelViewController");
     }
 
     %new
     - (void)addNextUpView {
-        [self.view addSubview:self.nextUpViewController.view];
+        MediaControlsPanelViewController *panelViewController = [self panelViewController];
+        [self.view addSubview:panelViewController.nextUpViewController.view];
 
-        UIView *mediaView = ((UIViewController *)[self valueForKey:@"_mediaControlsPanelViewController"]).view;
+        UIView *mediaView = panelViewController.view;
 
-        self.nextUpViewController.view.frame = CGRectMake(mediaView.frame.origin.x,
-                                                          mediaView.frame.origin.y + mediaView.frame.size.height,
-                                                          mediaView.frame.size.width,
-                                                          105);
+        panelViewController.nextUpViewController.view.frame = CGRectMake(mediaView.frame.origin.x,
+                                                                         mediaView.frame.origin.y + mediaView.frame.size.height,
+                                                                         mediaView.frame.size.width,
+                                                                         105);
         self.showingNextUp = YES;
         self.nextUpNeedPostFix = YES;
     }
 
     %new
     - (void)removeNextUpView {
-        [self.nextUpViewController.view removeFromSuperview];
+        [[self panelViewController].nextUpViewController.view removeFromSuperview];
         self.showingNextUp = NO;
     }
 
@@ -312,19 +266,19 @@ NextUpManager *manager;
     %property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
 
     - (id)initWithFrame:(CGRect)frame delegate:(id)delegate {
-        SBDashBoardQuickActionsView *orig = %orig;
+        self = %orig;
 
-        [[NSNotificationCenter defaultCenter] addObserver:orig
+        [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(showNextUp)
                                                      name:kShowNextUp
                                                    object:nil];
 
-        [[NSNotificationCenter defaultCenter] addObserver:orig
+        [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(hideNextUp)
                                                      name:kHideNextUp
                                                    object:nil];
 
-        return orig;
+        return self;
     }
 
     %new
@@ -378,15 +332,19 @@ NextUpManager *manager;
     - (void)cfw_colorize:(CFWColorInfo *)colorInfo {
         %orig;
 
-        self.nextUpViewController.headerLabel.textColor = colorInfo.primaryColor;
-        [self.nextUpViewController.mediaView cfw_colorize:colorInfo];
+        NextUpViewController *nextUpViewController = [self panelViewController].nextUpViewController;
+
+        nextUpViewController.headerLabel.textColor = colorInfo.primaryColor;
+        [nextUpViewController.mediaView cfw_colorize:colorInfo];
     }
 
     - (void)cfw_revert {
         %orig;
 
-        self.nextUpViewController.headerLabel.textColor = self.nextUpViewController.mediaView.textColor;
-        [self.nextUpViewController.mediaView cfw_revert];
+        NextUpViewController *nextUpViewController = [self panelViewController].nextUpViewController;
+
+        nextUpViewController.headerLabel.textColor = nextUpViewController.mediaView.textColor;
+        [nextUpViewController.mediaView cfw_revert];
     }
     %end
 
@@ -617,7 +575,7 @@ void showTrialEndedMessage() {
 %ctor {
     manager = [[NextUpManager alloc] init];
 
-    // License check – if no license found, present message. If no valid license found, do not init
+    // License check – if no license found, present message. If no valid license found, do not init
     switch (check_lic(licensePath$bs(), package$bs())) {
         case CheckNoLicense:
             %init(Welcome);
