@@ -363,6 +363,24 @@ NextUpManager *manager;
         [self.nextUpViewController.mediaView cfw_revert];
     }
     %end
+
+    %hook NextUpMediaHeaderView
+
+    - (void)cfw_colorize:(CFWColorInfo *)colorInfo {
+        %orig;
+
+        self.routingButton.clear.strokeColor = colorInfo.secondaryColor.CGColor;
+        self.routingButton.backgroundColor = colorInfo.primaryColor;
+    }
+
+    - (void)cfw_revert {
+        %orig;
+
+        self.routingButton.clear.strokeColor = self.textColor.CGColor;
+        self.routingButton.backgroundColor = self.skipBackgroundColor;
+    }
+
+    %end
 %end
 // ---
 
@@ -449,20 +467,6 @@ NextUpManager *manager;
         self.textColor = color;
 
         self.routingButton.clear.strokeColor = color.CGColor;
-    }
-
-    - (void)cfw_colorize:(CFWColorInfo *)colorInfo {
-        %orig;
-
-        self.routingButton.clear.strokeColor = colorInfo.secondaryColor.CGColor;
-        self.routingButton.backgroundColor = colorInfo.primaryColor;
-    }
-
-    - (void)cfw_revert {
-        %orig;
-
-        self.routingButton.clear.strokeColor = self.textColor.CGColor;
-        self.routingButton.backgroundColor = self.skipBackgroundColor;
     }
 
     %new
