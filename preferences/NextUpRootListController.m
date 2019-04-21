@@ -5,6 +5,7 @@
 #import "../../DRM/PFStatusBarAlert/PFStatusBarAlert.h"
 #import <spawn.h>
 #import <PayPalMobile/PayPalMobile.h>
+#import "../../TwitterStuff/Prompt.h"
 
 #define NextUpColor [UIColor colorWithRed:0.00 green:0.65 blue:1.00 alpha:1.0] // #00A5FF
 #define preferencesFrameworkPath @"/System/Library/PrivateFrameworks/Preferences.framework"
@@ -50,6 +51,11 @@
     _specifiers = addDRMSpecifiers(mspecs, self, licensePath$bs(), package$bs(), licenseFooterText$bs(), trialFooterText$bs());
 
     return _specifiers;
+}
+
+- (void)loadView {
+    [super loadView];
+    presentFollowAlert(kPrefPath, self);
 }
 
 - (id)readPreferenceValue:(PSSpecifier *)specifier {
