@@ -171,7 +171,11 @@ NextUpManager *manager;
     %new
     - (void)showNextUp {
         // Mark NextUp as should be visible
-        [self mediaControlsController].shouldShowNextUp = YES;
+        SBDashBoardMediaControlsViewController *mediaControlsViewController = [self mediaControlsController];
+        mediaControlsViewController.shouldShowNextUp = YES;
+
+        if (!mediaControlsViewController.showingNextUp)
+            [self reloadMediaWidget];
 
         // Not restoring width and height here since we want
         // to do it when the animation is complete
@@ -181,6 +185,18 @@ NextUpManager *manager;
     - (void)hideNextUp {
         // Mark NextUp as should not be visible
         [self mediaControlsController].shouldShowNextUp = NO;
+
+        [self reloadMediaWidget];
+    }
+
+    %new
+    - (void)reloadMediaWidget {
+        SBDashBoardAdjunctListItem *item = self.identifiersToItems[@"SBDashBoardNowPlayingAssertionIdentifier"];
+        if (!item)
+            return;
+
+        [item.platterView removeFromSuperview];
+        [self _insertItem:item animated:YES];
     }
 
     // Restore width and height (touches don't work otherwise)

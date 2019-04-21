@@ -150,8 +150,16 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 - (void)removeNextUpView;
 @end
 
+@interface SBDashBoardAdjunctListItem : NSObject
+@property (nonatomic, retain) UIView *platterView;
+@end
 
 @interface SBDashBoardNotificationAdjunctListViewController : UIViewController
+@property (nonatomic, retain) NSMutableDictionary<NSString *, SBDashBoardAdjunctListItem *> *identifiersToItems;
+- (void)_insertItem:(SBDashBoardAdjunctListItem *)item animated:(BOOL)animate;
+- (void)_removeItem:(SBDashBoardAdjunctListItem *)item animated:(BOOL)animate;
+- (void)reloadMediaWidget;
+
 - (void)_updateAdjunctListItems;
 - (void)_updateMediaControlsVisibility;
 - (void)_updateMediaControlsVisibilityAnimated:(BOOL)arg;
