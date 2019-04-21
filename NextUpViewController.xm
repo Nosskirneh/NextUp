@@ -9,8 +9,10 @@
 
 @dynamic view;
 
-- (id)init {
+- (id)initWithControlCenter:(BOOL)controlCenter {
     if (self == [super init]) {
+        _controlCenter = controlCenter;
+
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(updateLabels)
                                                      name:kUpdateLabels
