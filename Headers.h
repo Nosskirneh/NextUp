@@ -13,6 +13,23 @@
 @end
 
 
+typedef enum UIImpactFeedbackStyle : NSInteger {
+    UIImpactFeedbackStyleHeavy,
+    UIImpactFeedbackStyleLight,
+    UIImpactFeedbackStyleMedium
+} UIImpactFeedbackStyle;
+
+@interface UIImpactFeedbackGenerator : NSObject
+- (id)initWithStyle:(UIImpactFeedbackStyle)style;
+- (void)impactOccurred;
+@end
+
+
+@interface MediaControlsTransportButton : UIButton
+@property (nonatomic, retain) UIImpactFeedbackGenerator *hapticGenerator;
+@end
+
+
 @interface CFWColorInfo : NSObject
 @property(nonatomic, retain) UIColor *backgroundColor;
 @property(nonatomic, retain) UIColor *primaryColor;
@@ -45,19 +62,6 @@
 - (void)cfw_colorize:(CFWColorInfo *)colorInfo;
 - (void)cfw_revert;
 @end
-
-
-typedef enum UIImpactFeedbackStyle : NSInteger {
-    UIImpactFeedbackStyleHeavy,
-    UIImpactFeedbackStyleLight,
-    UIImpactFeedbackStyleMedium
-} UIImpactFeedbackStyle;
-
-@interface UIImpactFeedbackGenerator : NSObject
-- (id)initWithStyle:(UIImpactFeedbackStyle)style;
-- (void)impactOccurred;
-@end
-
 
 
 @interface NUSkipButton : UIButton

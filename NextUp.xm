@@ -327,11 +327,30 @@ NextUpManager *manager;
     }
 
     %end
-
     // ---
 %end
 // ---
 
+
+/* Add haptic feedback to the media buttons */
+%group HapticFeedback
+    %hook MediaControlsTransportButton
+    %property (nonatomic, retain) UIImpactFeedbackGenerator *hapticGenerator;
+
+    - (id)initWithFrame:(CGRect)frame {
+        self = %orig;
+        self.hapticGenerator = [[%c(UIImpactFeedbackGenerator) alloc] initWithStyle:UIImpactFeedbackStyleMedium];
+        return self;
+    }
+
+    - (void)_handleTouchUp {
+        %orig;
+        [self.hapticGenerator impactOccurred];
+    }
+
+    %end
+%end
+// ---
 
 /* ColorFlow 4 support */
 %group ColorFlow
@@ -600,6 +619,9 @@ void showTrialEndedMessage() {
     [manager setup];
 
     %init(SpringBoard);
+    if (!manager.preferences[kHapticFeedbackOther] || [manager.preferences[kHapticFeedbackOther] boolValue])
+        %init(HapticFeedback);
+
     if ([%c(SBDashBoardMediaControlsViewController) instancesRespondToSelector:@selector(cfw_colorize:)])
         %init(ColorFlow);
     %init(CustomViews);
