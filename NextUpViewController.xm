@@ -1,12 +1,18 @@
 #import "Headers.h"
 #import "Common.h"
 
-@implementation NextUpViewController
+@implementation NextUpViewController {
+    UIColor *_textColor;
+    CGFloat _textAlpha;
+    UIColor *_skipBackgroundColor;
+}
 
 @dynamic view;
 
-- (id)init {
+- (id)initWithControlCenter:(BOOL)controlCenter {
     if (self == [super init]) {
+        _controlCenter = controlCenter;
+
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(updateLabels)
                                                      name:kUpdateLabels
@@ -22,9 +28,13 @@
                                                      name:kHideNextUp
                                                    object:nil];
 
-        self.textAlpha = 0.63f;
-        self.textColor = UIColor.blackColor;
-        self.hapticGenerator = [[%c(UIImpactFeedbackGenerator) alloc] initWithStyle:UIImpactFeedbackStyleMedium];
+        _textAlpha = 0.63f;
+        _textColor = UIColor.blackColor;
+        _skipBackgroundColor = [UIColor.grayColor colorWithAlphaComponent:0.5];
+
+        if (!_manager.preferences[kHapticFeedbackSkip] || [_manager.preferences[kHapticFeedbackSkip] boolValue])
+            self.hapticGenerator = [[%c(UIImpactFeedbackGenerator) alloc] initWithStyle:UIImpactFeedbackStyleMedium];
+
         self.bundle = [NSBundle bundleWithPath:@"/Library/Application Support/NextUp.bundle"];
     }
 
@@ -57,8 +67,9 @@
 
     self.mediaView = [[%c(NextUpMediaHeaderView) alloc] initWithFrame:CGRectZero];
     self.mediaView.style = self.style;
-    self.mediaView.textAlpha = self.textAlpha;
-    [self.mediaView updateTextColor:self.textColor];
+    self.mediaView.textAlpha = _textAlpha;
+    [self.mediaView updateTextColor:_textColor];
+    [self.mediaView updateSkipBackgroundColor:_skipBackgroundColor];
 
     if ([_mediaView respondsToSelector:@selector(setShouldEnableMarquee:)])
         [_mediaView setShouldEnableMarquee:YES];
@@ -75,7 +86,7 @@
     self.headerLabel = [[UILabel alloc] init];
     self.headerLabel.backgroundColor = UIColor.clearColor;
     self.headerLabel.textAlignment = NSTextAlignmentLeft;
-    self.headerLabel.textColor = self.textColor;
+    self.headerLabel.textColor = _textColor;
     self.headerLabel.numberOfLines = 0;
     self.headerLabel.alpha = 0.64;
     self.headerLabel.text = [self.bundle localizedStringForKey:@"NEXT_UP" value:nil table:nil];
@@ -115,7 +126,8 @@
 }
 
 - (void)skipTrack:(UIButton *)sender {
-    [self.hapticGenerator impactOccurred];
+    if (self.hapticGenerator)
+        [self.hapticGenerator impactOccurred];
 
     NSString *skipNext = [NSString stringWithFormat:@"%@/%@/%@", NEXTUP_IDENTIFIER, kSkipNext, _manager.mediaApplication];
     notify(skipNext);
@@ -130,20 +142,18 @@
         _mediaView.secondaryString = metadata[kSubtitle];
         _mediaView.artworkView.image = [UIImage imageWithData:metadata[kArtwork]];
         _mediaView.routingButton.hidden = metadata[kSkipable] && ![metadata[kSkipable] boolValue];
+
+        if ([_manager hideOnEmpty])
+            [[NSNotificationCenter defaultCenter] postNotificationName:kShowNextUp object:nil];
     } else {
         _mediaView.primaryString = @"No next track available";
         _mediaView.secondaryString = nil;
         _mediaView.artworkView.image = nil;
         _mediaView.routingButton.hidden = YES;
+
+        if ([_manager hideOnEmpty])
+            [[NSNotificationCenter defaultCenter] postNotificationName:kHideNextUp object:nil];
     }
-}
-
-// Note that this is called manually
-- (void)viewDidAppear:(BOOL)arg {
-    [super viewDidAppear:arg];
-
-    _mediaView.primaryMarqueeView.marqueeEnabled = YES;
-    _mediaView.secondaryMarqueeView.marqueeEnabled = YES;
 }
 
 @end

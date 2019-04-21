@@ -24,6 +24,7 @@ NSString *const kYTMSkipNext = @"se.nosskirneh.nextup/skipNext/com.google.ios.yo
 NSString *const kGPMSkipNext = @"se.nosskirneh.nextup/skipNext/com.google.PlayMusic";
 NSString *const kTDLSkipNext = @"se.nosskirneh.nextup/skipNext/com.aspiro.TIDAL";
 NSString *const kANGSkipNext = @"se.nosskirneh.nextup/skipNext/com.anghami.anghami";
+NSString *const kVOXSkipNext = @"se.nosskirneh.nextup/skipNext/com.coppertino.VoxMobile";
 
 NSString *const kSPTManualUpdate = @"se.nosskirneh.nextup/manualUpdate/com.spotify.client";
 NSString *const kAPMManualUpdate = @"se.nosskirneh.nextup/manualUpdate/com.apple.Music";
@@ -34,6 +35,7 @@ NSString *const kSDCManualUpdate = @"se.nosskirneh.nextup/manualUpdate/com.sound
 NSString *const kGPMManualUpdate = @"se.nosskirneh.nextup/manualUpdate/com.google.PlayMusic";
 NSString *const kTDLManualUpdate = @"se.nosskirneh.nextup/manualUpdate/com.aspiro.TIDAL";
 NSString *const kANGManualUpdate = @"se.nosskirneh.nextup/manualUpdate/com.anghami.anghami";
+NSString *const kVOXManualUpdate = @"se.nosskirneh.nextup/manualUpdate/com.coppertino.VoxMobile";
 
 NSString *const kTitle = @"title";
 NSString *const kSubtitle = @"subtitle";
@@ -41,6 +43,9 @@ NSString *const kSkipable = @"skipable";
 NSString *const kArtwork = @"artwork";
 
 NSString *const kHideXButtons = @"hideXButtons";
+NSString *const kHideOnEmpty = @"hideOnEmpty";
+NSString *const kHapticFeedbackOther = @"hapticFeedbackOther";
+NSString *const kHapticFeedbackSkip = @"hapticFeedbackSkip";
 
 
 void sendNextTrackMetadata(NSDictionary *metadata) {

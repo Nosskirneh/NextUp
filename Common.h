@@ -42,6 +42,7 @@ extern NSString *const kYTMSkipNext;
 extern NSString *const kGPMSkipNext;
 extern NSString *const kTDLSkipNext;
 extern NSString *const kANGSkipNext;
+extern NSString *const kVOXSkipNext;
 
 extern NSString *const kSPTManualUpdate;
 extern NSString *const kAPMManualUpdate;
@@ -52,6 +53,7 @@ extern NSString *const kSDCManualUpdate;
 extern NSString *const kGPMManualUpdate;
 extern NSString *const kTDLManualUpdate;
 extern NSString *const kANGManualUpdate;
+extern NSString *const kVOXManualUpdate;
 
 extern NSString *const kTitle;
 extern NSString *const kSubtitle;
@@ -59,6 +61,9 @@ extern NSString *const kSkipable;
 extern NSString *const kArtwork;
 
 extern NSString *const kHideXButtons;
+extern NSString *const kHideOnEmpty;
+extern NSString *const kHapticFeedbackOther;
+extern NSString *const kHapticFeedbackSkip;
 
 
 @interface UIImage (Private)

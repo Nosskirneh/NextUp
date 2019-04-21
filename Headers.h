@@ -3,13 +3,30 @@
 /* Common */
 @interface SBMediaController (Addition)
 @property (nonatomic, retain) NSDictionary *nextUpPrefs;
-- (BOOL)isValidApplicationID:(NSString *)bundleID;
+- (BOOL)shouldActivateForApplicationID:(NSString *)bundleID;
 @end
 
 
 @interface SBIdleTimerGlobalCoordinator
 + (id)sharedInstance;
 - (void)resetIdleTimer;
+@end
+
+
+typedef enum UIImpactFeedbackStyle : NSInteger {
+    UIImpactFeedbackStyleHeavy,
+    UIImpactFeedbackStyleLight,
+    UIImpactFeedbackStyleMedium
+} UIImpactFeedbackStyle;
+
+@interface UIImpactFeedbackGenerator : NSObject
+- (id)initWithStyle:(UIImpactFeedbackStyle)style;
+- (void)impactOccurred;
+@end
+
+
+@interface MediaControlsTransportButton : UIButton
+@property (nonatomic, retain) UIImpactFeedbackGenerator *hapticGenerator;
 @end
 
 
@@ -47,19 +64,6 @@
 @end
 
 
-typedef enum UIImpactFeedbackStyle : NSInteger {
-    UIImpactFeedbackStyleHeavy,
-    UIImpactFeedbackStyleLight,
-    UIImpactFeedbackStyleMedium
-} UIImpactFeedbackStyle;
-
-@interface UIImpactFeedbackGenerator : NSObject
-- (id)initWithStyle:(UIImpactFeedbackStyle)style;
-- (void)impactOccurred;
-@end
-
-
-
 @interface NUSkipButton : UIButton
 @property (nonatomic, retain) CAShapeLayer *clear;
 @property (nonatomic, assign) CGFloat size;
@@ -69,8 +73,10 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @property (nonatomic, retain) NUSkipButton *routingButton;
 @property (nonatomic, retain) UIColor *textColor;
 @property (nonatomic, assign) CGFloat textAlpha;
+@property (nonatomic, retain) UIColor *skipBackgroundColor;
 - (CGRect)rectForMaxWidth:(CGRect)frame maxWidth:(CGFloat)maxWidth originX:(CGFloat)originX;
 - (void)updateTextColor:(UIColor *)color;
+- (void)updateSkipBackgroundColor:(UIColor *)color;
 @end
 
 
@@ -83,12 +89,9 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @property (nonatomic, retain) UILabel *headerLabel;
 @property (nonatomic, retain) NextUpMediaHeaderView *mediaView;
 @property (nonatomic, assign) BOOL showsHeader;
-@property (nonatomic, retain) UIColor *textColor;
-@property (nonatomic, assign) CGFloat textAlpha;
 @property (nonatomic, assign) BOOL controlCenter;
-@property (nonatomic, assign) int background;
-@property (nonatomic, assign) CGFloat cornerRadius;
 @property (assign, nonatomic) long long style;
+- (id)initWithControlCenter:(BOOL)controlCenter;
 @end
 // ---
 
@@ -101,7 +104,7 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 
 @interface MediaControlsContainerView : UIView
 @property (assign, nonatomic) long long style;
-@property (nonatomic, retain) NextUpViewController *nextUpViewController;
+@property (nonatomic, retain) UIView *nextUpView;
 @property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
 @property (nonatomic, assign) BOOL shouldShowNextUp;
 - (void)addNextUpView;
@@ -115,6 +118,7 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 
 @interface MediaControlsPanelViewController : UIViewController
 @property (nonatomic, retain) id delegate;
+@property (nonatomic, retain) NextUpViewController *nextUpViewController;
 @property (nonatomic, retain) MediaControlsParentContainerView *parentContainerView;
 @property (assign, nonatomic) long long style;
 
@@ -141,7 +145,6 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 
 
 @interface SBDashBoardMediaControlsViewController : UIViewController
-@property (nonatomic, retain) NextUpViewController *nextUpViewController;
 @property (nonatomic, assign) BOOL nextUpNeedPostFix;
 @property (nonatomic, assign) BOOL shouldShowNextUp;
 @property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
@@ -150,6 +153,7 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 - (void)initNextUp;
 - (void)addNextUpView;
 - (void)removeNextUpView;
+- (MediaControlsPanelViewController *)panelViewController;
 @end
 
 
@@ -159,7 +163,7 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 - (void)_updateMediaControlsVisibilityAnimated:(BOOL)arg;
 - (void)_prepareNowPlayingControlsView;
 - (void)nowPlayingController:(id)controller didChangeToState:(NSInteger)state;
-- (SBDashBoardMediaControlsViewController *)mediaControlsController;
+- (SBDashBoardMediaControlsViewController *)mediaControlsViewController;
 - (void)nextUpViewWasAdded;
 @end
 

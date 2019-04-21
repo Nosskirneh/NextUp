@@ -33,6 +33,21 @@
             <key>default</key>
             <true/>
             <key>key</key>
+            <string>com.coppertino.VoxMobile</string>
+            <key>icon</key>
+            <string>vox.png</string>
+            <key>label</key>
+            <string>Enable for VOX</string>
+        </dict>
+
+        <dict>
+            <key>cell</key>
+            <string>PSSwitchCell</string>
+            <key>cellClass</key>
+            <string>NextUpSwitchTableCell</string>
+            <key>default</key>
+            <true/>
+            <key>key</key>
             <string>com.apple.Music</string>
             <key>id</key>
             <string>Music</string>
@@ -184,6 +199,69 @@
             <string>hideXButtons</string>
             <key>label</key>
             <string>Hide iPhone X buttons</string>
+            <key>PostNotification</key>
+            <string>se.nosskirneh.nextup/preferencesChanged</string>
+        </dict>
+
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>footerAlignment</key>
+            <integer>0</integer>
+            <key>footerText</key>
+            <string>Hide NextUp when there is no next track available.</string>
+        </dict>
+
+        <dict>
+            <key>cell</key>
+            <string>PSSwitchCell</string>
+            <key>cellClass</key>
+            <string>NextUpSwitchTableCell</string>
+            <key>default</key>
+            <false/>
+            <key>key</key>
+            <string>hideOnEmpty</string>
+            <key>label</key>
+            <string>Hide on empty</string>
+            <key>PostNotification</key>
+            <string>se.nosskirneh.nextup/preferencesChanged</string>
+        </dict>
+
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>footerAlignment</key>
+            <integer>0</integer>
+            <key>footerText</key>
+            <string>These settings require a respring.</string>
+        </dict>
+
+        <dict>
+            <key>cell</key>
+            <string>PSSwitchCell</string>
+            <key>cellClass</key>
+            <string>NextUpSwitchTableCell</string>
+            <key>default</key>
+            <true/>
+            <key>key</key>
+            <string>hapticFeedbackOther</string>
+            <key>label</key>
+            <string>Haptic Feedback (Other buttons)</string>
+            <key>PostNotification</key>
+            <string>se.nosskirneh.nextup/preferencesChanged</string>
+        </dict>
+
+        <dict>
+            <key>cell</key>
+            <string>PSSwitchCell</string>
+            <key>cellClass</key>
+            <string>NextUpSwitchTableCell</string>
+            <key>default</key>
+            <true/>
+            <key>key</key>
+            <string>hapticFeedbackSkip</string>
+            <key>label</key>
+            <string>Haptic Feedback (Skip button)</string>
             <key>PostNotification</key>
             <string>se.nosskirneh.nextup/preferencesChanged</string>
         </dict>

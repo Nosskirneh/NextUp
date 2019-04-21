@@ -51,4 +51,8 @@
     _trialEnded = YES;
 }
 
+- (BOOL)hideOnEmpty {
+    return self.preferences[kHideOnEmpty] && [self.preferences[kHideOnEmpty] boolValue];
+}
+
 @end
