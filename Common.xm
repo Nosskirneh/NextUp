@@ -43,6 +43,8 @@ NSString *const kSkipable = @"skipable";
 NSString *const kArtwork = @"artwork";
 
 NSString *const kHideXButtons = @"hideXButtons";
+NSString *const kHapticFeedbackOther = @"hapticFeedbackOther";
+NSString *const kHapticFeedbackSkip = @"hapticFeedbackSkip";
 
 
 void sendNextTrackMetadata(NSDictionary *metadata) {

@@ -29,7 +29,10 @@
         _textAlpha = 0.63f;
         _textColor = UIColor.blackColor;
         _skipBackgroundColor = [UIColor.grayColor colorWithAlphaComponent:0.5];
-        self.hapticGenerator = [[%c(UIImpactFeedbackGenerator) alloc] initWithStyle:UIImpactFeedbackStyleMedium];
+
+        if (!_manager.preferences[kHapticFeedbackSkip] || [_manager.preferences[kHapticFeedbackSkip] boolValue])
+            self.hapticGenerator = [[%c(UIImpactFeedbackGenerator) alloc] initWithStyle:UIImpactFeedbackStyleMedium];
+
         self.bundle = [NSBundle bundleWithPath:@"/Library/Application Support/NextUp.bundle"];
     }
 
@@ -121,7 +124,8 @@
 }
 
 - (void)skipTrack:(UIButton *)sender {
-    [self.hapticGenerator impactOccurred];
+    if (self.hapticGenerator)
+        [self.hapticGenerator impactOccurred];
 
     NSString *skipNext = [NSString stringWithFormat:@"%@/%@/%@", NEXTUP_IDENTIFIER, kSkipNext, _manager.mediaApplication];
     notify(skipNext);
