@@ -3,7 +3,7 @@
 /* Common */
 @interface SBMediaController (Addition)
 @property (nonatomic, retain) NSDictionary *nextUpPrefs;
-- (BOOL)isValidApplicationID:(NSString *)bundleID;
+- (BOOL)shouldActivateForApplicationID:(NSString *)bundleID;
 @end
 
 

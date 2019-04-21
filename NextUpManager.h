@@ -12,4 +12,5 @@
 - (void)setup;
 - (void)reloadPreferences;
 - (void)setTrialEnded;
+- (BOOL)hideOnEmpty;
 @end

@@ -61,6 +61,7 @@ extern NSString *const kSkipable;
 extern NSString *const kArtwork;
 
 extern NSString *const kHideXButtons;
+extern NSString *const kHideOnEmpty;
 extern NSString *const kHapticFeedbackOther;
 extern NSString *const kHapticFeedbackSkip;
 
