@@ -140,11 +140,17 @@
         _mediaView.secondaryString = metadata[kSubtitle];
         _mediaView.artworkView.image = [UIImage imageWithData:metadata[kArtwork]];
         _mediaView.routingButton.hidden = metadata[kSkipable] && ![metadata[kSkipable] boolValue];
+
+        if ([_manager hideOnEmpty])
+            [[NSNotificationCenter defaultCenter] postNotificationName:kShowNextUp object:nil];
     } else {
         _mediaView.primaryString = @"No next track available";
         _mediaView.secondaryString = nil;
         _mediaView.artworkView.image = nil;
         _mediaView.routingButton.hidden = YES;
+
+        if ([_manager hideOnEmpty])
+            [[NSNotificationCenter defaultCenter] postNotificationName:kHideNextUp object:nil];
     }
 }
 

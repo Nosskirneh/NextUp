@@ -43,6 +43,7 @@ NSString *const kSkipable = @"skipable";
 NSString *const kArtwork = @"artwork";
 
 NSString *const kHideXButtons = @"hideXButtons";
+NSString *const kHideOnEmpty = @"hideOnEmpty";
 NSString *const kHapticFeedbackOther = @"hapticFeedbackOther";
 NSString *const kHapticFeedbackSkip = @"hapticFeedbackSkip";
 

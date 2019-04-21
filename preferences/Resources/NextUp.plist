@@ -202,6 +202,31 @@
             <key>PostNotification</key>
             <string>se.nosskirneh.nextup/preferencesChanged</string>
         </dict>
+
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>footerAlignment</key>
+            <integer>0</integer>
+            <key>footerText</key>
+            <string>Hide NextUp when there is no next track available.</string>
+        </dict>
+
+        <dict>
+            <key>cell</key>
+            <string>PSSwitchCell</string>
+            <key>cellClass</key>
+            <string>NextUpSwitchTableCell</string>
+            <key>default</key>
+            <false/>
+            <key>key</key>
+            <string>hideOnEmpty</string>
+            <key>label</key>
+            <string>Hide on empty</string>
+            <key>PostNotification</key>
+            <string>se.nosskirneh.nextup/preferencesChanged</string>
+        </dict>
+
         <dict>
             <key>cell</key>
             <string>PSGroupCell</string>

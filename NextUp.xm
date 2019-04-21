@@ -17,15 +17,20 @@ NextUpManager *manager;
     %hook SBMediaController
 
     %new
-    - (BOOL)isValidApplicationID:(NSString *)bundleID {
-        return !manager.preferences[bundleID] || [manager.preferences[bundleID] boolValue];
+    - (BOOL)shouldActivateForApplicationID:(NSString *)bundleID {
+        return [manager.enabledApps containsObject:bundleID] &&
+               (!manager.preferences[bundleID] || [manager.preferences[bundleID] boolValue]);
     }
 
     - (void)_setNowPlayingApplication:(SBApplication *)app {
         NSString *bundleID = app.bundleIdentifier;
-        if ([manager.enabledApps containsObject:app.bundleIdentifier] && [self isValidApplicationID:app.bundleIdentifier] && !manager.trialEnded) {
+        if ([self shouldActivateForApplicationID:bundleID] && !manager.trialEnded) {
             [manager setMediaApplication:bundleID];
-            [[NSNotificationCenter defaultCenter] postNotificationName:kShowNextUp object:nil];
+
+            // If we should not hide on empty, we show NextUp from the beginning.
+            // In the other case, this is done from the NextUpViewController
+            if (![manager hideOnEmpty])
+                [[NSNotificationCenter defaultCenter] postNotificationName:kShowNextUp object:nil];
         } else {
             [manager setMediaApplication:nil];
             [[NSNotificationCenter defaultCenter] postNotificationName:kHideNextUp object:nil];
@@ -132,13 +137,15 @@ NextUpManager *manager;
     %new
     - (void)showNextUp {
         self.shouldShowNextUp = YES;
-        [self layoutSubviews];
+        if (!self.showingNextUp)
+            [self layoutSubviews];
     }
 
     %new
     - (void)hideNextUp {
         self.shouldShowNextUp = NO;
-        [self layoutSubviews];
+        if (self.showingNextUp)
+            [self layoutSubviews];
     }
 
     %end
