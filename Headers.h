@@ -145,11 +145,8 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 
 
 @interface SBDashBoardMediaControlsViewController : UIViewController
-@property (nonatomic, assign) BOOL nextUpNeedPostFix;
 @property (nonatomic, assign) BOOL shouldShowNextUp;
 @property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
-@property (nonatomic, assign, getter=isNextUpInitialized) BOOL nextUpInitialized;
-- (id)_presenter;
 - (void)initNextUp;
 - (void)addNextUpView;
 - (void)removeNextUpView;

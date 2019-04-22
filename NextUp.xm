@@ -213,10 +213,8 @@ NextUpManager *manager;
 
 
     %hook SBDashBoardMediaControlsViewController
-    %property (nonatomic, assign) BOOL nextUpNeedPostFix;
     %property (nonatomic, assign) BOOL shouldShowNextUp;
     %property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
-    %property (nonatomic, assign, getter=isNextUpInitialized) BOOL nextUpInitialized;
 
     - (CGSize)preferredContentSize {
         CGSize orig = %orig;
@@ -249,7 +247,6 @@ NextUpManager *manager;
                                                                          mediaView.frame.size.width,
                                                                          105);
         self.showingNextUp = YES;
-        self.nextUpNeedPostFix = YES;
     }
 
     %new
@@ -471,24 +468,28 @@ NextUpManager *manager;
     - (void)layoutSubviews {
         %orig;
 
-        if (CGRectIsEmpty(self.routingButton.frame)) { // Frame will not be set on iOS 11.2.x
-            self.routingButton.frame = CGRectMake(self.frame.size.width - 24 * 2,
-                                                  self.artworkView.frame.origin.y + self.artworkView.frame.size.height / 2 - 24 / 2,
-                                                  24, 24);
+        NUSkipButton *routingButton = self.routingButton;
+        UIView *artworkView = self.artworkView;
+
+        if (routingButton.center.x == 0 && routingButton.center.y == 0) { // Coordinates will not be set properly on iOS 11.2.x
+            float buttonSize = routingButton.size;
+            routingButton.frame = CGRectMake(self.frame.size.width - buttonSize * 2,
+                                             artworkView.frame.origin.y + artworkView.frame.size.height / 2 - buttonSize / 2,
+                                             buttonSize, buttonSize);
         }
 
         float maxWidth;
         float originX;
         if ([UIApplication sharedApplication].userInterfaceLayoutDirection == UIUserInterfaceLayoutDirectionRightToLeft) {
-            maxWidth = self.artworkView.frame.origin.x - self.routingButton.frame.origin.x - self.routingButton.frame.size.width - 15;
-            originX = self.routingButton.frame.origin.x + self.routingButton.frame.size.width + 8;
+            maxWidth = artworkView.frame.origin.x - routingButton.frame.origin.x - routingButton.frame.size.width - 15;
+            originX = routingButton.frame.origin.x + routingButton.frame.size.width + 8;
         } else {
-            maxWidth = self.routingButton.frame.origin.x - self.artworkView.frame.origin.x - self.artworkView.frame.size.width - 15;
-            originX = self.artworkView.frame.origin.x + self.artworkView.frame.size.width + 12;
+            maxWidth = routingButton.frame.origin.x - artworkView.frame.origin.x - artworkView.frame.size.width - 15;
+            originX = artworkView.frame.origin.x + artworkView.frame.size.width + 12;
         }
 
-        if (self.routingButton.hidden)
-            maxWidth += self.routingButton.frame.size.width;
+        if (routingButton.hidden)
+            maxWidth += routingButton.frame.size.width;
 
         // Primary label
         CGRect frame = self.primaryMarqueeView.frame;
