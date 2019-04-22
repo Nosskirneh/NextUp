@@ -81,9 +81,8 @@ NextUpManager *manager;
                                                          name:kHideNextUp
                                                        object:nil];
 
-            BOOL controlCenter = [self NU_isControlCenter];
-            self.nextUpViewController = [[%c(NextUpViewController) alloc] initWithControlCenter:controlCenter];
-            self.nextUpViewController.style = self.style;
+            self.nextUpViewController = [[%c(NextUpViewController) alloc] initWithControlCenter:[self NU_isControlCenter]
+                                                                                   defaultStyle:self.style];
             self.nextUpViewController.manager = manager;
             containerView.nextUpView = self.nextUpViewController.view;
 

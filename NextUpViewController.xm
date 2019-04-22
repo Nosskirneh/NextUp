@@ -9,7 +9,7 @@
 
 @dynamic view;
 
-- (id)initWithControlCenter:(BOOL)controlCenter {
+- (id)initWithControlCenter:(BOOL)controlCenter defaultStyle:(long long)style {
     if (self == [super init]) {
         _controlCenter = controlCenter;
 
@@ -31,6 +31,7 @@
         _textAlpha = 0.63f;
         _textColor = UIColor.blackColor;
         _skipBackgroundColor = [UIColor.grayColor colorWithAlphaComponent:0.5];
+        _style = style;
 
         if (!_manager.preferences[kHapticFeedbackSkip] || [_manager.preferences[kHapticFeedbackSkip] boolValue])
             self.hapticGenerator = [[%c(UIImpactFeedbackGenerator) alloc] initWithStyle:UIImpactFeedbackStyleMedium];
@@ -39,7 +40,7 @@
             NSDictionary *noctisPrefs = [NSDictionary dictionaryWithContentsOfFile:@"/var/mobile/Library/Preferences/com.laughingquoll.noctisxiprefs.settings.plist"];
             if (!noctisPrefs || !noctisPrefs[@"enableMedia"] || [noctisPrefs[@"enableMedia"] boolValue]) {
                 _textColor = UIColor.whiteColor;
-                self.style = 2;
+                _style = 2;
             }
         } else if (controlCenter) {
             _textColor = UIColor.whiteColor;
