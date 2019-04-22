@@ -83,15 +83,7 @@ NextUpManager *manager;
 
             BOOL controlCenter = [self NU_isControlCenter];
             self.nextUpViewController = [[%c(NextUpViewController) alloc] initWithControlCenter:controlCenter];
-
-            if (!controlCenter && %c(NoctisSystemController)) {
-                NSDictionary *noctisPrefs = [NSDictionary dictionaryWithContentsOfFile:@"/var/mobile/Library/Preferences/com.laughingquoll.noctisxiprefs.settings.plist"];
-                if (!noctisPrefs || !noctisPrefs[@"enableMedia"] || [noctisPrefs[@"enableMedia"] boolValue]) {
-                    self.nextUpViewController.textColor = UIColor.whiteColor;
-                    self.nextUpViewController.style = 2;
-                }
-            }
-
+            self.nextUpViewController.style = self.style;
             self.nextUpViewController.manager = manager;
             containerView.nextUpView = self.nextUpViewController.view;
 
@@ -405,7 +397,7 @@ NextUpManager *manager;
     - (id)initWithFrame:(CGRect)arg1 {
         self = %orig;
 
-        float size = 26.0;
+        float size = 24.0;
 
         self.routingButton = [%c(NUSkipButton) buttonWithType:UIButtonTypeCustom];
         self.routingButton.size = size;

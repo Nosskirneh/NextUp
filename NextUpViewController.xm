@@ -35,6 +35,16 @@
         if (!_manager.preferences[kHapticFeedbackSkip] || [_manager.preferences[kHapticFeedbackSkip] boolValue])
             self.hapticGenerator = [[%c(UIImpactFeedbackGenerator) alloc] initWithStyle:UIImpactFeedbackStyleMedium];
 
+        if (!controlCenter && %c(NoctisSystemController)) {
+            NSDictionary *noctisPrefs = [NSDictionary dictionaryWithContentsOfFile:@"/var/mobile/Library/Preferences/com.laughingquoll.noctisxiprefs.settings.plist"];
+            if (!noctisPrefs || !noctisPrefs[@"enableMedia"] || [noctisPrefs[@"enableMedia"] boolValue]) {
+                _textColor = UIColor.whiteColor;
+                self.style = 2;
+            }
+        } else if (controlCenter) {
+            _textColor = UIColor.whiteColor;
+        }
+
         self.bundle = [NSBundle bundleWithPath:@"/Library/Application Support/NextUp.bundle"];
     }
 
