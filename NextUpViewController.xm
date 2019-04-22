@@ -9,7 +9,7 @@
 
 @dynamic view;
 
-- (id)initWithControlCenter:(BOOL)controlCenter {
+- (id)initWithControlCenter:(BOOL)controlCenter defaultStyle:(long long)style {
     if (self == [super init]) {
         _controlCenter = controlCenter;
 
@@ -31,6 +31,7 @@
         _textAlpha = 1.0f;
         _textColor = UIColor.whiteColor;
         _skipBackgroundColor = [UIColor.whiteColor colorWithAlphaComponent:0.16];
+        _style = style;
 
         if (!_manager.preferences[kHapticFeedbackSkip] || [_manager.preferences[kHapticFeedbackSkip] boolValue])
             self.hapticGenerator = [[%c(UIImpactFeedbackGenerator) alloc] initWithStyle:UIImpactFeedbackStyleMedium];
