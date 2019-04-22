@@ -30,17 +30,21 @@
 
         _textAlpha = 0.63f;
         _textColor = UIColor.blackColor;
-        _skipBackgroundColor = [UIColor.grayColor colorWithAlphaComponent:0.5];
+        _skipBackgroundColor = [UIColor.grayColor colorWithAlphaComponent:0.5f];
         _style = style;
 
         if (!_manager.preferences[kHapticFeedbackSkip] || [_manager.preferences[kHapticFeedbackSkip] boolValue])
             self.hapticGenerator = [[%c(UIImpactFeedbackGenerator) alloc] initWithStyle:UIImpactFeedbackStyleMedium];
 
-        if (!controlCenter && %c(NoctisSystemController)) {
-            NSDictionary *noctisPrefs = [NSDictionary dictionaryWithContentsOfFile:@"/var/mobile/Library/Preferences/com.laughingquoll.noctisxiprefs.settings.plist"];
-            if (!noctisPrefs || !noctisPrefs[@"enableMedia"] || [noctisPrefs[@"enableMedia"] boolValue]) {
-                _textColor = UIColor.whiteColor;
-                _style = 2;
+        if (!controlCenter) {
+            _skipBackgroundColor = [UIColor.grayColor colorWithAlphaComponent:0.63f];
+
+            if (%c(NoctisSystemController)) {
+                NSDictionary *noctisPrefs = [NSDictionary dictionaryWithContentsOfFile:@"/var/mobile/Library/Preferences/com.laughingquoll.noctisxiprefs.settings.plist"];
+                if (!noctisPrefs || !noctisPrefs[@"enableMedia"] || [noctisPrefs[@"enableMedia"] boolValue]) {
+                    _textColor = UIColor.whiteColor;
+                    _style = 2;
+                }
             }
         } else if (controlCenter) {
             _textColor = UIColor.whiteColor;
