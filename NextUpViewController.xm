@@ -9,9 +9,11 @@
 
 @dynamic view;
 
-- (id)initWithControlCenter:(BOOL)controlCenter defaultStyle:(long long)style {
+- (id)initWithControlCenter:(BOOL)controlCenter defaultStyle:(long long)style manager:(NextUpManager *)manager {
     if (self == [super init]) {
         _controlCenter = controlCenter;
+        _style = style;
+        _manager = manager;
 
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(updateLabels)
@@ -30,8 +32,7 @@
 
         _textAlpha = 0.63f;
         _textColor = UIColor.blackColor;
-        _skipBackgroundColor = [UIColor.grayColor colorWithAlphaComponent:0.5f];
-        _style = style;
+        _skipBackgroundColor = [UIColor.grayColor colorWithAlphaComponent:0.5];
 
         if (!_manager.preferences[kHapticFeedbackSkip] || [_manager.preferences[kHapticFeedbackSkip] boolValue])
             self.hapticGenerator = [[%c(UIImpactFeedbackGenerator) alloc] initWithStyle:UIImpactFeedbackStyleMedium];

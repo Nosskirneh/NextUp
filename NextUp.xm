@@ -82,8 +82,8 @@ NextUpManager *manager;
                                                        object:nil];
 
             self.nextUpViewController = [[%c(NextUpViewController) alloc] initWithControlCenter:[self NU_isControlCenter]
-                                                                                   defaultStyle:self.style];
-            self.nextUpViewController.manager = manager;
+                                                                                   defaultStyle:self.style
+                                                                                        manager:manager];
             containerView.nextUpView = self.nextUpViewController.view;
 
             self.nextUpInitialized = YES;
@@ -598,12 +598,13 @@ void showTrialEndedMessage() {
     [manager setup];
 
     %init(SpringBoard);
+    %init(CustomViews);
+
     if (!manager.preferences[kHapticFeedbackOther] || [manager.preferences[kHapticFeedbackOther] boolValue])
         %init(HapticFeedback);
 
     if ([%c(SBDashBoardMediaControlsViewController) instancesRespondToSelector:@selector(cfw_colorize:)])
         %init(ColorFlow);
-    %init(CustomViews);
 
     subscribe(preferencesChanged, kPrefChanged);
 }
