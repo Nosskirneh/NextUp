@@ -2,11 +2,11 @@
 #import "../../Common.h"
 
 
-void APMSkipNext(notificationArguments) {
+void skipNext(notificationArguments) {
     [[NSNotificationCenter defaultCenter] postNotificationName:kAPMSkipNext object:nil];
 }
 
-void APMManualUpdate(notificationArguments) {
+void manualUpdate(notificationArguments) {
     [[NSNotificationCenter defaultCenter] postNotificationName:kAPMManualUpdate object:nil];
 }
 
@@ -138,6 +138,6 @@ void APMManualUpdate(notificationArguments) {
 
     registerApp();
 
-    subscribe(&APMSkipNext, kAPMSkipNext);
-    subscribe(&APMManualUpdate, kAPMManualUpdate);
+    subscribe(&skipNext, skipNextID(bundleID));
+    subscribe(&manualUpdate, manualUpdateID(bundleID));
 }

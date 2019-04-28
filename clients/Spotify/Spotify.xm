@@ -2,11 +2,11 @@
 #import "../../Common.h"
 #import <substrate.h>
 
-void SPTSkipNext(notificationArguments) {
+void skipNext(notificationArguments) {
     [getQueueImplementation() skipNext];
 }
 
-void SPTManualUpdate(notificationArguments) {
+void manualUpdate(notificationArguments) {
     SPTQueueViewModelImplementation *queueViewModel = getQueueImplementation();
     if (!queueViewModel)
         return;
@@ -135,6 +135,6 @@ SPTQueueViewModelImplementation *getQueueImplementation() {
 
     registerApp();
 
-    subscribe(&SPTSkipNext, kSPTSkipNext);
-    subscribe(&SPTManualUpdate, kSPTManualUpdate);
+    subscribe(&skipNext, skipNextID(bundleID));
+    subscribe(&manualUpdate, manualUpdateID(bundleID));
 }
