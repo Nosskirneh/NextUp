@@ -3,26 +3,26 @@
 
 
 void skipNext(notificationArguments) {
-    [[NSNotificationCenter defaultCenter] postNotificationName:kAPMSkipNext object:nil];
+    [[NSNotificationCenter defaultCenter] postNotificationName:kSkipNext object:nil];
 }
 
 void manualUpdate(notificationArguments) {
-    [[NSNotificationCenter defaultCenter] postNotificationName:kAPMManualUpdate object:nil];
+    [[NSNotificationCenter defaultCenter] postNotificationName:kManualUpdate object:nil];
 }
 
 %hook MPCMediaPlayerLegacyPlaylistManager
 
 - (id)init {
-    MPCMediaPlayerLegacyPlaylistManager *orig = %orig;
-    [[NSNotificationCenter defaultCenter] addObserver:orig
+    MPCMediaPlayerLegacyPlaylistManager *self = %orig;
+    [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(skipNext)
-                                                 name:kAPMSkipNext
+                                                 name:kSkipNext
                                                object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:orig
+    [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(fetchNextUp)
-                                                 name:kAPMManualUpdate
+                                                 name:kManualUpdate
                                                object:nil];
-    return orig;
+    return self;
 }
 
 - (void)player:(id)player currentItemDidChangeFromItem:(MPMediaItem *)from toItem:(MPMediaItem *)to {
