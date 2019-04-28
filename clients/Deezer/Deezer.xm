@@ -2,11 +2,11 @@
 #import "../../Common.h"
 
 
-void DZRSkipNext(notificationArguments) {
+void skipNext(notificationArguments) {
     [getQueuer() skipNext];
 }
 
-void DZRManualUpdate(notificationArguments) {
+void manualUpdate(notificationArguments) {
     [getQueuer() fetchNextUp];
 }
 
@@ -148,6 +148,6 @@ DZRPlaybackQueuer *getQueuer() {
 
     registerApp();
 
-    subscribe(&DZRSkipNext, kDZRSkipNext);
-    subscribe(&DZRManualUpdate, kDZRManualUpdate);
+    subscribe(&skipNext, skipNextID(bundleID));
+    subscribe(&manualUpdate, manualUpdateID(bundleID));
 }

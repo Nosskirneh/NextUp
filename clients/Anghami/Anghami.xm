@@ -6,11 +6,11 @@ ANGPlayQueue *getQueue() {
     return [%c(PlayQueueSingleton) currentPlayQueue];
 }
 
-void ANGSkipNext(notificationArguments) {
+void skipNext(notificationArguments) {
     [getQueue() skipNext];
 }
 
-void ANGManualUpdate(notificationArguments) {
+void manualUpdate(notificationArguments) {
     [getQueue() manuallyUpdate];
 }
 
@@ -90,6 +90,6 @@ void ANGManualUpdate(notificationArguments) {
 
     registerApp();
 
-    subscribe(&ANGSkipNext, kANGSkipNext);
-    subscribe(&ANGManualUpdate, kANGManualUpdate);
+    subscribe(&skipNext, skipNextID(bundleID));
+    subscribe(&manualUpdate, manualUpdateID(bundleID));
 }

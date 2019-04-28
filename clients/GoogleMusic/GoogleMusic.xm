@@ -14,11 +14,11 @@ MusicQueueManager *getQueueManager() {
     return getGPMAppDelegate().musicQueueManager;
 }
 
-void GPMSkipNext(notificationArguments) {
+void skipNext(notificationArguments) {
     [getQueueManager() skipNext];
 }
 
-void GPMManualUpdate(notificationArguments) {
+void manualUpdate(notificationArguments) {
     [getQueueManager() manuallyUpdate];
 }
 
@@ -92,6 +92,6 @@ void GPMManualUpdate(notificationArguments) {
 
     registerApp();
 
-    subscribe(&GPMSkipNext, kGPMSkipNext);
-    subscribe(&GPMManualUpdate, kGPMManualUpdate);
+    subscribe(&skipNext, skipNextID(bundleID));
+    subscribe(&manualUpdate, manualUpdateID(bundleID));
 }

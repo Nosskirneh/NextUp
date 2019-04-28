@@ -2,11 +2,11 @@
 #import "../../Common.h"
 
 
-void TDLSkipNext(notificationArguments) {
+void skipNext(notificationArguments) {
     [[%c(_TtC4WiMP16PlayQueueManager) sharedInstance] skipNext];
 }
 
-void TDLManualUpdate(notificationArguments) {
+void manualUpdate(notificationArguments) {
     [[%c(_TtC4WiMP16PlayQueueManager) sharedInstance] manuallyUpdate];
 }
 
@@ -86,6 +86,6 @@ void TDLManualUpdate(notificationArguments) {
 
     registerApp();
 
-    subscribe(&TDLSkipNext, kTDLSkipNext);
-    subscribe(&TDLManualUpdate, kTDLManualUpdate);
+    subscribe(&skipNext, skipNextID(bundleID));
+    subscribe(&manualUpdate, manualUpdateID(bundleID));
 }

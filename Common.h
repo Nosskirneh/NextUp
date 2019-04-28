@@ -34,26 +34,8 @@ extern NSString *const kUpdateLabels;
 extern NSString *const kSkipNext;
 extern NSString *const kManualUpdate;
 
-extern NSString *const kSPTSkipNext;
-extern NSString *const kAPMSkipNext;
-extern NSString *const kDZRSkipNext;
-extern NSString *const kPODSkipNext;
-extern NSString *const kYTMSkipNext;
-extern NSString *const kGPMSkipNext;
-extern NSString *const kTDLSkipNext;
-extern NSString *const kANGSkipNext;
-extern NSString *const kVOXSkipNext;
-
-extern NSString *const kSPTManualUpdate;
-extern NSString *const kAPMManualUpdate;
-extern NSString *const kDZRManualUpdate;
-extern NSString *const kPODManualUpdate;
-extern NSString *const kYTMManualUpdate;
-extern NSString *const kSDCManualUpdate;
-extern NSString *const kGPMManualUpdate;
-extern NSString *const kTDLManualUpdate;
-extern NSString *const kANGManualUpdate;
-extern NSString *const kVOXManualUpdate;
+#define skipNextID(bundleIdentifier) [NSString stringWithFormat:@"%@/%@/%@", NEXTUP_IDENTIFIER, kSkipNext, bundleIdentifier]
+#define manualUpdateID(bundleIdentifier) [NSString stringWithFormat:@"%@/%@/%@", NEXTUP_IDENTIFIER, kManualUpdate, bundleIdentifier]
 
 extern NSString *const kTitle;
 extern NSString *const kSubtitle;
