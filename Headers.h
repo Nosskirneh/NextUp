@@ -131,7 +131,7 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 
 /* Lockscreen */
 @interface SBDashBoardViewController : UIViewController
-- (BOOL)isShowingMediaControls;
+@property (nonatomic, assign, getter=isShowingMediaControls) BOOL showingMediaControls;
 @end
 
 @interface SBDashBoardQuickActionsViewController : UIViewController
@@ -155,6 +155,7 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 
 
 @interface SBDashBoardNotificationAdjunctListViewController : UIViewController
+@property (nonatomic, assign, getter=isShowingMediaControls) BOOL showingMediaControls;
 - (void)_updateAdjunctListItems;
 - (void)_updateMediaControlsVisibility;
 - (void)_updateMediaControlsVisibilityAnimated:(BOOL)arg;
