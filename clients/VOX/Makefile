@@ -1,10 +1,10 @@
 include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = NUVOX
-NUVOX_FILES = VOX.xm ../../Common.xm
-NUVOX_CFLAGS = -fobjc-arc
-NUVOX_LIBRARIES = rocketbootstrap
-NUVOX_PRIVATE_FRAMEWORKS = AppSupport
+$(TWEAK_NAME)_FILES = VOX.xm ../../Common.xm
+$(TWEAK_NAME)_CFLAGS = -fobjc-arc
+$(TWEAK_NAME)_LIBRARIES = rocketbootstrap
+$(TWEAK_NAME)_PRIVATE_FRAMEWORKS = AppSupport
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 

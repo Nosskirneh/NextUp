@@ -4,12 +4,12 @@ TARGET = iphone:clang:9.2
 TARGET_IPHONEOS_DEPLOYMENT_VERSION = 9.2
 
 BUNDLE_NAME = NextUpPrefs
-NextUpPrefs_FILES = NextUpRootListController.m ../../DRM/PFStatusBarAlert/PFStatusBarAlert.mm ../../TwitterStuff/Prompt.m
-NextUpPrefs_CFLAGS = -fobjc-arc
-NextUpPrefs_INSTALL_PATH = /Library/PreferenceBundles
-NextUpPrefs_PRIVATE_FRAMEWORKS = Preferences
-NextUpPrefs_OBJ_FILES = $(THEOS)/lib/libPayPalMobile.a
-NextUpPrefs_FRAMEWORKS = Accelerate, AudioToolbox, AVFoundation, CoreLocation, CoreMedia, \
+$(TWEAK_NAME)_FILES = NextUpRootListController.m ../../DRM/PFStatusBarAlert/PFStatusBarAlert.mm ../../TwitterStuff/Prompt.m
+$(TWEAK_NAME)_CFLAGS = -fobjc-arc
+$(TWEAK_NAME)_INSTALL_PATH = /Library/PreferenceBundles
+$(TWEAK_NAME)_PRIVATE_FRAMEWORKS = Preferences
+$(TWEAK_NAME)_OBJ_FILES = $(THEOS)/lib/libPayPalMobile.a
+$(TWEAK_NAME)_FRAMEWORKS = Accelerate, AudioToolbox, AVFoundation, CoreLocation, CoreMedia, \
 						 MessageUI, MobileCoreServices, SystemConfiguration, SafariServices
 
 include $(THEOS_MAKE_PATH)/bundle.mk

@@ -4,10 +4,10 @@ ARCHS = arm64
 include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = NUTIDAL
-NUTIDAL_FILES = TIDAL.xm ../../Common.xm
-NUTIDAL_CFLAGS = -fobjc-arc
-NUTIDAL_LIBRARIES = rocketbootstrap
-NUTIDAL_PRIVATE_FRAMEWORKS = AppSupport
+$(TWEAK_NAME)_FILES = TIDAL.xm ../../Common.xm
+$(TWEAK_NAME)_CFLAGS = -fobjc-arc
+$(TWEAK_NAME)_LIBRARIES = rocketbootstrap
+$(TWEAK_NAME)_PRIVATE_FRAMEWORKS = AppSupport
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 
