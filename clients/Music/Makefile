@@ -1,13 +1,13 @@
 TARGET = iphone:clang:9.2
-ARCHS = arm64
+ARCHS = armv7 arm64 #arm64e
 
 include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = NUMusic
-NUMusic_FILES = Music.xm ../../Common.xm
-NUMusic_CFLAGS = -fobjc-arc
-NUMusic_LIBRARIES = rocketbootstrap
-NUMusic_PRIVATE_FRAMEWORKS = AppSupport
+$(TWEAK_NAME)_FILES = Music.xm ../../Common.xm
+$(TWEAK_NAME)_CFLAGS = -fobjc-arc
+$(TWEAK_NAME)_LIBRARIES = rocketbootstrap
+$(TWEAK_NAME)_PRIVATE_FRAMEWORKS = AppSupport
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 

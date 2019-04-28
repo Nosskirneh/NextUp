@@ -1,3 +1,6 @@
+TARGET = iphone:clang:9.2
+ARCHS = armv7 arm64 #arm64e
+
 include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = NUVOX
