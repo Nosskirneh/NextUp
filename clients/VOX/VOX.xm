@@ -2,11 +2,11 @@
 #import "../../Common.h"
 
 void skipNext(notificationArguments) {
-    [[NSNotificationCenter defaultCenter] postNotificationName:kVOXSkipNext object:nil];
+    [[NSNotificationCenter defaultCenter] postNotificationName:kSkipNext object:nil];
 }
 
 void manualUpdate(notificationArguments) {
-    [[NSNotificationCenter defaultCenter] postNotificationName:kVOXManualUpdate object:nil];
+    [[NSNotificationCenter defaultCenter] postNotificationName:kManualUpdate object:nil];
 }
 
 %hook VOXPlayerQueue
@@ -16,11 +16,11 @@ void manualUpdate(notificationArguments) {
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(skipNext)
-                                                 name:kVOXSkipNext
+                                                 name:kSkipNext
                                                object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(fetchNextUp)
-                                                 name:kVOXManualUpdate
+                                                 name:kManualUpdate
                                                object:nil];
 
     return self;

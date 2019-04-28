@@ -4,10 +4,10 @@ ARCHS = arm64
 include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = NUYouTubeMusic
-NUYouTubeMusic_FILES = YouTubeMusic.xm ../../Common.xm
-NUYouTubeMusic_CFLAGS = -fobjc-arc
-NUYouTubeMusic_LIBRARIES = rocketbootstrap
-NUYouTubeMusic_PRIVATE_FRAMEWORKS = AppSupport
+$(TWEAK_NAME)_FILES = YouTubeMusic.xm ../../Common.xm
+$(TWEAK_NAME)_CFLAGS = -fobjc-arc
+$(TWEAK_NAME)_LIBRARIES = rocketbootstrap
+$(TWEAK_NAME)_PRIVATE_FRAMEWORKS = AppSupport
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 

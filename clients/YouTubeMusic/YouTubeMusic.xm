@@ -3,11 +3,11 @@
 
 
 void skipNext(notificationArguments) {
-    [[NSNotificationCenter defaultCenter] postNotificationName:kYTMSkipNext object:nil];
+    [[NSNotificationCenter defaultCenter] postNotificationName:kSkipNext object:nil];
 }
 
 void manualUpdate(notificationArguments) {
-    [[NSNotificationCenter defaultCenter] postNotificationName:kYTMManualUpdate object:nil];
+    [[NSNotificationCenter defaultCenter] postNotificationName:kManualUpdate object:nil];
 }
 
 YTMAppDelegate *getYTMAppDelegate() {
@@ -25,11 +25,11 @@ GIMMe *gimme() {
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(skipNext)
-                                                 name:kYTMSkipNext
+                                                 name:kSkipNext
                                                object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(fetchNextUp)
-                                                 name:kYTMManualUpdate
+                                                 name:kManualUpdate
                                                object:nil];
 }
 
