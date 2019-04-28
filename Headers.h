@@ -156,19 +156,9 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 
 @interface SBDashBoardNotificationAdjunctListViewController : UIViewController
 @property (nonatomic, assign, getter=isShowingMediaControls) BOOL showingMediaControls;
-- (void)_updateAdjunctListItems;
-- (void)_updateMediaControlsVisibility;
 - (void)_updateMediaControlsVisibilityAnimated:(BOOL)arg;
-- (void)_prepareNowPlayingControlsView;
 - (void)nowPlayingController:(id)controller didChangeToState:(NSInteger)state;
 - (SBDashBoardMediaControlsViewController *)mediaControlsViewController;
-- (void)nextUpViewWasAdded;
-@end
-
-
-@interface SBLockscreenNowPlayingController : NSObject
-@property (assign, getter=isEnabled, nonatomic) BOOL enabled;
-- (void)_updateToState:(long long)state;
 @end
 
 
@@ -176,12 +166,8 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 - (long long)type;
 @end
 
-@interface SBDashBoardNowPlayingController : SBLockscreenNowPlayingController
+
+@interface SBDashBoardNowPlayingController : UIViewController
 @property (nonatomic, readonly) SBDashBoardMediaControlsViewController *controlsViewController;
-@end
-
-
-@interface UIVisualEffectView (Missing)
-- (void)_setCornerRadius:(double)arg1;
 @end
 // ---
