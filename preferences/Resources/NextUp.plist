@@ -209,7 +209,22 @@
             <key>footerAlignment</key>
             <integer>0</integer>
             <key>footerText</key>
-            <string>Hide NextUp when there is no next track available.</string>
+            <string>Hide NextUp when there is no next track available. Only the slimmed mode setting needs a respring.</string>
+        </dict>
+
+        <dict>
+            <key>cell</key>
+            <string>PSSwitchCell</string>
+            <key>cellClass</key>
+            <string>NextUpSwitchTableCell</string>
+            <key>default</key>
+            <false/>
+            <key>key</key>
+            <string>slimmedLSMode</string>
+            <key>label</key>
+            <string>Slimmed mode (LS)</string>
+            <key>PostNotification</key>
+            <string>se.nosskirneh.nextup/preferencesChanged</string>
         </dict>
 
         <dict>

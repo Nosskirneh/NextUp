@@ -12,5 +12,6 @@
 - (void)setup;
 - (void)reloadPreferences;
 - (void)setTrialEnded;
+- (BOOL)slimmedLSMode;
 - (BOOL)hideOnEmpty;
 @end
