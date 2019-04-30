@@ -85,33 +85,38 @@
                                  action:@selector(skipTrack:)
                        forControlEvents:UIControlEventTouchUpInside];
 
-    self.headerLabel = [[UILabel alloc] init];
-    self.headerLabel.backgroundColor = UIColor.clearColor;
-    self.headerLabel.textAlignment = NSTextAlignmentLeft;
-    self.headerLabel.textColor = _textColor;
-    self.headerLabel.numberOfLines = 0;
-    self.headerLabel.alpha = 0.64;
-    self.headerLabel.text = [self.bundle localizedStringForKey:@"NEXT_UP" value:nil table:nil];
-    [self.contentView addSubview:self.headerLabel];
-
     int horizontalPadding = -8;
-    if (self.controlCenter) {
-        self.headerLabel.hidden = YES;
+    NSLayoutYAxisAnchor *lowestTopAnchor = self.contentView.topAnchor;
+    int verticalConstant = 0;
 
+    if (!self.controlCenter && ![_manager slimmedLSMode]) {
+        self.headerLabel = [[UILabel alloc] init];
+        self.headerLabel.backgroundColor = UIColor.clearColor;
+        self.headerLabel.textAlignment = NSTextAlignmentLeft;
+        self.headerLabel.textColor = _textColor;
+        self.headerLabel.numberOfLines = 0;
+        self.headerLabel.alpha = 0.64;
+        self.headerLabel.text = [self.bundle localizedStringForKey:@"NEXT_UP" value:nil table:nil];
+        [self.contentView addSubview:self.headerLabel];
+
+        self.headerLabel.translatesAutoresizingMaskIntoConstraints = NO;
+        [self.headerLabel.topAnchor constraintEqualToAnchor:self.contentView.topAnchor].active = YES;
+        [self.headerLabel.bottomAnchor constraintEqualToAnchor:self.contentView.topAnchor constant:20].active = YES;
+        // Right to left language (RTL), such as Arabic
+        if ([UIApplication sharedApplication].userInterfaceLayoutDirection == UIUserInterfaceLayoutDirectionRightToLeft)
+            [self.headerLabel.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor constant:-15].active = YES;
+        else
+            [self.headerLabel.leftAnchor constraintEqualToAnchor:self.contentView.leftAnchor constant:15].active = YES;
+
+        lowestTopAnchor = self.headerLabel.bottomAnchor;
+    } else if (self.controlCenter) {
         horizontalPadding = 0;
+    } else {
+        verticalConstant = -20;
     }
 
-    self.headerLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.headerLabel.topAnchor constraintEqualToAnchor:self.contentView.topAnchor].active = YES;
-    [self.headerLabel.bottomAnchor constraintEqualToAnchor:self.contentView.topAnchor constant:20].active = YES;
-    // Left to Right language, such as Arabic
-    if ([UIApplication sharedApplication].userInterfaceLayoutDirection == UIUserInterfaceLayoutDirectionRightToLeft)
-        [self.headerLabel.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor constant:-15].active = YES;
-    else
-        [self.headerLabel.leftAnchor constraintEqualToAnchor:self.contentView.leftAnchor constant:15].active = YES;
-
     // Media view constraints
-    [_mediaView.topAnchor constraintEqualToAnchor:self.headerLabel.bottomAnchor].active = YES;
+    [_mediaView.topAnchor constraintEqualToAnchor:lowestTopAnchor constant:verticalConstant].active = YES;
     [_mediaView.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor].active = YES;
     [_mediaView.leftAnchor constraintEqualToAnchor:self.contentView.leftAnchor constant:horizontalPadding].active = YES;
     [_mediaView.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor constant:-horizontalPadding].active = YES;
