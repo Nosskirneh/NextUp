@@ -9,9 +9,6 @@ $(BUNDLE_NAME)_FILES = NextUpRootListController.m ../../DRM/PFStatusBarAlert/PFS
 $(BUNDLE_NAME)_CFLAGS = -fobjc-arc
 $(BUNDLE_NAME)_INSTALL_PATH = /Library/PreferenceBundles
 $(BUNDLE_NAME)_PRIVATE_FRAMEWORKS = Preferences
-$(BUNDLE_NAME)_OBJ_FILES = $(THEOS)/lib/libPayPalMobile.a
-$(BUNDLE_NAME)_FRAMEWORKS = Accelerate, AudioToolbox, AVFoundation, CoreLocation, CoreMedia, \
-						   MessageUI, MobileCoreServices, SystemConfiguration, SafariServices
 
 include $(THEOS_MAKE_PATH)/bundle.mk
 
