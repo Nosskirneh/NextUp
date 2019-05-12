@@ -13,7 +13,7 @@ void manualUpdate(notificationArguments) {
 %hook MPCMediaPlayerLegacyPlaylistManager
 
 - (id)init {
-    MPCMediaPlayerLegacyPlaylistManager *self = %orig;
+    self = %orig;
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(skipNext)
                                                  name:kSkipNext

@@ -1,5 +1,5 @@
 TARGET = iphone:clang:9.2
-ARCHS = armv7 arm64 arm64e
+ARCHS = arm64
 
 include $(THEOS)/makefiles/common.mk
 
@@ -12,7 +12,7 @@ $(TWEAK_NAME)_PRIVATE_FRAMEWORKS = AppSupport
 include $(THEOS_MAKE_PATH)/tweak.mk
 
 after-install::
-	install.exec "killall -9 Musi"
+	install.exec "killall -9 Preferences"
 
 SUBPROJECTS += clients/Anghami
 SUBPROJECTS += clients/Deezer

@@ -11,14 +11,10 @@
 #define preferencesFrameworkPath @"/System/Library/PrivateFrameworks/Preferences.framework"
 #define kPostNotification @"PostNotification"
 
-@interface NextUpRootListController : PSListController <PFStatusBarAlertDelegate, PayPalPaymentDelegate> {
+@interface NextUpRootListController : PSListController <PFStatusBarAlertDelegate> {
     UIWindow *settingsView;
 }
 @property (nonatomic, strong) PFStatusBarAlert *statusAlert;
-
-@property (nonatomic, strong, readwrite) UIView *successView;
-@property (nonatomic, strong, readwrite) PayPalConfiguration *payPalConfig;
-@property (nonatomic, strong, readwrite) NSString *resultText;
 @end
 
 #define kIconImage @"iconImage"
@@ -34,9 +30,6 @@
                                                                           target:self
                                                                           action:@selector(respring:)];
         self.navigationItem.rightBarButtonItem = respringButton;
-
-        _payPalConfig = initPayPal();
-        self.successView.hidden = YES;
     }
 
     return self;
@@ -156,42 +149,14 @@
 }
 
 - (void)sendEmail {
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"mailto:andreaskhenriksson@gmail.com?subject=NextUp"]];
+    openURL([NSURL URLWithString:@"mailto:andreaskhenriksson@gmail.com?subject=NextUp"]);
 }
 
-#pragma mark PayPal
 
 - (void)purchase {
-    self.resultText = nil;
-
-    fetchPrice(package$bs(), self, ^(NSString *price) {
-        showPaymentViewController(packageShown$bs(), OBFS_UTF8(price), SKU$bs(), self.payPalConfig, self);
+    fetchPrice(package$bs(), self, ^(NSString *respondingServer, const NSString *price, const NSString *data) {
+        redirectToCheckout(respondingServer, package$bs(), price, data);
     });
-}
-
-- (void)payPalPaymentViewController:(PayPalPaymentViewController *)paymentViewController didCompletePayment:(PayPalPayment *)completedPayment {
-    self.resultText = [completedPayment description];
-    [self showSuccess];
-
-    [self dismissViewControllerAnimated:YES completion:^{
-        storePaymentAndActivate(completedPayment, licensePath$bs(), package$bs(), self);
-    }];
-}
-
-- (void)payPalPaymentDidCancel:(PayPalPaymentViewController *)paymentViewController {
-    self.resultText = nil;
-    self.successView.hidden = YES;
-    [self dismissViewControllerAnimated:YES completion:nil];
-}
-
-- (void)showSuccess {
-    self.successView.hidden = NO;
-    self.successView.alpha = 1.0f;
-    [UIView beginAnimations:nil context:NULL];
-    [UIView setAnimationDuration:0.5];
-    [UIView setAnimationDelay:2.0];
-    self.successView.alpha = 0.0f;
-    [UIView commitAnimations];
 }
 
 @end

@@ -1,7 +1,7 @@
 #import "NextUpManager.h"
 #import "Common.h"
 #import "Headers.h"
-#import "DRMOptions.mm"
+#import "DRMValidateOptions.mm"
 #import "notify.h"
 
 
