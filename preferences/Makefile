@@ -2,7 +2,7 @@ include $(THEOS)/makefiles/common.mk
 
 TARGET = iphone:clang:9.2
 TARGET_IPHONEOS_DEPLOYMENT_VERSION = 9.2
-ARCHS = arm64
+ARCHS = arm64 arm64e
 
 BUNDLE_NAME = NextUpPrefs
 $(BUNDLE_NAME)_FILES = NextUpRootListController.m ../../DRM/PFStatusBarAlert/PFStatusBarAlert.mm ../../TwitterStuff/Prompt.m
