@@ -4,10 +4,10 @@ ARCHS = arm64
 include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = NUSpotify
-NUSpotify_FILES = Spotify.xm ../../Common.xm
-NUSpotify_CFLAGS = -fobjc-arc
-NUSpotify_LIBRARIES = rocketbootstrap
-NUSpotify_PRIVATE_FRAMEWORKS = AppSupport
+$(TWEAK_NAME)_FILES = Spotify.xm ../../Common.xm
+$(TWEAK_NAME)_CFLAGS = -fobjc-arc
+$(TWEAK_NAME)_LIBRARIES = rocketbootstrap
+$(TWEAK_NAME)_PRIVATE_FRAMEWORKS = AppSupport
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 

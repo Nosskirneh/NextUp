@@ -3,8 +3,8 @@ ARCHS = arm64
 
 include $(THEOS)/makefiles/common.mk
 
-TWEAK_NAME = NUGoogleMusic
-$(TWEAK_NAME)_FILES = GoogleMusic.xm ../../Common.xm
+TWEAK_NAME = NUMusi
+$(TWEAK_NAME)_FILES = Musi.xm ../../Common.xm
 $(TWEAK_NAME)_CFLAGS = -fobjc-arc
 $(TWEAK_NAME)_LIBRARIES = rocketbootstrap
 $(TWEAK_NAME)_PRIVATE_FRAMEWORKS = AppSupport
@@ -12,4 +12,4 @@ $(TWEAK_NAME)_PRIVATE_FRAMEWORKS = AppSupport
 include $(THEOS_MAKE_PATH)/tweak.mk
 
 after-install::
-	install.exec "killall -9 GoogleMusic"
+	install.exec "killall -9 Musi"

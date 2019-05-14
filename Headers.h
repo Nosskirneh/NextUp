@@ -131,7 +131,7 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 
 /* Lockscreen */
 @interface SBDashBoardViewController : UIViewController
-- (BOOL)isShowingMediaControls;
+@property (nonatomic, assign, getter=isShowingMediaControls) BOOL showingMediaControls;
 @end
 
 @interface SBDashBoardQuickActionsViewController : UIViewController
@@ -147,6 +147,7 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @interface SBDashBoardMediaControlsViewController : UIViewController
 @property (nonatomic, assign) BOOL shouldShowNextUp;
 @property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
+@property (nonatomic, assign) float nextUpHeight;
 - (void)initNextUp;
 - (void)addNextUpView;
 - (void)removeNextUpView;
@@ -155,19 +156,10 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 
 
 @interface SBDashBoardNotificationAdjunctListViewController : UIViewController
-- (void)_updateAdjunctListItems;
-- (void)_updateMediaControlsVisibility;
+@property (nonatomic, assign, getter=isShowingMediaControls) BOOL showingMediaControls;
 - (void)_updateMediaControlsVisibilityAnimated:(BOOL)arg;
-- (void)_prepareNowPlayingControlsView;
 - (void)nowPlayingController:(id)controller didChangeToState:(NSInteger)state;
 - (SBDashBoardMediaControlsViewController *)mediaControlsViewController;
-- (void)nextUpViewWasAdded;
-@end
-
-
-@interface SBLockscreenNowPlayingController : NSObject
-@property (assign, getter=isEnabled, nonatomic) BOOL enabled;
-- (void)_updateToState:(long long)state;
 @end
 
 
@@ -175,12 +167,8 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 - (long long)type;
 @end
 
-@interface SBDashBoardNowPlayingController : SBLockscreenNowPlayingController
+
+@interface SBDashBoardNowPlayingController : UIViewController
 @property (nonatomic, readonly) SBDashBoardMediaControlsViewController *controlsViewController;
-@end
-
-
-@interface UIVisualEffectView (Missing)
-- (void)_setCornerRadius:(double)arg1;
 @end
 // ---

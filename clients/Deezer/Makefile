@@ -4,10 +4,10 @@ ARCHS = arm64
 include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = NUDeezer
-NUDeezer_FILES = Deezer.xm ../../Common.xm
-NUDeezer_CFLAGS = -fobjc-arc
-NUDeezer_LIBRARIES = rocketbootstrap
-NUDeezer_PRIVATE_FRAMEWORKS = AppSupport
+$(TWEAK_NAME)_FILES = Deezer.xm ../../Common.xm
+$(TWEAK_NAME)_CFLAGS = -fobjc-arc
+$(TWEAK_NAME)_LIBRARIES = rocketbootstrap
+$(TWEAK_NAME)_PRIVATE_FRAMEWORKS = AppSupport
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 

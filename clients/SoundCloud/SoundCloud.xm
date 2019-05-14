@@ -1,7 +1,7 @@
 #import "SoundCloud.h"
 #import "../../Common.h"
 
-void SDCManualUpdate(notificationArguments) {
+void manualUpdate(notificationArguments) {
     [[%c(PlaybackService) sharedInstance] fetchNextUp];
 }
 
@@ -54,7 +54,6 @@ void SDCManualUpdate(notificationArguments) {
 %end
 
 
-
 %ctor {
     NSString *bundleID = [NSBundle mainBundle].bundleIdentifier;
     NSDictionary *preferences = [NSDictionary dictionaryWithContentsOfFile:kPrefPath];
@@ -63,5 +62,5 @@ void SDCManualUpdate(notificationArguments) {
 
     registerApp();
 
-    subscribe(&SDCManualUpdate, kSDCManualUpdate);
+    subscribe(&manualUpdate, manualUpdateID(bundleID));
 }

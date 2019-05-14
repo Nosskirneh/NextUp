@@ -51,6 +51,10 @@
     _trialEnded = YES;
 }
 
+- (BOOL)slimmedLSMode {
+    return self.preferences[kSlimmedLSMode] && [self.preferences[kSlimmedLSMode] boolValue];
+}
+
 - (BOOL)hideOnEmpty {
     return self.preferences[kHideOnEmpty] && [self.preferences[kHideOnEmpty] boolValue];
 }

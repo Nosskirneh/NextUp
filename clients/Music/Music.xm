@@ -2,27 +2,27 @@
 #import "../../Common.h"
 
 
-void APMSkipNext(notificationArguments) {
-    [[NSNotificationCenter defaultCenter] postNotificationName:kAPMSkipNext object:nil];
+void skipNext(notificationArguments) {
+    [[NSNotificationCenter defaultCenter] postNotificationName:kSkipNext object:nil];
 }
 
-void APMManualUpdate(notificationArguments) {
-    [[NSNotificationCenter defaultCenter] postNotificationName:kAPMManualUpdate object:nil];
+void manualUpdate(notificationArguments) {
+    [[NSNotificationCenter defaultCenter] postNotificationName:kManualUpdate object:nil];
 }
 
 %hook MPCMediaPlayerLegacyPlaylistManager
 
 - (id)init {
-    MPCMediaPlayerLegacyPlaylistManager *orig = %orig;
-    [[NSNotificationCenter defaultCenter] addObserver:orig
+    self = %orig;
+    [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(skipNext)
-                                                 name:kAPMSkipNext
+                                                 name:kSkipNext
                                                object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:orig
+    [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(fetchNextUp)
-                                                 name:kAPMManualUpdate
+                                                 name:kManualUpdate
                                                object:nil];
-    return orig;
+    return self;
 }
 
 - (void)player:(id)player currentItemDidChangeFromItem:(MPMediaItem *)from toItem:(MPMediaItem *)to {
@@ -138,6 +138,6 @@ void APMManualUpdate(notificationArguments) {
 
     registerApp();
 
-    subscribe(&APMSkipNext, kAPMSkipNext);
-    subscribe(&APMManualUpdate, kAPMManualUpdate);
+    subscribe(&skipNext, skipNextID(bundleID));
+    subscribe(&manualUpdate, manualUpdateID(bundleID));
 }

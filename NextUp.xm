@@ -1,7 +1,7 @@
 #import "NextUpManager.h"
 #import "Common.h"
 #import "Headers.h"
-#import "DRMOptions.mm"
+#import "DRMValidateOptions.mm"
 #import "notify.h"
 
 
@@ -200,6 +200,7 @@ NextUpManager *manager;
         // Mark NextUp as should not be visible
         SBDashBoardMediaControlsViewController *mediaControlsViewController = [self mediaControlsViewController];
         mediaControlsViewController.shouldShowNextUp = NO;
+        [mediaControlsViewController removeNextUpView];
 
         if (!mediaControlsViewController.showingNextUp)
             return;
@@ -215,11 +216,23 @@ NextUpManager *manager;
     %hook SBDashBoardMediaControlsViewController
     %property (nonatomic, assign) BOOL shouldShowNextUp;
     %property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
+    %property (nonatomic, assign) float nextUpHeight;
+
+    - (id)init {
+        self = %orig;
+
+        float nextUpHeight = 105.0;
+        if ([manager slimmedLSMode])
+            nextUpHeight -= 40;
+        self.nextUpHeight = nextUpHeight;
+
+        return self;
+    }
 
     - (CGSize)preferredContentSize {
         CGSize orig = %orig;
         if (self.shouldShowNextUp)
-            orig.height += 105;
+            orig.height += self.nextUpHeight;
         return orig;
     }
 
@@ -245,7 +258,7 @@ NextUpManager *manager;
         panelViewController.nextUpViewController.view.frame = CGRectMake(mediaView.frame.origin.x,
                                                                          mediaView.frame.origin.y + mediaView.frame.size.height,
                                                                          mediaView.frame.size.width,
-                                                                         105);
+                                                                         self.nextUpHeight);
         self.showingNextUp = YES;
     }
 

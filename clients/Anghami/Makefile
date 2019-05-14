@@ -4,10 +4,10 @@ ARCHS = arm64
 include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = NUAnghami
-NUAnghami_FILES = Anghami.xm ../../Common.xm
-NUAnghami_CFLAGS = -fobjc-arc
-NUAnghami_LIBRARIES = rocketbootstrap
-NUAnghami_PRIVATE_FRAMEWORKS = AppSupport
+$(TWEAK_NAME)_FILES = Anghami.xm ../../Common.xm
+$(TWEAK_NAME)_CFLAGS = -fobjc-arc
+$(TWEAK_NAME)_LIBRARIES = rocketbootstrap
+$(TWEAK_NAME)_PRIVATE_FRAMEWORKS = AppSupport
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 

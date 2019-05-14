@@ -2,11 +2,11 @@
 #import "../../Common.h"
 
 
-void PODSkipNext(notificationArguments) {
+void skipNext(notificationArguments) {
     [[%c(MTPlaybackQueueController) sharedInstance] skipNext];
 }
 
-void PODManualUpdate(notificationArguments) {
+void manualUpdate(notificationArguments) {
     MTPlaybackQueueController *queueController = [%c(MTPlaybackQueueController) sharedInstance];
     queueController.lastSentEpisode = nil;
     [queueController fetchNextUp];
@@ -130,6 +130,6 @@ void PODManualUpdate(notificationArguments) {
 
     registerApp();
 
-    subscribe(&PODSkipNext, kPODSkipNext);
-    subscribe(&PODManualUpdate, kPODManualUpdate);
+    subscribe(&skipNext, skipNextID(bundleID));
+    subscribe(&manualUpdate, manualUpdateID(bundleID));
 }

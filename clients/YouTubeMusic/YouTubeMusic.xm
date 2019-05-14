@@ -2,12 +2,12 @@
 #import "../../Common.h"
 
 
-void YTMSkipNext(notificationArguments) {
-    [[NSNotificationCenter defaultCenter] postNotificationName:kYTMSkipNext object:nil];
+void skipNext(notificationArguments) {
+    [[NSNotificationCenter defaultCenter] postNotificationName:kSkipNext object:nil];
 }
 
-void YTMManualUpdate(notificationArguments) {
-    [[NSNotificationCenter defaultCenter] postNotificationName:kYTMManualUpdate object:nil];
+void manualUpdate(notificationArguments) {
+    [[NSNotificationCenter defaultCenter] postNotificationName:kManualUpdate object:nil];
 }
 
 YTMAppDelegate *getYTMAppDelegate() {
@@ -25,11 +25,11 @@ GIMMe *gimme() {
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(skipNext)
-                                                 name:kYTMSkipNext
+                                                 name:kSkipNext
                                                object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(fetchNextUp)
-                                                 name:kYTMManualUpdate
+                                                 name:kManualUpdate
                                                object:nil];
 }
 
@@ -148,6 +148,6 @@ GIMMe *gimme() {
 
     registerApp();
 
-    subscribe(&YTMSkipNext, kYTMSkipNext);
-    subscribe(&YTMManualUpdate, kYTMManualUpdate);
+    subscribe(&skipNext, skipNextID(bundleID));
+    subscribe(&manualUpdate, manualUpdateID(bundleID));
 }

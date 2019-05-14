@@ -1,12 +1,12 @@
 #import "VOX.h"
 #import "../../Common.h"
 
-void VOXSkipNext(notificationArguments) {
-    [[NSNotificationCenter defaultCenter] postNotificationName:kVOXSkipNext object:nil];
+void skipNext(notificationArguments) {
+    [[NSNotificationCenter defaultCenter] postNotificationName:kSkipNext object:nil];
 }
 
-void VOXManualUpdate(notificationArguments) {
-    [[NSNotificationCenter defaultCenter] postNotificationName:kVOXManualUpdate object:nil];
+void manualUpdate(notificationArguments) {
+    [[NSNotificationCenter defaultCenter] postNotificationName:kManualUpdate object:nil];
 }
 
 %hook VOXPlayerQueue
@@ -16,11 +16,11 @@ void VOXManualUpdate(notificationArguments) {
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(skipNext)
-                                                 name:kVOXSkipNext
+                                                 name:kSkipNext
                                                object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(fetchNextUp)
-                                                 name:kVOXManualUpdate
+                                                 name:kManualUpdate
                                                object:nil];
 
     return self;
@@ -73,6 +73,7 @@ void VOXManualUpdate(notificationArguments) {
 
 %end
 
+
 %ctor {
     NSString *bundleID = [NSBundle mainBundle].bundleIdentifier;
     NSDictionary *preferences = [NSDictionary dictionaryWithContentsOfFile:kPrefPath];
@@ -81,6 +82,6 @@ void VOXManualUpdate(notificationArguments) {
 
     registerApp();
 
-    subscribe(&VOXSkipNext, kVOXSkipNext);
-    subscribe(&VOXManualUpdate, kVOXManualUpdate);
+    subscribe(&skipNext, skipNextID(bundleID));
+    subscribe(&manualUpdate, manualUpdateID(bundleID));
 }
