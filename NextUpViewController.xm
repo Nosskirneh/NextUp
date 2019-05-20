@@ -81,7 +81,7 @@
     _mediaView.translatesAutoresizingMaskIntoConstraints = NO;
     [self.contentView addSubview:_mediaView];
 
-    [_mediaView.routingButton addTarget:self 
+    [_mediaView.routingButton addTarget:self
                                  action:@selector(skipTrack:)
                        forControlEvents:UIControlEventTouchUpInside];
 
