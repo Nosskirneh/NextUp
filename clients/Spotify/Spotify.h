@@ -30,6 +30,7 @@
 
 @interface SPTQueueViewModelDataSource : NSObject
 @property (readonly, nonatomic) NSArray<SPTQueueTrackImplementation *> *futureTracks;
+@property (readonly, nonatomic) NSArray<SPTQueueTrackImplementation *> *upNextTracks;
 @end
 
 @interface SPTGLUEImageLoader : NSObject

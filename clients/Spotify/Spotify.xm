@@ -82,11 +82,15 @@ SPTQueueViewModelImplementation *getQueueImplementation() {
 
 %new
 - (void)skipNext {
-    if (!self.dataSource.futureTracks || self.dataSource.futureTracks.count == 0)
+    NSArray *queue = nil;
+    if (self.dataSource.futureTracks && self.dataSource.futureTracks.count > 0)
+        queue = self.dataSource.futureTracks;
+    else if (self.dataSource.upNextTracks && self.dataSource.upNextTracks.count > 0)
+        queue = self.dataSource.upNextTracks;
+    else
         return;
 
-    SPTQueueTrackImplementation *track = self.dataSource.futureTracks[0];
-    NSSet *tracks = [NSSet setWithArray:@[track]];
+    NSSet *tracks = [NSSet setWithArray:@[queue[0]]];
     [self removeTracks:tracks];
 }
 
