@@ -198,6 +198,7 @@ NextUpManager *manager;
 
         if (mediaControlsViewController.showingNextUp)
             [self reloadMediaWidget];
+        mediaControlsViewController.showingNextUp = NO;
     }
 
     %new
@@ -265,7 +266,6 @@ NextUpManager *manager;
     %new
     - (void)removeNextUpView {
         [[self panelViewController].nextUpViewController.view removeFromSuperview];
-        self.showingNextUp = NO;
     }
 
     %end
