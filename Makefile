@@ -20,11 +20,11 @@ SUBPROJECTS += clients/GoogleMusic
 SUBPROJECTS += clients/Music
 SUBPROJECTS += clients/Podcasts
 SUBPROJECTS += clients/SoundCloud
-SUBPROJECTS += clients/Spotify
 SUBPROJECTS += clients/TIDAL
 SUBPROJECTS += clients/YouTubeMusic
 SUBPROJECTS += clients/VOX
 SUBPROJECTS += clients/Musi
+SUBPROJECTS += clients/Spotify
 SUBPROJECTS += preferences
 
 include $(THEOS_MAKE_PATH)/aggregate.mk
