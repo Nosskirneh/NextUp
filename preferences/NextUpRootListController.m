@@ -161,8 +161,8 @@
 
 
 - (void)purchase {
-    fetchPrice(package$bs(), self, ^(NSString *respondingServer, const NSString *price, const NSString *data) {
-        redirectToCheckout(respondingServer, package$bs(), price, data);
+    fetchPrice(package$bs(), self, ^(NSString *respondingServer, const NSString *price, const NSString *URL) {
+        redirectToCheckout(respondingServer, URL);
     });
 }
 
