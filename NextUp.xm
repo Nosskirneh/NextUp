@@ -207,7 +207,13 @@ NextUpManager *manager;
 
         // Reload the widget
         MSHookIvar<NSInteger>(self, "_nowPlayingState") = 0;
-        [self _updateMediaControlsVisibilityAnimated:YES];
+        [self _updateMediaControlsVisibilityAnimated:NO];
+        mediaControlsViewController.showingNextUp = NO;
+
+        if ([[%c(SBMediaController) sharedInstance] isPlaying]) {
+            MSHookIvar<NSInteger>(self, "_nowPlayingState") = 2;
+            [self _updateMediaControlsVisibilityAnimated:YES];
+        }
     }
 
     %end
@@ -265,7 +271,6 @@ NextUpManager *manager;
     %new
     - (void)removeNextUpView {
         [[self panelViewController].nextUpViewController.view removeFromSuperview];
-        self.showingNextUp = NO;
     }
 
     %end
