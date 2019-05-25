@@ -5,13 +5,14 @@
 @end
 
 @interface _TtC2UI11ImageLoader : NSObject
-// + (id)makeObjcCompatible; // This takes too long time or something; only works when manually fetching images
+ + (id)makeForObjC;
 - (void)loadImageFrom:(id)arg1 successCompletion:(id)arg2 failureCompletion:(id)arg3;
 @end
 
 @interface PlaybackService : NSObject
 @property (nonatomic, retain) _TtC2UI11ImageLoader *imageLoader;
 + (id)sharedInstance;
+- (_TtC2UI11ImageLoader *)getImageLoader;
 - (_TtC8Playback10PlayerItem *)nextItemWithInteraction:(unsigned long long)arg1;
 
 - (void)fetchNextUp;
