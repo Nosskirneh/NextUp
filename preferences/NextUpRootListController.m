@@ -152,10 +152,9 @@
     openURL([NSURL URLWithString:@"mailto:andreaskhenriksson@gmail.com?subject=NextUp"]);
 }
 
-
 - (void)purchase {
     fetchPrice(package$bs(), self, ^(NSString *respondingServer, const NSString *price, const NSString *URL) {
-        redirectToCheckout(respondingServer, URL);
+        redirectToCheckout(respondingServer, URL, self);
     });
 }
 
