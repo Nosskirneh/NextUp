@@ -1,5 +1,5 @@
 #import "SoundCloud.h"
-#import "../../Common.h"
+#import "../CommonClients.h"
 
 void manualUpdate(notificationArguments) {
     [[%c(PlaybackService) sharedInstance] fetchNextUp];
@@ -55,11 +55,8 @@ void manualUpdate(notificationArguments) {
 
 %ctor {
     NSString *bundleID = [NSBundle mainBundle].bundleIdentifier;
-    NSDictionary *preferences = [NSDictionary dictionaryWithContentsOfFile:kPrefPath];
-    if (preferences[bundleID] && ![preferences[bundleID] boolValue])
+    if (!initClient(bundleID))
         return;
-
-    registerApp();
 
     subscribe(&manualUpdate, manualUpdateID(bundleID));
 }
