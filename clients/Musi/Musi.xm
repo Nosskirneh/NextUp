@@ -1,5 +1,5 @@
 #import "Musi.h"
-#import "../../Common.h"
+#import "../CommonClients.h"
 
 MMusicSession *getMusicSession() {
     MSplashViewController *splashViewController = (MSplashViewController *)[[[UIApplication sharedApplication] delegate] window].rootViewController;
@@ -101,11 +101,8 @@ void manualUpdate(notificationArguments) {
 
 %ctor {
     NSString *bundleID = [NSBundle mainBundle].bundleIdentifier;
-    NSDictionary *preferences = [NSDictionary dictionaryWithContentsOfFile:kPrefPath];
-    if (preferences[bundleID] && ![preferences[bundleID] boolValue])
+    if (!initClient(bundleID))
         return;
-
-    registerApp();
 
     subscribe(&skipNext, skipNextID(bundleID));
     subscribe(&manualUpdate, manualUpdateID(bundleID));

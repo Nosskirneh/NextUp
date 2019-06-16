@@ -1,4 +1,5 @@
 #import "NextUpManager.h"
+#import "SettingsKeys.h"
 #import "Common.h"
 #import "Headers.h"
 #import "DRMValidateOptions.mm"

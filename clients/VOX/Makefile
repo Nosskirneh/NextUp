@@ -4,7 +4,7 @@ ARCHS = arm64
 include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = NUVOX
-$(TWEAK_NAME)_FILES = VOX.xm ../../Common.xm
+$(TWEAK_NAME)_FILES = VOX.xm ../CommonClients.xm ../../Common.xm
 $(TWEAK_NAME)_CFLAGS = -fobjc-arc
 $(TWEAK_NAME)_LIBRARIES = rocketbootstrap
 $(TWEAK_NAME)_PRIVATE_FRAMEWORKS = AppSupport
