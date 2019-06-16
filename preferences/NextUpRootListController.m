@@ -81,7 +81,7 @@
 }
 
 - (void)activate {
-    presentDidYouBuyQuestion(YES, package$bs(), nextup$bs(), nextUpDisplayName$bs(), YES, self, ^(BOOL choice, const NSString *email) {
+    presentDidYouBuyQuestion(DYBFreeUpgrade, nextUpDisplayName$bs(), YES, self, ^(BOOL choice, const NSString *email) {
         if (choice)
             return activateWithUpgradePackage(licensePath$bs(), package$bs(), email, choice ? nextup$bs() : nil, self);
         activate(licensePath$bs(), package$bs(), self);
