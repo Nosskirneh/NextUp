@@ -1,5 +1,5 @@
 #import "VOX.h"
-#import "../../Common.h"
+#import "../CommonClients.h"
 
 void skipNext(notificationArguments) {
     [[NSNotificationCenter defaultCenter] postNotificationName:kSkipNext object:nil];
@@ -50,11 +50,9 @@ void manualUpdate(notificationArguments) {
     VOXImageFetcher *imageFetcher = [%c(VOXImageFetcher) fetcherURL:[NSURL URLWithString:next.artworkURL]];
 
     [[%c(HNKCache) sharedCache] fetchImageForFetcher:imageFetcher formatName:@"smallArtworkCache" success:^(UIImage *image) {
-        NSDictionary *metadata = [self serializeTrack:next image:image];
-        sendNextTrackMetadata(metadata);
+        sendNextTrackMetadata([self serializeTrack:next image:image]);
     } failure:^() {
-        NSDictionary *metadata = [self serializeTrack:next image:nil];
-        sendNextTrackMetadata(metadata);
+        sendNextTrackMetadata([self serializeTrack:next image:nil]);
     }];
 }
 
@@ -76,11 +74,8 @@ void manualUpdate(notificationArguments) {
 
 %ctor {
     NSString *bundleID = [NSBundle mainBundle].bundleIdentifier;
-    NSDictionary *preferences = [NSDictionary dictionaryWithContentsOfFile:kPrefPath];
-    if (preferences[bundleID] && ![preferences[bundleID] boolValue])
+    if (!initClient(bundleID))
         return;
-
-    registerApp();
 
     subscribe(&skipNext, skipNextID(bundleID));
     subscribe(&manualUpdate, manualUpdateID(bundleID));

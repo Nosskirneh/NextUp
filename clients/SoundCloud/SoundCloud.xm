@@ -1,23 +1,22 @@
 #import "SoundCloud.h"
-#import "../../Common.h"
+#import "../CommonClients.h"
 
 void manualUpdate(notificationArguments) {
     [[%c(PlaybackService) sharedInstance] fetchNextUp];
 }
 
-%hook _TtC2UI11ImageLoader
-
-- (id)initWithPlaceholder:(id)arg1 {
-    PlaybackService *playbackService = [%c(PlaybackService) sharedInstance];
-    if (!playbackService.imageLoader)
-        return playbackService.imageLoader = %orig;
-    return %orig;
-}
-
-%end
-
 %hook PlaybackService
 %property (nonatomic, retain) _TtC2UI11ImageLoader *imageLoader;
+
+%new
+- (id)getImageLoader {
+    static dispatch_once_t once;
+    dispatch_once(&once, ^
+    {
+        self.imageLoader = [%c(_TtC2UI11ImageLoader) makeForObjC];
+    });
+    return self.imageLoader;
+}
 
 - (void)preloadItemAfterItem:(id)arg1 {
     %orig;
@@ -31,7 +30,7 @@ void manualUpdate(notificationArguments) {
     if (!item)
         return;
 
-    [self.imageLoader loadImageFrom:item.artworkURL successCompletion:^(UIImage *image) {
+    [[self getImageLoader] loadImageFrom:item.artworkURL successCompletion:^(UIImage *image) {
         NSDictionary *metadata = [self serializeTrack:item image:image skipable:NO];
         sendNextTrackMetadata(metadata);
     } failureCompletion:nil];
@@ -56,11 +55,8 @@ void manualUpdate(notificationArguments) {
 
 %ctor {
     NSString *bundleID = [NSBundle mainBundle].bundleIdentifier;
-    NSDictionary *preferences = [NSDictionary dictionaryWithContentsOfFile:kPrefPath];
-    if (preferences[bundleID] && ![preferences[bundleID] boolValue])
+    if (!initClient(bundleID))
         return;
-
-    registerApp();
 
     subscribe(&manualUpdate, manualUpdateID(bundleID));
 }

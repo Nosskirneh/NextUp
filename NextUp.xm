@@ -1,4 +1,5 @@
 #import "NextUpManager.h"
+#import "SettingsKeys.h"
 #import "Common.h"
 #import "Headers.h"
 #import "DRMValidateOptions.mm"
@@ -552,12 +553,7 @@ NextUpManager *manager;
 %end
 %end
 
-void showTrialEndedMessage() {
-    showSpringBoardDismissAlert(packageShown$bs(), TrialEndedMsg$bs());
-}
 
-// These two groups down below has to be separate as theos otherwise complains
-// about double inited groups (even though it's two different switch cases...)
 %group CheckTrialEnded
 %hook SBCoverSheetPresentationManager
 
@@ -567,29 +563,16 @@ void showTrialEndedMessage() {
     if (!manager.trialEnded && check_lic(licensePath$bs(), package$bs()) == CheckInvalidTrialLicense) {
         [manager setTrialEnded];
         [[NSNotificationCenter defaultCenter] postNotificationName:kHideNextUp object:nil];
-        showTrialEndedMessage();
+        showSpringBoardDismissAlert(packageShown$bs(), TrialEndedMsg$bs());
     }
 }
 
 %end
 %end
 
-%group TrialEnded
-%hook SBCoverSheetPresentationManager
-
-- (void)_cleanupDismissalTransition {
-    %orig;
-
-    if (!manager.trialEnded) {
-        [manager setTrialEnded];
-        [[NSNotificationCenter defaultCenter] postNotificationName:kHideNextUp object:nil];
-        showTrialEndedMessage();
-    }
+static inline void initTrial() {
+    %init(CheckTrialEnded);
 }
-
-%end
-%end
-
 
 %ctor {
     manager = [[NextUpManager alloc] init];
@@ -600,10 +583,10 @@ void showTrialEndedMessage() {
             %init(Welcome);
             return;
         case CheckInvalidTrialLicense:
-            %init(TrialEnded);
+            initTrial();
             return;
         case CheckValidTrialLicense:
-            %init(CheckTrialEnded);
+            initTrial();
             break;
         case CheckValidLicense:
             break;
