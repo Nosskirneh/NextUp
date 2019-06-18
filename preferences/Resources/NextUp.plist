@@ -123,6 +123,21 @@
             <key>default</key>
             <true/>
             <key>icon</key>
+            <string>napster.png</string>
+            <key>key</key>
+            <string>com.rhapsody.iphone.Napster3</string>
+            <key>label</key>
+            <string>Enable for Napster</string>
+        </dict>
+
+        <dict>
+            <key>cell</key>
+            <string>PSSwitchCell</string>
+            <key>cellClass</key>
+            <string>NextUpSwitchTableCell</string>
+            <key>default</key>
+            <true/>
+            <key>icon</key>
             <string>anghami.png</string>
             <key>key</key>
             <string>com.anghami.anghami</string>
