@@ -31,6 +31,8 @@
 @property (nonatomic, retain) MTCompositeManifest *manifest; // iOS 11.1.2
 @property (nonatomic, retain) MTCompositeManifest *compositeManifest; // iOS 11.3.1
 
++ (id)sharedInstance;
+
 - (BOOL)removeItemWithContentID:(NSString *)itemID;
 - (BOOL)nowPlayingInfoCenter:(id)arg removeItemAtOffset:(NSInteger)offset;
 
