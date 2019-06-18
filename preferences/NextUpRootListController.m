@@ -5,6 +5,7 @@
 #import "../../DRM/PFStatusBarAlert/PFStatusBarAlert.h"
 #import <spawn.h>
 #import "../../TwitterStuff/Prompt.h"
+#import "../SettingsKeys.h"
 
 #define NextUpColor [UIColor colorWithRed:0.00 green:0.65 blue:1.00 alpha:1.0] // #00A5FF
 #define preferencesFrameworkPath @"/System/Library/PrivateFrameworks/Preferences.framework"

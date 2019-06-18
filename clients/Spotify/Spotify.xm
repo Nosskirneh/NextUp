@@ -103,12 +103,11 @@ SPTQueueViewModelImplementation *getQueueImplementation() {
     metadata[kSubtitle] = track.artistTitle;
 
     // Artwork
-    CGSize imageSize = ARTWORK_SIZE;
     __block UIImage *image = [UIImage trackSPTPlaceholderWithSize:0];
 
     // Do this lastly
     if ([self.imageLoader respondsToSelector:@selector(loadImageForURL:imageSize:completion:)]) {
-        [self.imageLoader loadImageForURL:track.coverArtURL imageSize:imageSize completion:^(UIImage *img) {
+        [self.imageLoader loadImageForURL:track.coverArtURL imageSize:ARTWORK_SIZE completion:^(UIImage *img) {
             if (img)
                 image = img;
 
