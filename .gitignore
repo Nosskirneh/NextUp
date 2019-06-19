@@ -4,3 +4,4 @@
 packages/
 .cydiaRepoUpload.log
 DRM*
+!DRMDefines.h
