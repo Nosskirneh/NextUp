@@ -13,6 +13,13 @@
     [c registerForMessageName:kRegisterApp target:self selector:@selector(handleIncomingMessage:withUserInfo:)];
     [c registerForMessageName:kNextTrackMessage target:self selector:@selector(handleIncomingMessage:withUserInfo:)];
 
+
+    if ([%c(SBDashBoardMediaControlsViewController) instancesRespondToSelector:@selector(cfw_colorize:)]) {
+        NSString *cfPrefPath = [NSString stringWithFormat:@"%@/Library/Preferences/com.golddavid.colorflow4.plist", NSHomeDirectory()];
+        NSDictionary *cfPrefs = [NSDictionary dictionaryWithContentsOfFile:cfPrefPath];
+        _cfLockscreen = !cfPrefs || !cfPrefs[@"LockScreenEnabled"] || [cfPrefs[@"LockScreenEnabled"] boolValue];
+    }
+
     _enabledApps = [NSMutableSet new];
     [self reloadPreferences];
 }
@@ -50,6 +57,10 @@
 
 - (void)setTrialEnded {
     _trialEnded = YES;
+}
+
+- (BOOL)colorFlowEnabled {
+    return _cfLockscreen;
 }
 
 - (BOOL)slimmedLSMode {
