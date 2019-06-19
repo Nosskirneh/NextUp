@@ -2,6 +2,7 @@
 
 @interface NextUpManager : NSObject {
 	NSMutableSet *_enabledApps;
+    BOOL _cfLockscreen;
 }
 @property (nonatomic, readonly) NSSet *enabledApps;
 @property (nonatomic, readonly) NSDictionary *preferences;
@@ -14,4 +15,5 @@
 - (void)setTrialEnded;
 - (BOOL)slimmedLSMode;
 - (BOOL)hideOnEmpty;
+- (BOOL)colorFlowEnabled;
 @end

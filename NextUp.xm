@@ -528,7 +528,7 @@ NextUpManager *manager;
         self.secondaryLabel.alpha = self.textAlpha;
 
         // Do not color the labels if ColorFlow is active
-        if (![self respondsToSelector:@selector(cfw_colorize:)]) {
+        if (![manager colorFlowEnabled]) {
             self.primaryLabel.textColor = self.textColor;
             self.secondaryLabel.textColor = self.textColor;
         }
