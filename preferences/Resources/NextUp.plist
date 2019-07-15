@@ -212,8 +212,37 @@
             <string>PSGroupCell</string>
             <key>label</key>
             <string>Settings</string>
-            <key>footerAlignment</key>
-            <integer>0</integer>
+        </dict>
+
+        <dict>
+            <key>cell</key>
+            <string>PSSwitchCell</string>
+            <key>cellClass</key>
+            <string>NextUpSwitchTableCell</string>
+            <key>default</key>
+            <true/>
+            <key>key</key>
+            <string>lockscreen</string>
+            <key>label</key>
+            <string>Enable in Lockscreen</string>
+        </dict>
+
+        <dict>
+            <key>cell</key>
+            <string>PSSwitchCell</string>
+            <key>cellClass</key>
+            <string>NextUpSwitchTableCell</string>
+            <key>default</key>
+            <true/>
+            <key>key</key>
+            <string>controlcenter</string>
+            <key>label</key>
+            <string>Enable in Control Center</string>
+        </dict>
+
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
             <key>footerText</key>
             <string>Useful when also using ColorFlow 4 with the extended media artwork view. Will only hide the buttons when the media controls are visible. Toggling this does not require a respring.</string>
         </dict>
