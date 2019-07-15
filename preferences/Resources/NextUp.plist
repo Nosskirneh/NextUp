@@ -18,7 +18,7 @@
             <key>cell</key>
             <string>PSGroupCell</string>
             <key>label</key>
-            <string>Apps</string>
+            <string>Enabled Apps</string>
             <key>footerAlignment</key>
             <integer>0</integer>
             <key>footerText</key>
@@ -37,7 +37,7 @@
             <key>icon</key>
             <string>vox.png</string>
             <key>label</key>
-            <string>Enable for VOX</string>
+            <string>VOX</string>
         </dict>
 
         <dict>
@@ -52,7 +52,7 @@
             <key>icon</key>
             <string>musi.png</string>
             <key>label</key>
-            <string>Enable for Musi</string>
+            <string>Musi</string>
         </dict>
 
         <dict>
@@ -67,7 +67,7 @@
             <key>id</key>
             <string>Music</string>
             <key>label</key>
-            <string>Enable for Music</string>
+            <string>Music</string>
         </dict>
 
         <dict>
@@ -82,7 +82,7 @@
             <key>key</key>
             <string>com.aspiro.TIDAL</string>
             <key>label</key>
-            <string>Enable for TIDAL</string>
+            <string>TIDAL</string>
         </dict>
 
         <dict>
@@ -97,7 +97,7 @@
             <key>key</key>
             <string>com.spotify.client</string>
             <key>label</key>
-            <string>Enable for Spotify</string>
+            <string>Spotify</string>
         </dict>
 
         <dict>
@@ -112,7 +112,7 @@
             <key>key</key>
             <string>com.deezer.Deezer</string>
             <key>label</key>
-            <string>Enable for Deezer</string>
+            <string>Deezer</string>
         </dict>
 
         <dict>
@@ -127,7 +127,7 @@
             <key>key</key>
             <string>com.rhapsody.iphone.Napster3</string>
             <key>label</key>
-            <string>Enable for Napster</string>
+            <string>Napster</string>
         </dict>
 
         <dict>
@@ -142,7 +142,7 @@
             <key>key</key>
             <string>com.anghami.anghami</string>
             <key>label</key>
-            <string>Enable for Anghami</string>
+            <string>Anghami</string>
         </dict>
 
         <dict>
@@ -157,7 +157,7 @@
             <key>key</key>
             <string>com.apple.podcasts</string>
             <key>label</key>
-            <string>Enable for Podcasts</string>
+            <string>Podcasts</string>
         </dict>
 
         <dict>
@@ -172,7 +172,7 @@
             <key>key</key>
             <string>com.soundcloud.TouchApp</string>
             <key>label</key>
-            <string>Enable for SoundCloud</string>
+            <string>SoundCloud</string>
         </dict>
 
         <dict>
@@ -187,7 +187,7 @@
             <key>key</key>
             <string>com.google.PlayMusic</string>
             <key>label</key>
-            <string>Enable for Google Music</string>
+            <string>Google Music</string>
         </dict>
 
         <dict>
@@ -202,7 +202,7 @@
             <key>key</key>
             <string>com.google.ios.youtubemusic</string>
             <key>label</key>
-            <string>Enable for YouTube Music</string>
+            <string>YouTube Music</string>
         </dict>
 
 
