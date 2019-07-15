@@ -380,6 +380,25 @@ NextUpManager *manager;
 // ---
 
 
+/* Nereid support */
+%group Nereid
+
+%hook MediaControlsPanelViewController
+
+- (void)nrdUpdate {
+    %orig;
+
+    UIColor *color = ((NRDManager *)[%c(NRDManager) sharedInstance]).mainColor;
+    NextUpViewController *nextUpViewController = self.nextUpViewController;
+    nextUpViewController.headerLabel.textColor = color;
+    [nextUpViewController.mediaView updateTextColor:color];
+}
+
+%end
+
+%end
+
+
 /* Custom views */
 %group CustomViews
     %subclass NUSkipButton : UIButton
@@ -601,6 +620,9 @@ static inline void initTrial() {
 
     if ([%c(SBDashBoardMediaControlsViewController) instancesRespondToSelector:@selector(cfw_colorize:)])
         %init(ColorFlow);
+
+    if ([%c(MediaControlsPanelViewController) instancesRespondToSelector:@selector(nrdUpdate)])
+        %init(Nereid);
 
     subscribe(preferencesChanged, kPrefChanged);
 }
