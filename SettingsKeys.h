@@ -10,6 +10,8 @@ extern NSString *const kShowNextUp;
 extern NSString *const kHideNextUp;
 extern NSString *const kUpdateLabels;
 
+extern NSString *const kControlCenter;
+extern NSString *const kLockscreen;
 extern NSString *const kHideXButtons;
 extern NSString *const kSlimmedLSMode;
 extern NSString *const kHideOnEmpty;

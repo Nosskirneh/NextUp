@@ -30,14 +30,6 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @end
 
 
-@interface CFWColorInfo : NSObject
-@property(nonatomic, retain) UIColor *backgroundColor;
-@property(nonatomic, retain) UIColor *primaryColor;
-@property(nonatomic, retain) UIColor *secondaryColor;
-@property(nonatomic, assign, getter=isBackgroundDark) BOOL backgroundDark;
-@end
-
-
 @interface MPUMarqueeView : UIView
 @property (assign, getter=isMarqueeEnabled, nonatomic) BOOL marqueeEnabled;
 @property (nonatomic, readonly) UIView *contentView;
@@ -58,9 +50,6 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @property (nonatomic, retain) NSString *secondaryString;
 - (void)setShouldEnableMarquee:(BOOL)arg1; // 11.1.2
 - (void)setMarqueeEnabled:(BOOL)arg1; // 11.3.1
-
-- (void)cfw_colorize:(CFWColorInfo *)colorInfo;
-- (void)cfw_revert;
 @end
 
 
@@ -178,3 +167,31 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @property (nonatomic, readonly) SBDashBoardMediaControlsViewController *controlsViewController;
 @end
 // ---
+
+
+
+/* ColorFlow */
+@interface CFWColorInfo : NSObject
+@property(nonatomic, retain) UIColor *backgroundColor;
+@property(nonatomic, retain) UIColor *primaryColor;
+@property(nonatomic, retain) UIColor *secondaryColor;
+@property(nonatomic, assign, getter=isBackgroundDark) BOOL backgroundDark;
+@end
+
+@interface MediaControlsHeaderView (ColorFlow)
+- (void)cfw_colorize:(CFWColorInfo *)colorInfo;
+- (void)cfw_revert;
+@end
+// ---
+
+/* Nereid */
+@interface MediaControlsHeaderView (Nereid)
+@property (nonatomic, assign) BOOL nrdEnabled;
+- (void)nrdUpdate;
+@end
+
+@interface NRDManager : NSObject
+@property (nonatomic, retain) UIColor *mainColor;
++ (instancetype)sharedInstance;
+@end
+/* */
