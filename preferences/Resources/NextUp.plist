@@ -365,9 +365,17 @@
             <key>cellClass</key>
             <string>NextUpColorButtonCell</string>
             <key>action</key>
+            <string>myTweaks</string>
+            <key>label</key>
+            <string>Check out my other tweaks</string>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSButtonCell</string>
+            <key>cellClass</key>
+            <string>NextUpColorButtonCell</string>
+            <key>action</key>
             <string>sendEmail</string>
-            <key>id</key>
-            <string>Mail</string>
             <key>label</key>
             <string>Email me</string>
         </dict>

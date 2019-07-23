@@ -165,6 +165,10 @@
     });
 }
 
+- (void)myTweaks {
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://henrikssonbrothers.com/cydia/repo/packages.html"]];
+}
+
 @end
 
 
