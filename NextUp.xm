@@ -255,9 +255,8 @@ void preferencesChanged(notificationArguments) {
 
     %new
     - (UIViewController<PanelViewController> *)panelViewController {
-        if (%c(MRPlatterViewController)) {
+        if (%c(MRPlatterViewController))
             return MSHookIvar<MRPlatterViewController *>(self, "_platterViewController");
-        }
         return MSHookIvar<MediaControlsPanelViewController *>(self, "_mediaControlsPanelViewController");
     }
 
