@@ -41,7 +41,7 @@ void preferencesChanged(notificationArguments) {
 %end
 
 /* Adding the widget */
-%hook MediaControlsPanelViewController
+%hook PanelViewController
 
 %property (nonatomic, retain) NextUpViewController *nextUpViewController;
 %property (nonatomic, assign, getter=isNextUpInitialized) BOOL nextUpInitialized;
@@ -51,30 +51,34 @@ void preferencesChanged(notificationArguments) {
 
     // This has to be done in `setDelegate` as it seems like the only way to know if its CC/LS is by comparing the delegate class.
     // Not ideal, but it works. Thus, we have to use `setDelegate` as it's executed after `viewDidLoad`.
-    [self initNextUp];
+    [(UIViewController<PanelViewController> *)self initNextUp];
 }
 
 %new
 - (BOOL)NU_isControlCenter {
-    return ([self.delegate class] == %c(MediaControlsEndpointsViewController));
+    return ([((UIViewController<PanelViewController> *)self).delegate class] == %c(MediaControlsEndpointsViewController));
 }
 
 - (void)setStyle:(int)style {
     %orig;
-
-    self.nextUpViewController.style = style;
+    ((UIViewController<PanelViewController> *)self).nextUpViewController.style = style;
 }
 
 %new
 - (void)initNextUp {
-    if (![self isNextUpInitialized]) {
-        BOOL controlCenter = [self NU_isControlCenter];
-        self.nextUpViewController = [[%c(NextUpViewController) alloc] initWithControlCenter:controlCenter
-                                                                                     defaultStyle:self.style
+    UIViewController<PanelViewController> *controller = (UIViewController<PanelViewController> *)self;
+    if (![controller isNextUpInitialized]) {
+        BOOL controlCenter = [controller NU_isControlCenter];
+        controller.nextUpViewController = [[%c(NextUpViewController) alloc] initWithControlCenter:controlCenter
+                                                                                     defaultStyle:controller.style
                                                                                           manager:manager];
 
         if (controlCenter) {
-            MediaControlsContainerView *containerView = self.parentContainerView.mediaControlsContainerView;
+            MediaControlsContainerView *containerView;
+            if ([controller.parentContainerView respondsToSelector:@selector(mediaControlsContainerView)])
+                containerView = controller.parentContainerView.mediaControlsContainerView;
+            else
+                containerView = controller.parentContainerView.containerView;
 
             if ([containerView respondsToSelector:@selector(nextUpView)]) {
                 [[NSNotificationCenter defaultCenter] addObserver:containerView
@@ -87,11 +91,11 @@ void preferencesChanged(notificationArguments) {
                                                              name:kHideNextUp
                                                            object:nil];
 
-                containerView.nextUpView = self.nextUpViewController.view;
+                containerView.nextUpView = controller.nextUpViewController.view;
             }
         }
 
-        self.nextUpInitialized = YES;
+        controller.nextUpInitialized = YES;
     }
 }
 
@@ -250,13 +254,16 @@ void preferencesChanged(notificationArguments) {
     }
 
     %new
-    - (MediaControlsPanelViewController *)panelViewController {
+    - (UIViewController<PanelViewController> *)panelViewController {
+        if (%c(MRPlatterViewController)) {
+            return MSHookIvar<MRPlatterViewController *>(self, "_platterViewController");
+        }
         return MSHookIvar<MediaControlsPanelViewController *>(self, "_mediaControlsPanelViewController");
     }
 
     %new
     - (void)addNextUpView {
-        MediaControlsPanelViewController *panelViewController = [self panelViewController];
+        UIViewController<PanelViewController> *panelViewController = [self panelViewController];
         [self.view addSubview:panelViewController.nextUpViewController.view];
 
         UIView *mediaView = panelViewController.view;
@@ -386,13 +393,13 @@ void preferencesChanged(notificationArguments) {
 
 /* Nereid support */
 %group Nereid
-    %hook MediaControlsPanelViewController
+    %hook PanelViewController
 
     - (void)nrdUpdate {
         %orig;
 
         UIColor *color = ((NRDManager *)[%c(NRDManager) sharedInstance]).mainColor;
-        NextUpViewController *nextUpViewController = self.nextUpViewController;
+        NextUpViewController *nextUpViewController = ((UIViewController<PanelViewController> *)self).nextUpViewController;
         nextUpViewController.headerLabel.textColor = color;
         [nextUpViewController.mediaView updateTextColor:color];
     }
@@ -614,7 +621,11 @@ static inline void initTrial() {
     // ---
     [manager setup];
 
-    %init();
+    Class c = %c(MRPlatterViewController);
+    if (!c)
+        c = %c(MediaControlsPanelViewController);
+    %init(PanelViewController = c);
+
     if (!manager.preferences[kControlCenter] || [manager.preferences[kControlCenter] boolValue])
         %init(ControlCenter);
 
@@ -629,8 +640,8 @@ static inline void initTrial() {
     if ([%c(SBDashBoardMediaControlsViewController) instancesRespondToSelector:@selector(cfw_colorize:)])
         %init(ColorFlow);
 
-    if ([%c(MediaControlsPanelViewController) instancesRespondToSelector:@selector(nrdUpdate)])
-        %init(Nereid);
+    if ([c instancesRespondToSelector:@selector(nrdUpdate)])
+        %init(Nereid, PanelViewController = c);
 
     subscribe(preferencesChanged, kPrefChanged);
 }

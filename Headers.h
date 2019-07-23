@@ -101,11 +101,13 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 
 
 @interface MediaControlsParentContainerView : UIView
-@property (nonatomic, retain) MediaControlsContainerView *mediaControlsContainerView;
+@property (nonatomic, retain) MediaControlsContainerView *mediaControlsContainerView; // 12.0 and 12.1
+@property (nonatomic, retain) MediaControlsContainerView *containerView; // 12.2
 @end
 
 
-@interface MediaControlsPanelViewController : UIViewController
+
+@protocol PanelViewController<NSObject>
 @property (nonatomic, retain) id delegate;
 @property (nonatomic, retain) NextUpViewController *nextUpViewController;
 @property (nonatomic, retain) MediaControlsParentContainerView *parentContainerView;
@@ -114,6 +116,13 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @property (nonatomic, assign, getter=isNextUpInitialized) BOOL nextUpInitialized;
 - (void)initNextUp;
 - (BOOL)NU_isControlCenter;
+@end
+
+
+@interface MediaControlsPanelViewController : UIViewController<PanelViewController>
+@end
+
+@interface MRPlatterViewController : UIViewController<PanelViewController>
 @end
 // ---
 
