@@ -68,8 +68,11 @@ void preferencesChanged(notificationArguments) {
 %new
 - (void)initNextUp {
     if (![self isNextUpInitialized]) {
-
         BOOL controlCenter = [self NU_isControlCenter];
+        self.nextUpViewController = [[%c(NextUpViewController) alloc] initWithControlCenter:controlCenter
+                                                                                     defaultStyle:self.style
+                                                                                          manager:manager];
+
         if (controlCenter) {
             MediaControlsContainerView *containerView = self.parentContainerView.mediaControlsContainerView;
 
@@ -87,10 +90,6 @@ void preferencesChanged(notificationArguments) {
                 containerView.nextUpView = self.nextUpViewController.view;
             }
         }
-
-        self.nextUpViewController = [[%c(NextUpViewController) alloc] initWithControlCenter:controlCenter
-                                                                               defaultStyle:self.style
-                                                                                    manager:manager];
 
         self.nextUpInitialized = YES;
     }
@@ -387,20 +386,18 @@ void preferencesChanged(notificationArguments) {
 
 /* Nereid support */
 %group Nereid
+    %hook MediaControlsPanelViewController
 
-%hook MediaControlsPanelViewController
+    - (void)nrdUpdate {
+        %orig;
 
-- (void)nrdUpdate {
-    %orig;
+        UIColor *color = ((NRDManager *)[%c(NRDManager) sharedInstance]).mainColor;
+        NextUpViewController *nextUpViewController = self.nextUpViewController;
+        nextUpViewController.headerLabel.textColor = color;
+        [nextUpViewController.mediaView updateTextColor:color];
+    }
 
-    UIColor *color = ((NRDManager *)[%c(NRDManager) sharedInstance]).mainColor;
-    NextUpViewController *nextUpViewController = self.nextUpViewController;
-    nextUpViewController.headerLabel.textColor = color;
-    [nextUpViewController.mediaView updateTextColor:color];
-}
-
-%end
-
+    %end
 %end
 
 
