@@ -160,9 +160,13 @@
 }
 
 - (void)purchase {
-    fetchPrice(package$bs(), self, ^(NSString *respondingServer, const NSString *price, const NSString *URL) {
+    fetchPrice(package$bs(), self, ^(const NSString *respondingServer, const NSString *price, const NSString *URL) {
         redirectToCheckout(respondingServer, URL, self);
     });
+}
+
+- (void)myTweaks {
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://henrikssonbrothers.com/cydia/repo/packages.html"]];
 }
 
 @end

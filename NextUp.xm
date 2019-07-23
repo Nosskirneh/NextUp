@@ -8,96 +8,99 @@
 
 NextUpManager *manager;
 
+void preferencesChanged(notificationArguments) {
+    [manager reloadPreferences];
+}
+
+/* Listen on changes of now playing app */
+%hook SBMediaController
+
+%new
+- (BOOL)shouldActivateForApplicationID:(NSString *)bundleID {
+    return [manager.enabledApps containsObject:bundleID] &&
+           (!manager.preferences[bundleID] || [manager.preferences[bundleID] boolValue]);
+}
+
+- (void)_setNowPlayingApplication:(SBApplication *)app {
+    NSString *bundleID = app.bundleIdentifier;
+    if ([self shouldActivateForApplicationID:bundleID] && !manager.trialEnded) {
+        [manager setMediaApplication:bundleID];
+
+        // If we should not hide on empty, we show NextUp from the beginning.
+        // In the other case, this is done from the NextUpViewController
+        if (![manager hideOnEmpty])
+            [[NSNotificationCenter defaultCenter] postNotificationName:kShowNextUp object:nil];
+    } else {
+        [manager setMediaApplication:nil];
+        [[NSNotificationCenter defaultCenter] postNotificationName:kHideNextUp object:nil];
+    }
+
+    %orig;
+}
+
+%end
+
 /* Adding the widget */
-%group SpringBoard
-    void preferencesChanged(notificationArguments) {
-        [manager reloadPreferences];
-    }
+%hook MediaControlsPanelViewController
 
-    /* Listen on changes of now playing app */
-    %hook SBMediaController
+%property (nonatomic, retain) NextUpViewController *nextUpViewController;
+%property (nonatomic, assign, getter=isNextUpInitialized) BOOL nextUpInitialized;
 
-    %new
-    - (BOOL)shouldActivateForApplicationID:(NSString *)bundleID {
-        return [manager.enabledApps containsObject:bundleID] &&
-               (!manager.preferences[bundleID] || [manager.preferences[bundleID] boolValue]);
-    }
+- (void)setDelegate:(id)delegate {
+    %orig;
 
-    - (void)_setNowPlayingApplication:(SBApplication *)app {
-        NSString *bundleID = app.bundleIdentifier;
-        if ([self shouldActivateForApplicationID:bundleID] && !manager.trialEnded) {
-            [manager setMediaApplication:bundleID];
+    // This has to be done in `setDelegate` as it seems like the only way to know if its CC/LS is by comparing the delegate class.
+    // Not ideal, but it works. Thus, we have to use `setDelegate` as it's executed after `viewDidLoad`.
+    [self initNextUp];
+}
 
-            // If we should not hide on empty, we show NextUp from the beginning.
-            // In the other case, this is done from the NextUpViewController
-            if (![manager hideOnEmpty])
-                [[NSNotificationCenter defaultCenter] postNotificationName:kShowNextUp object:nil];
-        } else {
-            [manager setMediaApplication:nil];
-            [[NSNotificationCenter defaultCenter] postNotificationName:kHideNextUp object:nil];
-        }
+%new
+- (BOOL)NU_isControlCenter {
+    return ([self.delegate class] == %c(MediaControlsEndpointsViewController));
+}
 
-        %orig;
-    }
+- (void)setStyle:(int)style {
+    %orig;
 
-    %end
+    self.nextUpViewController.style = style;
+}
 
-    /* Both */
-    %hook MediaControlsPanelViewController
+%new
+- (void)initNextUp {
+    if (![self isNextUpInitialized]) {
+        BOOL controlCenter = [self NU_isControlCenter];
+        self.nextUpViewController = [[%c(NextUpViewController) alloc] initWithControlCenter:controlCenter
+                                                                                     defaultStyle:self.style
+                                                                                          manager:manager];
 
-    %property (nonatomic, retain) NextUpViewController *nextUpViewController;
-    %property (nonatomic, assign, getter=isNextUpInitialized) BOOL nextUpInitialized;
-
-    - (void)setDelegate:(id)delegate {
-        %orig;
-
-        // This has to be done in `setDelegate` as it seems like the only way to know if its CC/LS is by comparing the delegate class.
-        // Not ideal, but it works. Thus, we have to use `setDelegate` as it's executed after `viewDidLoad`.
-        [self initNextUp];
-    }
-
-    %new
-    - (BOOL)NU_isControlCenter {
-        return ([self.delegate class] == %c(MediaControlsEndpointsViewController));
-    }
-
-    - (void)setStyle:(int)style {
-        %orig;
-
-        self.nextUpViewController.style = style;
-    }
-
-    %new
-    - (void)initNextUp {
-        if (![self isNextUpInitialized]) {
+        if (controlCenter) {
             MediaControlsContainerView *containerView = self.parentContainerView.mediaControlsContainerView;
 
-            [[NSNotificationCenter defaultCenter] addObserver:containerView
-                                                     selector:@selector(showNextUp)
-                                                         name:kShowNextUp
-                                                       object:nil];
+            if ([containerView respondsToSelector:@selector(nextUpView)]) {
+                [[NSNotificationCenter defaultCenter] addObserver:containerView
+                                                         selector:@selector(showNextUp)
+                                                             name:kShowNextUp
+                                                           object:nil];
 
-            [[NSNotificationCenter defaultCenter] addObserver:containerView
-                                                     selector:@selector(hideNextUp)
-                                                         name:kHideNextUp
-                                                       object:nil];
+                [[NSNotificationCenter defaultCenter] addObserver:containerView
+                                                         selector:@selector(hideNextUp)
+                                                             name:kHideNextUp
+                                                           object:nil];
 
-            self.nextUpViewController = [[%c(NextUpViewController) alloc] initWithControlCenter:[self NU_isControlCenter]
-                                                                                   defaultStyle:self.style
-                                                                                        manager:manager];
-            containerView.nextUpView = self.nextUpViewController.view;
-
-            self.nextUpInitialized = YES;
+                containerView.nextUpView = self.nextUpViewController.view;
+            }
         }
+
+        self.nextUpInitialized = YES;
     }
+}
 
-    %end
-    // ---
+%end
+// ---
 
-    // The remaining parts (CC/LS) is for changing the heights/y-coordinates of their respective views.
-    // Can't be done in the panelViewController as they are fundamentally different views.
-
-    /* Control Center */
+// The remaining parts (CC/LS) is for changing the heights/y-coordinates of their respective views.
+// Can't be done in the panelViewController as they are fundamentally different views.
+%group ControlCenter
     %hook CCUIContentModuleContainerViewController
 
     - (void)setExpanded:(BOOL)expanded {
@@ -154,10 +157,11 @@ NextUpManager *manager;
     }
 
     %end
-    // ---
+%end
+// ---
 
 
-    /* Lockscreen */
+%group Lockscreen
     %hook SBDashBoardNotificationAdjunctListViewController
 
     - (id)init {
@@ -385,6 +389,23 @@ NextUpManager *manager;
 // ---
 
 
+/* Nereid support */
+%group Nereid
+    %hook MediaControlsPanelViewController
+
+    - (void)nrdUpdate {
+        %orig;
+
+        UIColor *color = ((NRDManager *)[%c(NRDManager) sharedInstance]).mainColor;
+        NextUpViewController *nextUpViewController = self.nextUpViewController;
+        nextUpViewController.headerLabel.textColor = color;
+        [nextUpViewController.mediaView updateTextColor:color];
+    }
+
+    %end
+%end
+
+
 /* Custom views */
 %group CustomViews
     %subclass NUSkipButton : UIButton
@@ -598,7 +619,13 @@ static inline void initTrial() {
     // ---
     [manager setup];
 
-    %init(SpringBoard);
+    %init();
+    if (!manager.preferences[kControlCenter] || [manager.preferences[kControlCenter] boolValue])
+        %init(ControlCenter);
+
+    if (!manager.preferences[kLockscreen] || [manager.preferences[kLockscreen] boolValue])
+        %init(Lockscreen);
+
     %init(CustomViews);
 
     if (!manager.preferences[kHapticFeedbackOther] || [manager.preferences[kHapticFeedbackOther] boolValue])
@@ -606,6 +633,9 @@ static inline void initTrial() {
 
     if ([%c(SBDashBoardMediaControlsViewController) instancesRespondToSelector:@selector(cfw_colorize:)])
         %init(ColorFlow);
+
+    if ([%c(MediaControlsPanelViewController) instancesRespondToSelector:@selector(nrdUpdate)])
+        %init(Nereid);
 
     subscribe(preferencesChanged, kPrefChanged);
 }
