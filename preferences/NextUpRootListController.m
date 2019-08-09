@@ -28,7 +28,7 @@
         UIBarButtonItem *respringButton = [[UIBarButtonItem alloc] initWithTitle:@"Respring"
                                                                            style:UIBarButtonItemStylePlain
                                                                           target:self
-                                                                          action:@selector(respring:)];
+                                                                          action:@selector(respring)];
         self.navigationItem.rightBarButtonItem = respringButton;
     }
 
@@ -86,7 +86,7 @@
     }
 }
 
-- (void)respring:(id)sender {
+- (void)respring {
     pid_t pid;
     const char *args[] = {"killall", "-9", "backboardd", NULL};
     posix_spawn(&pid, "/usr/bin/killall", NULL, NULL, (char *const *)args, NULL);
@@ -129,7 +129,7 @@
     if (!self.statusAlert) {
         self.statusAlert = [[PFStatusBarAlert alloc] initWithMessage:nil
                                                         notification:nil
-                                                              action:@selector(respring:)
+                                                              action:@selector(respring)
                                                               target:self];
         self.statusAlert.backgroundColor = [UIColor colorWithHue:0.590 saturation:1 brightness:1 alpha:0.9];
         self.statusAlert.textColor = [UIColor whiteColor];
