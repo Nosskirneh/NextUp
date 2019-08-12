@@ -158,6 +158,10 @@
     [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://henrikssonbrothers.com/cydia/repo/packages.html"]];
 }
 
+- (void)safariViewControllerDidFinish:(id)arg1 {
+    safariViewControllerDidFinish(self);
+}
+
 @end
 
 
