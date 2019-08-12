@@ -11,10 +11,13 @@
 #define preferencesFrameworkPath @"/System/Library/PrivateFrameworks/Preferences.framework"
 #define kPostNotification @"PostNotification"
 
-@interface NextUpRootListController : PSListController <PFStatusBarAlertDelegate> {
+@interface NextUpRootListController : PSListController <PFStatusBarAlertDelegate, DRMDelegate> {
     UIWindow *settingsView;
 }
 @property (nonatomic, strong) PFStatusBarAlert *statusAlert;
+@property (nonatomic, weak) UIAlertAction *okAction;
+@property (nonatomic, weak) NSString *okRegex;
+@property (nonatomic, strong) UIAlertController *giveawayAlertController;
 @end
 
 #define kIconImage @"iconImage"
@@ -97,26 +100,12 @@
 }
 
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
-    [self determineUnlockOKButton:textField];
+    [self textFieldChanged:textField];
     return YES;
 }
 
-- (void)paypalEmailTextFieldChanged:(UITextField *)textField {
-    [self determineUnlockOKButton:textField];
-}
-
-- (void)determineUnlockOKButton:(UITextField *)textField {
-    UIAlertController *alertController = (UIAlertController *)self.presentedViewController;
-    if (alertController) {
-        UIAlertAction *okAction = alertController.actions.lastObject;
-        okAction.enabled = [self validateEmail:textField.text];
-    }
-}
-
-- (BOOL)validateEmail:(NSString *)candidate {
-    NSString *emailRegex = @"[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}";
-    NSPredicate *emailTest = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", emailRegex];
-    return [emailTest evaluateWithObject:candidate];
+- (void)textFieldChanged:(UITextField *)textField {
+    determineUnlockOKButton(textField, self);
 }
 
 - (void)trial {
