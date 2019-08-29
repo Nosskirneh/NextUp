@@ -561,6 +561,22 @@ void preferencesChanged(notificationArguments) {
 // ---
 
 
+%group PackagePirated
+%hook SBCoverSheetPresentationManager
+
+- (void)_cleanupDismissalTransition {
+    %orig;
+
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        showPiracyAlert(packageShown$bs());
+    });
+}
+
+%end
+%end
+
+
 %group Welcome
 %hook SBCoverSheetPresentationManager
 
@@ -594,6 +610,9 @@ static inline void initTrial() {
 }
 
 %ctor {
+    if (fromUntrustedSource(package$bs()))
+        %init(PackagePirated);
+
     manager = [[NextUpManager alloc] init];
 
     // License check – if no license found, present message. If no valid license found, do not init
