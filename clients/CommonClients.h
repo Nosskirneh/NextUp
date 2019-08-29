@@ -11,7 +11,7 @@ extern "C" {
 #endif
 
 void sendNextTrackMetadata(NSDictionary *metadata);
-BOOL initClient(NSString *bundleID);
+BOOL initClient(NSString *bundleID, CFNotificationCallback skipNextCallback, CFNotificationCallback manualUpdateCallback);
 
 #ifdef __cplusplus
 }
