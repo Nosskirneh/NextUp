@@ -25,11 +25,15 @@ void registerApp(NSString *bundleID) {
     }];
 }
 
-BOOL initClient(NSString *bundleID) {
+BOOL initClient(NSString *bundleID, CFNotificationCallback skipNextCallback, CFNotificationCallback manualUpdateCallback) {
     NSDictionary *preferences = [NSDictionary dictionaryWithContentsOfFile:kPrefPath];
     if (preferences[bundleID] && ![preferences[bundleID] boolValue])
         return NO;
 
     registerApp(bundleID);
+    if (skipNextCallback)
+        subscribe(skipNextCallback, skipNextID(bundleID));
+    if (manualUpdateCallback)
+        subscribe(manualUpdateCallback, manualUpdateID(bundleID));
     return YES;
 }
