@@ -16,6 +16,7 @@ after-install::
 
 SUBPROJECTS += clients/Anghami
 SUBPROJECTS += clients/Deezer
+SUBPROJECTS += clients/JioSaavn
 SUBPROJECTS += clients/GoogleMusic
 SUBPROJECTS += clients/Music
 SUBPROJECTS += clients/Podcasts
