@@ -92,6 +92,9 @@ void preferencesChanged(notificationArguments) {
         }
 
         self.nextUpInitialized = YES;
+        [[NSNotificationCenter defaultCenter] postNotificationName:kNextUpDidInitialize
+                                                            object:nil
+                                                          userInfo:nil];
     }
 }
 
