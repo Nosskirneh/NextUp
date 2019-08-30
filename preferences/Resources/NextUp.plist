@@ -153,6 +153,21 @@
             <key>default</key>
             <true/>
             <key>icon</key>
+            <string>jiosaavn.png</string>
+            <key>key</key>
+            <string>com.Saavn.Saavn</string>
+            <key>label</key>
+            <string>JioSaavn</string>
+        </dict>
+
+        <dict>
+            <key>cell</key>
+            <string>PSSwitchCell</string>
+            <key>cellClass</key>
+            <string>NextUpSwitchTableCell</string>
+            <key>default</key>
+            <true/>
+            <key>icon</key>
             <string>podcasts.png</string>
             <key>key</key>
             <string>com.apple.podcasts</string>
