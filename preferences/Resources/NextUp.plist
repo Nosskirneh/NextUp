@@ -378,7 +378,7 @@
             <key>label</key>
             <string>Other</string>
             <key>footerAlignment</key>
-            <integer>1</integer>
+            <integer>0</integer>
             <key>footerText</key>
             <string>Before emailing me with an issue, please read through the troubleshoot link above. Thank you!</string>
         </dict>
@@ -416,8 +416,6 @@
         <dict>
             <key>cell</key>
             <string>PSGroupCell</string>
-            <key>label</key>
-            <string>Other</string>
             <key>footerAlignment</key>
             <integer>1</integer>
             <key>footerText</key>
