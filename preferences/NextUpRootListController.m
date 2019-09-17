@@ -8,7 +8,6 @@
 #import "../SettingsKeys.h"
 
 #define NextUpColor [UIColor colorWithRed:0.00 green:0.65 blue:1.00 alpha:1.0] // #00A5FF
-#define preferencesFrameworkPath @"/System/Library/PrivateFrameworks/Preferences.framework"
 #define kPostNotification @"PostNotification"
 
 @interface NextUpRootListController : PSListController <PFStatusBarAlertDelegate, DRMDelegate> {
@@ -43,14 +42,14 @@
         _specifiers = [self loadSpecifiersFromPlistName:@"NextUp" target:self];
 
     for (PSSpecifier *spec in _specifiers) {
-        UIImage *image;
         if ([spec.identifier isEqualToString:@"Music"] || [spec.identifier isEqualToString:@"Mail"]) {
             NSString *imageName = [NSString stringWithFormat:@"%@.png", spec.identifier];
-            image = [UIImage imageNamed:imageName inBundle:[NSBundle bundleWithPath:preferencesFrameworkPath]];
+            UIImage *image = [UIImage imageNamed:imageName inBundle:[NSBundle bundleWithPath:preferencesFrameworkPath]];
+            if (image)
+                [spec setProperty:image forKey:kIconImage];
+        } else if ([[specifier propertyForKey:kKey] isEqualToString:kHideArtwork]) {
+            [specifier setProperty:@(NO) forKey:@"enabled"];
         }
-
-        if (image)
-            [spec setProperty:image forKey:kIconImage];
     }
 
     // Add license specifier
@@ -90,9 +89,7 @@
 }
 
 - (void)respring {
-    pid_t pid;
-    const char *args[] = {"killall", "-9", "backboardd", NULL};
-    posix_spawn(&pid, "/usr/bin/killall", NULL, NULL, (char *const *)args, NULL);
+    respring(NO);
 }
 
 - (void)activate {
@@ -145,7 +142,7 @@
 }
 
 - (void)sendEmail {
-    openURL([NSURL URLWithString:@"mailto:andreaskhenriksson@gmail.com?subject=NextUp"]);
+    openURL([NSURL URLWithString:@"mailto:andreaskhenriksson@gmail.com?subject=NextUp%202"]);
 }
 
 - (void)purchase {
@@ -156,6 +153,10 @@
 
 - (void)myTweaks {
     [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://henrikssonbrothers.com/cydia/repo/packages.html"]];
+}
+
+- (void)troubleshoot {
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://github.com/Nosskirneh/NextUp-Public/blob/master/README.md#troubleshooting--faq"]];
 }
 
 - (void)safariViewControllerDidFinish:(id)arg1 {

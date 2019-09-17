@@ -1,7 +1,7 @@
 #import "Common.h"
 
 @interface NextUpManager : NSObject {
-	NSMutableSet *_enabledApps;
+    NSMutableSet *_enabledApps;
     BOOL _cfLockscreen;
 }
 @property (nonatomic, readonly) NSSet *enabledApps;
@@ -15,5 +15,6 @@
 - (void)setTrialEnded;
 - (BOOL)slimmedLSMode;
 - (BOOL)hideOnEmpty;
+- (BOOL)hideArtwork;
 - (BOOL)colorFlowEnabled;
 @end
