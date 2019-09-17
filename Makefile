@@ -12,20 +12,20 @@ $(TWEAK_NAME)_PRIVATE_FRAMEWORKS = AppSupport
 include $(THEOS_MAKE_PATH)/tweak.mk
 
 after-install::
-	install.exec "killall -9 Preferences"
+	install.exec "killall -9 SpringBoard"
 
-# SUBPROJECTS += clients/Anghami
-# SUBPROJECTS += clients/Deezer
-# SUBPROJECTS += clients/JioSaavn
-# SUBPROJECTS += clients/GoogleMusic
-# SUBPROJECTS += clients/Music
-# SUBPROJECTS += clients/Podcasts
-# SUBPROJECTS += clients/SoundCloud
-# SUBPROJECTS += clients/TIDAL
-# SUBPROJECTS += clients/YouTubeMusic
-# SUBPROJECTS += clients/VOX
-# SUBPROJECTS += clients/Musi
-# SUBPROJECTS += clients/Napster
+SUBPROJECTS += clients/Anghami
+SUBPROJECTS += clients/Deezer
+SUBPROJECTS += clients/JioSaavn
+SUBPROJECTS += clients/GoogleMusic
+SUBPROJECTS += clients/Music
+SUBPROJECTS += clients/Podcasts
+SUBPROJECTS += clients/SoundCloud
+SUBPROJECTS += clients/TIDAL
+SUBPROJECTS += clients/YouTubeMusic
+SUBPROJECTS += clients/VOX
+SUBPROJECTS += clients/Musi
+SUBPROJECTS += clients/Napster
 SUBPROJECTS += clients/Spotify
 SUBPROJECTS += preferences
 

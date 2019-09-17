@@ -22,7 +22,7 @@
             <key>footerAlignment</key>
             <integer>0</integer>
             <key>footerText</key>
-            <string>These settings require a restart of the respective app.</string>
+            <string>These settings require a restart of the respective app. Disabling apps that are not installed will not make a difference.</string>
         </dict>
 
         <dict>
@@ -283,7 +283,7 @@
             <key>footerAlignment</key>
             <integer>0</integer>
             <key>footerText</key>
-            <string>Hide NextUp when there is no next track available. Only the slimmed mode setting needs a respring.</string>
+            <string>Hide NextUp when there is no next track available. Hide on empty does not require a respring. Hide artwork is only available on non-RTL languages.</string>
         </dict>
 
         <dict>
@@ -312,6 +312,21 @@
             <string>hideOnEmpty</string>
             <key>label</key>
             <string>Hide on empty</string>
+            <key>PostNotification</key>
+            <string>se.nosskirneh.nextup/preferencesChanged</string>
+        </dict>
+
+        <dict>
+            <key>cell</key>
+            <string>PSSwitchCell</string>
+            <key>cellClass</key>
+            <string>NextUpSwitchTableCell</string>
+            <key>default</key>
+            <false/>
+            <key>key</key>
+            <string>hideArtwork</string>
+            <key>label</key>
+            <string>Hide artwork</string>
             <key>PostNotification</key>
             <string>se.nosskirneh.nextup/preferencesChanged</string>
         </dict>
@@ -356,13 +371,6 @@
         </dict>
 
 
-        <!-- Fill out -->
-        <dict>
-            <key>cell</key>
-            <string>PSGroupCell</string>
-        </dict>
-
-
         <!-- Other -->
         <dict>
             <key>cell</key>
@@ -372,7 +380,7 @@
             <key>footerAlignment</key>
             <integer>1</integer>
             <key>footerText</key>
-            <string>© 2018 - 2019 Andreas Henriksson</string>
+            <string>Before emailing me with an issue, please read through the troubleshoot link above. Thank you!</string>
         </dict>
         <dict>
             <key>cell</key>
@@ -390,9 +398,30 @@
             <key>cellClass</key>
             <string>NextUpColorButtonCell</string>
             <key>action</key>
+            <string>troubleshoot</string>
+            <key>label</key>
+            <string>Troubleshoot issue</string>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSButtonCell</string>
+            <key>cellClass</key>
+            <string>NextUpColorButtonCell</string>
+            <key>action</key>
             <string>sendEmail</string>
             <key>label</key>
             <string>Email me</string>
+        </dict>
+
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>label</key>
+            <string>Other</string>
+            <key>footerAlignment</key>
+            <integer>1</integer>
+            <key>footerText</key>
+            <string>© 2018 - 2019 Andreas Henriksson</string>
         </dict>
 	</array>
 

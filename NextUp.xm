@@ -479,6 +479,15 @@ void preferencesChanged(notificationArguments) {
 
         [self addSubview:self.routingButton];
 
+        // Artwork view
+        if ([manager hideArtwork] &&
+            [UIApplication sharedApplication].userInterfaceLayoutDirection != UIUserInterfaceLayoutDirectionRightToLeft) {
+            self.artworkView.hidden = YES;
+            self.artworkBackground.hidden = YES;
+            self.placeholderArtworkView.hidden = YES;
+            self.shadow.hidden = YES;
+        }
+
         return self;
     }
 
@@ -497,7 +506,8 @@ void preferencesChanged(notificationArguments) {
     }
 
     %new
-    - (CGRect)rectForMaxWidth:(CGRect)frame maxWidth:(CGFloat)maxWidth originX:(CGFloat)originX {
+    - (CGRect)rectForMaxWidth:(CGRect)frame maxWidth:(CGFloat)maxWidth fallbackOriginX:(CGFloat)fallbackOriginX bonusWidth:(CGFloat)bonusWidth bonusOriginX:(CGFloat)bonusOriginX {
+        frame.size.width += bonusWidth;
         if (maxWidth < frame.size.width) {
             if ([UIApplication sharedApplication].userInterfaceLayoutDirection == UIUserInterfaceLayoutDirectionRightToLeft)
                 frame.origin.x += frame.size.width - maxWidth;
@@ -505,10 +515,14 @@ void preferencesChanged(notificationArguments) {
         }
 
         if (frame.origin.x == 0)
-            frame.origin.x = originX;
+            frame.origin.x = fallbackOriginX;
+
+        frame.origin.x -= bonusOriginX;
         return frame;
     }
 
+    // This is a bit messy, but it's because MPUMarqueeView is weird.
+    // Changing its frame doesn't work very well with RTL either...
     - (void)layoutSubviews {
         %orig;
 
@@ -523,13 +537,24 @@ void preferencesChanged(notificationArguments) {
         }
 
         float maxWidth;
-        float originX;
+        float fallbackOriginX;
+        float bonusWidth = 0.0;
+        float bonusOriginX = 0.0;
         if ([UIApplication sharedApplication].userInterfaceLayoutDirection == UIUserInterfaceLayoutDirectionRightToLeft) {
             maxWidth = artworkView.frame.origin.x - routingButton.frame.origin.x - routingButton.frame.size.width - 15;
-            originX = routingButton.frame.origin.x + routingButton.frame.size.width + 8;
+            fallbackOriginX = routingButton.frame.origin.x + routingButton.frame.size.width + 8;
         } else {
             maxWidth = routingButton.frame.origin.x - artworkView.frame.origin.x - artworkView.frame.size.width - 15;
-            originX = artworkView.frame.origin.x + artworkView.frame.size.width + 12;
+            fallbackOriginX = artworkView.frame.origin.x + artworkView.frame.size.width + 12;
+
+            if (artworkView.hidden && ![self respondsToSelector:@selector(masqArtwork)]) {
+                bonusOriginX = artworkView.frame.size.width + 15;
+                bonusWidth += artworkView.frame.size.width;
+                maxWidth += bonusWidth;
+            }
+
+            if (routingButton.hidden)
+                bonusWidth += routingButton.frame.size.width;
         }
 
         if (routingButton.hidden)
@@ -537,12 +562,12 @@ void preferencesChanged(notificationArguments) {
 
         // Primary label
         CGRect frame = self.primaryMarqueeView.frame;
-        frame = [self rectForMaxWidth:frame maxWidth:maxWidth originX:originX];
+        frame = [self rectForMaxWidth:frame maxWidth:maxWidth fallbackOriginX:fallbackOriginX bonusWidth:bonusWidth bonusOriginX:bonusOriginX];
         self.primaryMarqueeView.frame = frame;
 
         // Secondary label
         frame = self.secondaryMarqueeView.frame;
-        frame = [self rectForMaxWidth:frame maxWidth:maxWidth originX:originX];
+        frame = [self rectForMaxWidth:frame maxWidth:maxWidth fallbackOriginX:fallbackOriginX bonusWidth:bonusWidth bonusOriginX:bonusOriginX];
         self.secondaryMarqueeView.frame = frame;
     }
 
