@@ -89,11 +89,12 @@
 }
 
 - (void)activate {
-    presentDidYouBuyQuestion(DYBFreeUpgrade, nextUpDisplayName$bs(), YES, self, ^(BOOL choice, const NSString *email) {
-        if (choice)
-            return activateWithUpgradePackage(licensePath$bs(), package$bs(), email, choice ? nextup$bs() : nil, self);
+    presentMultiTweakQuestionWithInfo(self, @[[UIAlertAction actionWithTitle:OBFS_NSSTR(nextUpDisplayName$bs()) style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+        activateWithUpgradePackagePromptEmail(licensePath$bs(), package$bs(), nextup$bs(), self);
+    }],
+    [UIAlertAction actionWithTitle:OBFS_NSSTR(nextUp2DisplayName$bs()) style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
         activate(licensePath$bs(), package$bs(), self);
-    });
+    }]], choosingTheWrongProductWillNOTWork$bs());
 }
 
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
