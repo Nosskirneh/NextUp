@@ -377,7 +377,7 @@ void preferencesChanged(notificationArguments) {
     - (void)cfw_colorize:(CFWColorInfo *)colorInfo {
         %orig;
 
-        self.routingButton.clear.strokeColor = colorInfo.secondaryColor.CGColor;
+        self.routingButton.clear.strokeColor = colorInfo.backgroundColor.CGColor;
         self.routingButton.backgroundColor = colorInfo.primaryColor;
     }
 

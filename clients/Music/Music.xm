@@ -62,10 +62,9 @@ void manualUpdate(notificationArguments) {
     NUMediaItem *next = [self metadataItemForPlaylistIndex:[self currentIndex] + 1];
 
     if (!next)
-        next = [self metadataItemForPlaylistIndex:0];
+        return sendNextTrackMetadata(nil);
 
-    if (next)
-        [self fetchNextUpItem:next withArtworkCatalog:[next artworkCatalogBlock]];
+    [self fetchNextUpItem:next withArtworkCatalog:[next artworkCatalogBlock]];
 }
 
 %new
@@ -101,7 +100,6 @@ void manualUpdate(notificationArguments) {
     }
 
     metadata[kSubtitle] = item.artist;
-
     metadata[kArtwork] = UIImagePNGRepresentation(artwork);
     return metadata;
 }
