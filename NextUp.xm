@@ -133,9 +133,9 @@ void preferencesChanged(notificationArguments) {
             frame.size.height = 101.0;
             self.frame = frame;
 
-            self.nextUpView.frame = CGRectMake(self.frame.origin.x,
-                                               self.frame.origin.y + self.frame.size.height,
-                                               self.frame.size.width,
+            self.nextUpView.frame = CGRectMake(frame.origin.x,
+                                               frame.origin.y + frame.size.height,
+                                               frame.size.width,
                                                105);
 
             if (!self.showingNextUp)
@@ -228,11 +228,16 @@ void preferencesChanged(notificationArguments) {
 
     %hook SBDashBoardMediaControlsViewController
     %property (nonatomic, assign) BOOL shouldShowNextUp;
+    %property (nonatomic, assign) BOOL nu_skipWidgetHeightIncrease;
     %property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
     %property (nonatomic, assign) float nextUpHeight;
 
     - (id)init {
         self = %orig;
+
+        /* This is apparently needed for some reason. It doesn't set NO as default,
+           it becomes some value that are undefined and changes */
+        self.nu_skipWidgetHeightIncrease = NO;
 
         float nextUpHeight = 105.0;
         if ([manager slimmedLSMode])
@@ -244,7 +249,7 @@ void preferencesChanged(notificationArguments) {
 
     - (CGSize)preferredContentSize {
         CGSize orig = %orig;
-        if (self.shouldShowNextUp)
+        if (self.shouldShowNextUp && !self.nu_skipWidgetHeightIncrease)
             orig.height += self.nextUpHeight;
         return orig;
     }
@@ -265,15 +270,19 @@ void preferencesChanged(notificationArguments) {
 
     %new
     - (void)addNextUpView {
+        CGSize size = [self preferredContentSize];
+        if (size.width < 0)
+            return;
+
         UIViewController<PanelViewController> *panelViewController = [self panelViewController];
         [self.view addSubview:panelViewController.nextUpViewController.view];
 
-        UIView *mediaView = panelViewController.view;
-
-        panelViewController.nextUpViewController.view.frame = CGRectMake(mediaView.frame.origin.x,
-                                                                         mediaView.frame.origin.y + mediaView.frame.size.height,
-                                                                         mediaView.frame.size.width,
-                                                                         self.nextUpHeight);
+        UIView *nextUpView = panelViewController.nextUpViewController.view;
+        nextUpView.frame = CGRectMake(panelViewController.view.frame.origin.x,
+                                      size.height - self.nextUpHeight,
+                                      size.width,
+                                      self.nextUpHeight);
+        [self.view addSubview:nextUpView];
         self.showingNextUp = YES;
     }
 
@@ -672,22 +681,22 @@ static inline void initTrial() {
         c = %c(MediaControlsPanelViewController);
     %init(PanelViewController = c);
 
+    %init(CustomViews);
     if (!manager.preferences[kControlCenter] || [manager.preferences[kControlCenter] boolValue])
         %init(ControlCenter);
 
-    if (!manager.preferences[kLockscreen] || [manager.preferences[kLockscreen] boolValue])
+    if (!manager.preferences[kLockscreen] || [manager.preferences[kLockscreen] boolValue]) {
         %init(Lockscreen);
 
-    %init(CustomViews);
+        if ([%c(SBDashBoardMediaControlsViewController) instancesRespondToSelector:@selector(cfw_colorize:)])
+            %init(ColorFlow);
+
+        if ([c instancesRespondToSelector:@selector(nrdUpdate)])
+            %init(Nereid, PanelViewController = c);
+    }
 
     if (!manager.preferences[kHapticFeedbackOther] || [manager.preferences[kHapticFeedbackOther] boolValue])
         %init(HapticFeedback);
-
-    if ([%c(SBDashBoardMediaControlsViewController) instancesRespondToSelector:@selector(cfw_colorize:)])
-        %init(ColorFlow);
-
-    if ([c instancesRespondToSelector:@selector(nrdUpdate)])
-        %init(Nereid, PanelViewController = c);
 
     subscribe(preferencesChanged, kPrefChanged);
 }

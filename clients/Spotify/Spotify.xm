@@ -119,7 +119,7 @@ SPTQueueViewModelImplementation *getQueueImplementation() {
 
 %end
 
-%hook  SPTGaiaBackgroundController
+%hook GaiaLocalAudioSessionController
 
 - (void)player:(SPTPlayerImpl *)player stateDidChange:(SPTPlayerState *)newState fromState:(SPTPlayerState *)oldState {
     %orig;
