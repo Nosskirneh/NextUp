@@ -8,6 +8,7 @@
 #import "../SettingsKeys.h"
 
 #define NextUpColor [UIColor colorWithRed:0.00 green:0.65 blue:1.00 alpha:1.0] // #00A5FF
+#define preferencesFrameworkPath @"/System/Library/PrivateFrameworks/Preferences.framework"
 #define kPostNotification @"PostNotification"
 
 @interface NextUpRootListController : PSListController <PFStatusBarAlertDelegate, DRMDelegate> {
@@ -41,12 +42,12 @@
     if (!_specifiers)
         _specifiers = [self loadSpecifiersFromPlistName:@"NextUp" target:self];
 
-    for (PSSpecifier *spec in _specifiers) {
-        if ([spec.identifier isEqualToString:@"Music"] || [spec.identifier isEqualToString:@"Mail"]) {
-            NSString *imageName = [NSString stringWithFormat:@"%@.png", spec.identifier];
+    for (PSSpecifier *specifier in _specifiers) {
+        if ([specifier.identifier isEqualToString:@"Music"] || [specifier.identifier isEqualToString:@"Mail"]) {
+            NSString *imageName = [NSString stringWithFormat:@"%@.png", specifier.identifier];
             UIImage *image = [UIImage imageNamed:imageName inBundle:[NSBundle bundleWithPath:preferencesFrameworkPath]];
             if (image)
-                [spec setProperty:image forKey:kIconImage];
+                [specifier setProperty:image forKey:kIconImage];
         } else if ([[specifier propertyForKey:kKey] isEqualToString:kHideArtwork]) {
             [specifier setProperty:@(NO) forKey:@"enabled"];
         }
