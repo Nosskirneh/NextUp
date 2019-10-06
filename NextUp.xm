@@ -686,8 +686,8 @@ static inline void initTrial() {
         if ([%c(SBDashBoardMediaControlsViewController) instancesRespondToSelector:@selector(cfw_colorize:)])
             %init(ColorFlow);
 
-        if ([c instancesRespondToSelector:@selector(nrdUpdate)])
-            %init(Nereid, PanelViewController = c);
+        if ([%c(MediaControlsPanelViewController) instancesRespondToSelector:@selector(nrdUpdate)])
+            %init(Nereid);
     }
 
     if (!manager.preferences[kHapticFeedbackOther] || [manager.preferences[kHapticFeedbackOther] boolValue])
