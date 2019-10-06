@@ -38,8 +38,12 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 
 @interface MediaControlsHeaderView : UIView
 @property (nonatomic, retain) UIButton *routingButton;
-@property (nonatomic, retain) UIView *buttonBackground;
 @property (nonatomic, retain) UIImageView *artworkView;
+@property (nonatomic, retain) UIImageView *placeholderArtworkView;
+@property (nonatomic, retain) UIView *buttonBackground; // iOS 11
+@property (nonatomic, retain) UIView *artworkBackground; // iOS 12
+@property (nonatomic, retain) UIView *artworkBackgroundView; // iOS 11
+@property (nonatomic, retain) UIView *shadow;
 @property (nonatomic, retain) MPUMarqueeView *primaryMarqueeView;
 @property (nonatomic, retain) MPUMarqueeView *secondaryMarqueeView;
 @property (nonatomic, retain) UILabel *primaryLabel;
@@ -50,6 +54,9 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @property (nonatomic, retain) NSString *secondaryString;
 - (void)setShouldEnableMarquee:(BOOL)arg1; // 11.1.2
 - (void)setMarqueeEnabled:(BOOL)arg1; // 11.3.1
+
+// MASQ
+@property (nonatomic, retain) UIView *masqArtwork;
 @end
 
 
@@ -63,11 +70,13 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @property (nonatomic, retain) UIColor *textColor;
 @property (nonatomic, assign) CGFloat textAlpha;
 @property (nonatomic, retain) UIColor *skipBackgroundColor;
-- (CGRect)rectForMaxWidth:(CGRect)frame maxWidth:(CGFloat)maxWidth originX:(CGFloat)originX;
+- (CGRect)rectForMaxWidth:(CGRect)frame maxWidth:(CGFloat)maxWidth fallbackOriginX:(CGFloat)fallbackOriginX bonusWidth:(CGFloat)bonusWidth bonusOriginX:(CGFloat)bonusOriginX;
 - (void)updateTextColor:(UIColor *)color;
 - (void)updateSkipBackgroundColor:(UIColor *)color;
 @end
 
+
+#define kNextUpDidInitialize @"nextUpDidInitialize"
 
 @interface NextUpViewController : UIViewController
 @property (nonatomic, retain) NSBundle *bundle;
@@ -135,6 +144,7 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 
 @interface SBDashBoardMediaControlsViewController : UIViewController
 @property (nonatomic, assign) BOOL shouldShowNextUp;
+@property (nonatomic, assign) BOOL nu_skipWidgetHeightIncrease;
 @property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
 @property (nonatomic, assign) float nextUpHeight;
 - (void)initNextUp;

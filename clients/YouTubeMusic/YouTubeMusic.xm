@@ -142,9 +142,6 @@ GIMMe *gimme() {
 
 %ctor {
     NSString *bundleID = [NSBundle mainBundle].bundleIdentifier;
-    if (!initClient(bundleID))
+    if (!initClient(bundleID, &skipNext, &manualUpdate))
         return;
-
-    subscribe(&skipNext, skipNextID(bundleID));
-    subscribe(&manualUpdate, manualUpdateID(bundleID));
 }

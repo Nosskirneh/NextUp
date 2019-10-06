@@ -8,13 +8,15 @@
 #import "../SettingsKeys.h"
 
 #define NextUpColor [UIColor colorWithRed:0.00 green:0.65 blue:1.00 alpha:1.0] // #00A5FF
-#define preferencesFrameworkPath @"/System/Library/PrivateFrameworks/Preferences.framework"
 #define kPostNotification @"PostNotification"
 
-@interface NextUpRootListController : PSListController <PFStatusBarAlertDelegate> {
+@interface NextUpRootListController : PSListController <PFStatusBarAlertDelegate, DRMDelegate> {
     UIWindow *settingsView;
 }
 @property (nonatomic, strong) PFStatusBarAlert *statusAlert;
+@property (nonatomic, weak) UIAlertAction *okAction;
+@property (nonatomic, weak) NSString *okRegex;
+@property (nonatomic, strong) UIAlertController *giveawayAlertController;
 @end
 
 #define kIconImage @"iconImage"
@@ -28,7 +30,7 @@
         UIBarButtonItem *respringButton = [[UIBarButtonItem alloc] initWithTitle:@"Respring"
                                                                            style:UIBarButtonItemStylePlain
                                                                           target:self
-                                                                          action:@selector(respring:)];
+                                                                          action:@selector(respring)];
         self.navigationItem.rightBarButtonItem = respringButton;
     }
 
@@ -40,19 +42,19 @@
         _specifiers = [self loadSpecifiersFromPlistName:@"NextUp" target:self];
 
     for (PSSpecifier *spec in _specifiers) {
-        UIImage *image;
         if ([spec.identifier isEqualToString:@"Music"] || [spec.identifier isEqualToString:@"Mail"]) {
             NSString *imageName = [NSString stringWithFormat:@"%@.png", spec.identifier];
-            image = [UIImage imageNamed:imageName inBundle:[NSBundle bundleWithPath:preferencesFrameworkPath]];
+            UIImage *image = [UIImage imageNamed:imageName inBundle:[NSBundle bundleWithPath:preferencesFrameworkPath]];
+            if (image)
+                [spec setProperty:image forKey:kIconImage];
+        } else if ([[specifier propertyForKey:kKey] isEqualToString:kHideArtwork]) {
+            [specifier setProperty:@(NO) forKey:@"enabled"];
         }
-
-        if (image)
-            [spec setProperty:image forKey:kIconImage];
     }
 
     // Add license specifier
     NSMutableArray *mspecs = (NSMutableArray *)[_specifiers mutableCopy];
-    _specifiers = addDRMSpecifiers(mspecs, self, licensePath$bs(), package$bs(), licenseFooterText$bs(), trialFooterText$bs());
+    _specifiers = addDRMSpecifiers(mspecs, self, licensePath$bs(), kPrefPath, package$bs(), licenseFooterText$bs(), trialFooterText$bs());
 
     return _specifiers;
 }
@@ -86,10 +88,8 @@
     }
 }
 
-- (void)respring:(id)sender {
-    pid_t pid;
-    const char *args[] = {"killall", "-9", "backboardd", NULL};
-    posix_spawn(&pid, "/usr/bin/killall", NULL, NULL, (char *const *)args, NULL);
+- (void)respring {
+    respring(NO);
 }
 
 - (void)activate {
@@ -97,26 +97,12 @@
 }
 
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
-    [self determineUnlockOKButton:textField];
+    [self textFieldChanged:textField];
     return YES;
 }
 
-- (void)paypalEmailTextFieldChanged:(UITextField *)textField {
-    [self determineUnlockOKButton:textField];
-}
-
-- (void)determineUnlockOKButton:(UITextField *)textField {
-    UIAlertController *alertController = (UIAlertController *)self.presentedViewController;
-    if (alertController) {
-        UIAlertAction *okAction = alertController.actions.lastObject;
-        okAction.enabled = [self validateEmail:textField.text];
-    }
-}
-
-- (BOOL)validateEmail:(NSString *)candidate {
-    NSString *emailRegex = @"[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}";
-    NSPredicate *emailTest = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", emailRegex];
-    return [emailTest evaluateWithObject:candidate];
+- (void)textFieldChanged:(UITextField *)textField {
+    determineUnlockOKButton(textField, self);
 }
 
 - (void)trial {
@@ -129,7 +115,7 @@
     if (!self.statusAlert) {
         self.statusAlert = [[PFStatusBarAlert alloc] initWithMessage:nil
                                                         notification:nil
-                                                              action:@selector(respring:)
+                                                              action:@selector(respring)
                                                               target:self];
         self.statusAlert.backgroundColor = [UIColor colorWithHue:0.590 saturation:1 brightness:1 alpha:0.9];
         self.statusAlert.textColor = [UIColor whiteColor];
@@ -156,7 +142,7 @@
 }
 
 - (void)sendEmail {
-    openURL([NSURL URLWithString:@"mailto:andreaskhenriksson@gmail.com?subject=NextUp"]);
+    openURL([NSURL URLWithString:@"mailto:andreaskhenriksson@gmail.com?subject=NextUp%202"]);
 }
 
 - (void)purchase {
@@ -167,6 +153,14 @@
 
 - (void)myTweaks {
     [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://henrikssonbrothers.com/cydia/repo/packages.html"]];
+}
+
+- (void)troubleshoot {
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://github.com/Nosskirneh/NextUp-Public/blob/master/README.md#troubleshooting--faq"]];
+}
+
+- (void)safariViewControllerDidFinish:(id)arg1 {
+    safariViewControllerDidFinish(self);
 }
 
 @end

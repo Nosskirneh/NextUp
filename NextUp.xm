@@ -92,6 +92,9 @@ void preferencesChanged(notificationArguments) {
         }
 
         self.nextUpInitialized = YES;
+        [[NSNotificationCenter defaultCenter] postNotificationName:kNextUpDidInitialize
+                                                            object:nil
+                                                          userInfo:nil];
     }
 }
 
@@ -126,9 +129,9 @@ void preferencesChanged(notificationArguments) {
             frame.size.height = 101.0;
             self.frame = frame;
 
-            self.nextUpView.frame = CGRectMake(self.frame.origin.x,
-                                               self.frame.origin.y + self.frame.size.height,
-                                               self.frame.size.width,
+            self.nextUpView.frame = CGRectMake(frame.origin.x,
+                                               frame.origin.y + frame.size.height,
+                                               frame.size.width,
                                                105);
 
             if (!self.showingNextUp)
@@ -226,11 +229,16 @@ void preferencesChanged(notificationArguments) {
 
     %hook SBDashBoardMediaControlsViewController
     %property (nonatomic, assign) BOOL shouldShowNextUp;
+    %property (nonatomic, assign) BOOL nu_skipWidgetHeightIncrease;
     %property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
     %property (nonatomic, assign) float nextUpHeight;
 
     - (id)init {
         self = %orig;
+
+        /* This is apparently needed for some reason. It doesn't set NO as default,
+           it becomes some value that are undefined and changes */
+        self.nu_skipWidgetHeightIncrease = NO;
 
         float nextUpHeight = 105.0;
         if ([manager slimmedLSMode])
@@ -242,7 +250,7 @@ void preferencesChanged(notificationArguments) {
 
     - (CGSize)preferredContentSize {
         CGSize orig = %orig;
-        if (self.shouldShowNextUp)
+        if (self.shouldShowNextUp && !self.nu_skipWidgetHeightIncrease)
             orig.height += self.nextUpHeight;
         return orig;
     }
@@ -261,15 +269,19 @@ void preferencesChanged(notificationArguments) {
 
     %new
     - (void)addNextUpView {
+        CGSize size = [self preferredContentSize];
+        if (size.width < 0)
+            return;
+
         MediaControlsPanelViewController *panelViewController = [self panelViewController];
         [self.view addSubview:panelViewController.nextUpViewController.view];
 
-        UIView *mediaView = panelViewController.view;
-
-        panelViewController.nextUpViewController.view.frame = CGRectMake(mediaView.frame.origin.x,
-                                                                         mediaView.frame.origin.y + mediaView.frame.size.height,
-                                                                         mediaView.frame.size.width,
-                                                                         self.nextUpHeight);
+        UIView *nextUpView = panelViewController.nextUpViewController.view;
+        nextUpView.frame = CGRectMake(panelViewController.view.frame.origin.x,
+                                      size.height - self.nextUpHeight,
+                                      size.width,
+                                      self.nextUpHeight);
+        [self.view addSubview:nextUpView];
         self.showingNextUp = YES;
     }
 
@@ -373,7 +385,7 @@ void preferencesChanged(notificationArguments) {
     - (void)cfw_colorize:(CFWColorInfo *)colorInfo {
         %orig;
 
-        self.routingButton.clear.strokeColor = colorInfo.secondaryColor.CGColor;
+        self.routingButton.clear.strokeColor = colorInfo.backgroundColor.CGColor;
         self.routingButton.backgroundColor = colorInfo.primaryColor;
     }
 
@@ -473,6 +485,15 @@ void preferencesChanged(notificationArguments) {
 
         [self addSubview:self.routingButton];
 
+        // Artwork view
+        if ([manager hideArtwork] &&
+            [UIApplication sharedApplication].userInterfaceLayoutDirection != UIUserInterfaceLayoutDirectionRightToLeft) {
+            self.artworkView.hidden = YES;
+            self.artworkBackgroundView.hidden = YES;
+            self.placeholderArtworkView.hidden = YES;
+            self.shadow.hidden = YES;
+        }
+
         return self;
     }
 
@@ -491,7 +512,8 @@ void preferencesChanged(notificationArguments) {
     }
 
     %new
-    - (CGRect)rectForMaxWidth:(CGRect)frame maxWidth:(CGFloat)maxWidth originX:(CGFloat)originX {
+    - (CGRect)rectForMaxWidth:(CGRect)frame maxWidth:(CGFloat)maxWidth fallbackOriginX:(CGFloat)fallbackOriginX bonusWidth:(CGFloat)bonusWidth bonusOriginX:(CGFloat)bonusOriginX {
+        frame.size.width += bonusWidth;
         if (maxWidth < frame.size.width) {
             if ([UIApplication sharedApplication].userInterfaceLayoutDirection == UIUserInterfaceLayoutDirectionRightToLeft)
                 frame.origin.x += frame.size.width - maxWidth;
@@ -499,10 +521,14 @@ void preferencesChanged(notificationArguments) {
         }
 
         if (frame.origin.x == 0)
-            frame.origin.x = originX;
+            frame.origin.x = fallbackOriginX;
+
+        frame.origin.x -= bonusOriginX;
         return frame;
     }
 
+    // This is a bit messy, but it's because MPUMarqueeView is weird.
+    // Changing its frame doesn't work very well with RTL either...
     - (void)layoutSubviews {
         %orig;
 
@@ -517,13 +543,24 @@ void preferencesChanged(notificationArguments) {
         }
 
         float maxWidth;
-        float originX;
+        float fallbackOriginX;
+        float bonusWidth = 0.0;
+        float bonusOriginX = 0.0;
         if ([UIApplication sharedApplication].userInterfaceLayoutDirection == UIUserInterfaceLayoutDirectionRightToLeft) {
             maxWidth = artworkView.frame.origin.x - routingButton.frame.origin.x - routingButton.frame.size.width - 15;
-            originX = routingButton.frame.origin.x + routingButton.frame.size.width + 8;
+            fallbackOriginX = routingButton.frame.origin.x + routingButton.frame.size.width + 8;
         } else {
             maxWidth = routingButton.frame.origin.x - artworkView.frame.origin.x - artworkView.frame.size.width - 15;
-            originX = artworkView.frame.origin.x + artworkView.frame.size.width + 12;
+            fallbackOriginX = artworkView.frame.origin.x + artworkView.frame.size.width + 12;
+
+            if (artworkView.hidden && ![self respondsToSelector:@selector(masqArtwork)]) {
+                bonusOriginX = artworkView.frame.size.width + 15;
+                bonusWidth += artworkView.frame.size.width;
+                maxWidth += bonusWidth;
+            }
+
+            if (routingButton.hidden)
+                bonusWidth += routingButton.frame.size.width;
         }
 
         if (routingButton.hidden)
@@ -531,12 +568,12 @@ void preferencesChanged(notificationArguments) {
 
         // Primary label
         CGRect frame = self.primaryMarqueeView.frame;
-        frame = [self rectForMaxWidth:frame maxWidth:maxWidth originX:originX];
+        frame = [self rectForMaxWidth:frame maxWidth:maxWidth fallbackOriginX:fallbackOriginX bonusWidth:bonusWidth bonusOriginX:bonusOriginX];
         self.primaryMarqueeView.frame = frame;
 
         // Secondary label
         frame = self.secondaryMarqueeView.frame;
-        frame = [self rectForMaxWidth:frame maxWidth:maxWidth originX:originX];
+        frame = [self rectForMaxWidth:frame maxWidth:maxWidth fallbackOriginX:fallbackOriginX bonusWidth:bonusWidth bonusOriginX:bonusOriginX];
         self.secondaryMarqueeView.frame = frame;
 
         self.buttonBackground.hidden = YES;
@@ -561,6 +598,22 @@ void preferencesChanged(notificationArguments) {
     %end
 %end
 // ---
+
+
+%group PackagePirated
+%hook SBCoverSheetPresentationManager
+
+- (void)_cleanupDismissalTransition {
+    %orig;
+
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        showPiracyAlert(packageShown$bs());
+    });
+}
+
+%end
+%end
 
 
 %group Welcome
@@ -596,6 +649,9 @@ static inline void initTrial() {
 }
 
 %ctor {
+    if (fromUntrustedSource(package$bs()))
+        %init(PackagePirated);
+
     manager = [[NextUpManager alloc] init];
 
     // License check – if no license found, present message. If no valid license found, do not init
@@ -620,22 +676,22 @@ static inline void initTrial() {
     [manager setup];
 
     %init();
+    %init(CustomViews);
     if (!manager.preferences[kControlCenter] || [manager.preferences[kControlCenter] boolValue])
         %init(ControlCenter);
 
-    if (!manager.preferences[kLockscreen] || [manager.preferences[kLockscreen] boolValue])
+    if (!manager.preferences[kLockscreen] || [manager.preferences[kLockscreen] boolValue]) {
         %init(Lockscreen);
 
-    %init(CustomViews);
+        if ([%c(SBDashBoardMediaControlsViewController) instancesRespondToSelector:@selector(cfw_colorize:)])
+            %init(ColorFlow);
+
+        if ([c instancesRespondToSelector:@selector(nrdUpdate)])
+            %init(Nereid, PanelViewController = c);
+    }
 
     if (!manager.preferences[kHapticFeedbackOther] || [manager.preferences[kHapticFeedbackOther] boolValue])
         %init(HapticFeedback);
-
-    if ([%c(SBDashBoardMediaControlsViewController) instancesRespondToSelector:@selector(cfw_colorize:)])
-        %init(ColorFlow);
-
-    if ([%c(MediaControlsPanelViewController) instancesRespondToSelector:@selector(nrdUpdate)])
-        %init(Nereid);
 
     subscribe(preferencesChanged, kPrefChanged);
 }

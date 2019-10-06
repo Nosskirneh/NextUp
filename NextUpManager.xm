@@ -71,4 +71,8 @@
     return self.preferences[kHideOnEmpty] && [self.preferences[kHideOnEmpty] boolValue];
 }
 
+- (BOOL)hideArtwork {
+    return self.preferences[kHideArtwork] && [self.preferences[kHideArtwork] boolValue];
+}
+
 @end
