@@ -263,12 +263,10 @@ void preferencesChanged(notificationArguments) {
 
     %new
     - (void)addNextUpView {
-        MediaControlsPanelViewController *panelViewController = [self panelViewController];
         CGSize size = [self preferredContentSize];
         if (size.width < 0)
             return;
 
-        UIViewController<PanelViewController> *panelViewController = [self panelViewController];
         MediaControlsPanelViewController *panelViewController = [self panelViewController];
         [self.view addSubview:panelViewController.nextUpViewController.view];
 
