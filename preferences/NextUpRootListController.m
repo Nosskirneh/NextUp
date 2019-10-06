@@ -142,7 +142,7 @@
 }
 
 - (void)sendEmail {
-    openURL([NSURL URLWithString:@"mailto:andreaskhenriksson@gmail.com?subject=NextUp%202"]);
+    openURL([NSURL URLWithString:@"mailto:andreaskhenriksson@gmail.com?subject=NextUp"]);
 }
 
 - (void)purchase {
