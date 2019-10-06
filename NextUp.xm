@@ -673,22 +673,22 @@ static inline void initTrial() {
     [manager setup];
 
     %init();
+    %init(CustomViews);
     if (!manager.preferences[kControlCenter] || [manager.preferences[kControlCenter] boolValue])
         %init(ControlCenter);
 
-    if (!manager.preferences[kLockscreen] || [manager.preferences[kLockscreen] boolValue])
+    if (!manager.preferences[kLockscreen] || [manager.preferences[kLockscreen] boolValue]) {
         %init(Lockscreen);
 
-    %init(CustomViews);
+        if ([%c(SBDashBoardMediaControlsViewController) instancesRespondToSelector:@selector(cfw_colorize:)])
+            %init(ColorFlow);
+
+        if ([c instancesRespondToSelector:@selector(nrdUpdate)])
+            %init(Nereid, PanelViewController = c);
+    }
 
     if (!manager.preferences[kHapticFeedbackOther] || [manager.preferences[kHapticFeedbackOther] boolValue])
         %init(HapticFeedback);
-
-    if ([%c(SBDashBoardMediaControlsViewController) instancesRespondToSelector:@selector(cfw_colorize:)])
-        %init(ColorFlow);
-
-    if ([%c(MediaControlsPanelViewController) instancesRespondToSelector:@selector(nrdUpdate)])
-        %init(Nereid);
 
     subscribe(preferencesChanged, kPrefChanged);
 }
