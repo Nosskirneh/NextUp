@@ -48,7 +48,8 @@
             UIImage *image = [UIImage imageNamed:imageName inBundle:[NSBundle bundleWithPath:preferencesFrameworkPath]];
             if (image)
                 [specifier setProperty:image forKey:kIconImage];
-        } else if ([[specifier propertyForKey:kKey] isEqualToString:kHideArtwork]) {
+        } else if ([UIApplication sharedApplication].userInterfaceLayoutDirection == UIUserInterfaceLayoutDirectionRightToLeft &&
+                   [[specifier propertyForKey:kKey] isEqualToString:kHideArtwork]) {
             [specifier setProperty:@(NO) forKey:@"enabled"];
         }
     }
