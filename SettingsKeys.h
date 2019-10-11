@@ -1,14 +1,4 @@
-#import <SpringBoard/SBMediaController.h>
-#define isAppCurrentMediaApp(x) [((SBMediaController *)[objc_getClass("SBMediaController") sharedInstance]).nowPlayingApplication.mainSceneID isEqualToString:x]
-
-
 #define kPrefChanged [NSString stringWithFormat:@"%@/preferencesChanged", NEXTUP_IDENTIFIER]
-
-extern NSString *const kHasSeenTrialEnded;
-
-extern NSString *const kShowNextUp;
-extern NSString *const kHideNextUp;
-extern NSString *const kUpdateLabels;
 
 extern NSString *const kControlCenter;
 extern NSString *const kLockscreen;
