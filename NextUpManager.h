@@ -11,7 +11,6 @@
 @property (nonatomic, assign, readwrite) BOOL controlCenterExpanded;
 @property (nonatomic, assign, readonly) BOOL trialEnded;
 - (void)setup;
-- (void)reloadPreferences;
 - (void)setTrialEnded;
 - (BOOL)slimmedLSMode;
 - (BOOL)hideOnEmpty;

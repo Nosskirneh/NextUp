@@ -1,3 +1,5 @@
+const char *kSettingsChanged = "se.nosskirneh.nextup/preferencesChanged";
+
 NSString *const kControlCenter = @"controlcenter";
 NSString *const kLockscreen = @"lockscreen";
 NSString *const kHideXButtons = @"hideXButtons";

@@ -4,6 +4,7 @@
 #import "../DRMOptions.mm"
 #import "../../DRM/PFStatusBarAlert/PFStatusBarAlert.h"
 #import <spawn.h>
+#import <notify.h>
 #import "../../TwitterStuff/Prompt.h"
 #import "../SettingsKeys.h"
 
@@ -75,17 +76,16 @@
 }
 
 - (void)setPreferenceValue:(id)value specifier:(PSSpecifier *)specifier {
-    NSMutableDictionary *preferences = [[NSMutableDictionary alloc] initWithContentsOfFile:kPrefPath];
-    if (!preferences) preferences = [[NSMutableDictionary alloc] init];
+    NSMutableDictionary *preferences = [NSMutableDictionary dictionaryWithContentsOfFile:kPrefPath];
+    if (!preferences) preferences = [NSMutableDictionary new];
     NSString *key = [specifier propertyForKey:kKey];
 
     [preferences setObject:value forKey:key];
     [preferences writeToFile:kPrefPath atomically:YES];
     
-    if (specifier.properties[kPostNotification]) {
-        CFStringRef post = (CFStringRef)CFBridgingRetain(specifier.properties[kPostNotification]);
-        notify(post);
-    }
+    NSString *notificationString = specifier.properties[kPostNotification];
+    if (notificationString)
+        notify_post([notificationString UTF8String]);
 }
 
 - (void)respring {

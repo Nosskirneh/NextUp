@@ -1,4 +1,4 @@
-#define kPrefChanged [NSString stringWithFormat:@"%@/preferencesChanged", NEXTUP_IDENTIFIER]
+extern const char *kSettingsChanged;
 
 extern NSString *const kControlCenter;
 extern NSString *const kLockscreen;
