@@ -2,6 +2,10 @@
 #import "../CommonClients.h"
 
 
+@interface NSString (Missing)
+- (id)CDVStringByXMLUnquoting;
+@end
+
 PlayerVC *getPlayerVC() {
     return [(AppDelegate *)[[UIApplication sharedApplication] delegate] getPlayerVC];
 }
@@ -50,7 +54,7 @@ void manualUpdate(notificationArguments) {
 - (NSDictionary *)serializeSong:(NSDictionary *)song image:(UIImage *)image {
     NSMutableDictionary *metadata = [NSMutableDictionary new];
 
-    metadata[kTitle] = song[@"title"];
+    metadata[kTitle] = [song[@"title"] CDVStringByXMLUnquoting];
     metadata[kSubtitle] = [%c(SongUtil) getPrimaryArtistNamesForSong:song];
 
     if (image)
