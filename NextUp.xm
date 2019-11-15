@@ -169,7 +169,7 @@ void preferencesChanged(notificationArguments) {
 
 
 %group Lockscreen
-    %hook SBDashBoardNotificationAdjunctListViewController
+    %hook NotificationAdjunctListViewController
 
     - (id)init {
         self = %orig;
@@ -186,15 +186,15 @@ void preferencesChanged(notificationArguments) {
     }
 
     %new
-    - (SBDashBoardMediaControlsViewController *)mediaControlsViewController {
-        SBDashBoardNowPlayingController *nowPlayingController = [self valueForKey:@"_nowPlayingController"];
+    - (id<MediaControlsViewController>)mediaControlsViewController {
+        id<NowPlayingController> nowPlayingController = [self valueForKey:@"_nowPlayingController"];
         return nowPlayingController.controlsViewController;
     }
 
     %new
     - (void)showNextUp {
         // Mark NextUp as should be visible
-        SBDashBoardMediaControlsViewController *mediaControlsViewController = [self mediaControlsViewController];
+        id<MediaControlsViewController> mediaControlsViewController = [self mediaControlsViewController];
         mediaControlsViewController.shouldShowNextUp = YES;
 
         if (!mediaControlsViewController.showingNextUp)
@@ -204,7 +204,7 @@ void preferencesChanged(notificationArguments) {
     %new
     - (void)hideNextUp {
         // Mark NextUp as should not be visible
-        SBDashBoardMediaControlsViewController *mediaControlsViewController = [self mediaControlsViewController];
+        id<MediaControlsViewController> mediaControlsViewController = [self mediaControlsViewController];
         mediaControlsViewController.shouldShowNextUp = NO;
         [mediaControlsViewController removeNextUpView];
 
@@ -215,7 +215,9 @@ void preferencesChanged(notificationArguments) {
 
     %new
     - (void)reloadMediaWidget {
-        SBDashBoardAdjunctListItem *item = self.identifiersToItems[@"SBDashBoardNowPlayingAssertionIdentifier"];
+        UIViewController<NotificationAdjunctListViewController> *_self = (UIViewController<NotificationAdjunctListViewController> *)self;
+        NSMutableDictionary *items = _self.identifiersToItems;
+        id<AdjunctListItem> item = items[@"SBDashBoardNowPlayingAssertionIdentifier"];
         if (!item)
             return;
 
@@ -226,39 +228,41 @@ void preferencesChanged(notificationArguments) {
     %end
 
 
-    %hook SBDashBoardMediaControlsViewController
+    %hook MediaControlsViewController
     %property (nonatomic, assign) BOOL shouldShowNextUp;
     %property (nonatomic, assign) BOOL nu_skipWidgetHeightIncrease;
     %property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
     %property (nonatomic, assign) float nextUpHeight;
 
     - (id)init {
-        self = %orig;
+        UIViewController<MediaControlsViewController> *_self = (UIViewController<MediaControlsViewController> *)%orig;
 
         /* This is apparently needed for some reason. It doesn't set NO as default,
            it becomes some value that are undefined and changes */
-        self.nu_skipWidgetHeightIncrease = NO;
+        _self.nu_skipWidgetHeightIncrease = NO;
 
         float nextUpHeight = 105.0;
         if ([manager slimmedLSMode])
             nextUpHeight -= 40;
-        self.nextUpHeight = nextUpHeight;
+        _self.nextUpHeight = nextUpHeight;
 
-        return self;
+        return _self;
     }
 
     - (CGSize)preferredContentSize {
         CGSize orig = %orig;
-        if (self.shouldShowNextUp && !self.nu_skipWidgetHeightIncrease)
-            orig.height += self.nextUpHeight;
+        UIViewController<MediaControlsViewController> *_self = (UIViewController<MediaControlsViewController> *)self;
+        if (_self.shouldShowNextUp && !_self.nu_skipWidgetHeightIncrease)
+            orig.height += _self.nextUpHeight;
         return orig;
     }
 
     - (void)_layoutMediaControls {
         %orig;
 
-        if (self.shouldShowNextUp)
-            [self addNextUpView];
+        UIViewController<MediaControlsViewController> *_self = (UIViewController<MediaControlsViewController> *)self;
+        if (_self.shouldShowNextUp)
+            [_self addNextUpView];
     }
 
     %new
@@ -275,15 +279,16 @@ void preferencesChanged(notificationArguments) {
             return;
 
         UIViewController<PanelViewController> *panelViewController = [self panelViewController];
-        [self.view addSubview:panelViewController.nextUpViewController.view];
+        UIViewController<MediaControlsViewController> *_self = (UIViewController<MediaControlsViewController> *)self;
+        [_self.view addSubview:panelViewController.nextUpViewController.view];
 
         UIView *nextUpView = panelViewController.nextUpViewController.view;
         nextUpView.frame = CGRectMake(panelViewController.view.frame.origin.x,
-                                      size.height - self.nextUpHeight,
+                                      size.height - _self.nextUpHeight,
                                       size.width,
-                                      self.nextUpHeight);
-        [self.view addSubview:nextUpView];
-        self.showingNextUp = YES;
+                                      _self.nextUpHeight);
+        [_self.view addSubview:nextUpView];
+        _self.showingNextUp = YES;
     }
 
     %new
@@ -294,7 +299,7 @@ void preferencesChanged(notificationArguments) {
     %end
 
     /* Hide iPhone X buttons */
-    %hook SBDashBoardQuickActionsView
+    %hook QuickActionsView
 
     %property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
 
@@ -316,18 +321,26 @@ void preferencesChanged(notificationArguments) {
 
     %new
     - (void)showNextUp {
-        self.showingNextUp = YES;
+        ((UIView<QuickActionsView> *)self).showingNextUp = YES;
         [self setAlpha:0];
     }
 
     %new
     - (void)hideNextUp {
-        self.showingNextUp = NO;
+        ((UIView<QuickActionsView> *)self).showingNextUp = NO;
+    }
+
+    %new
+    - (BOOL)isShowingMediaControls {
+        id delegate = ((UIView<QuickActionsView> *)self).delegate;
+        if ([delegate respondsToSelector:@selector(coverSheetViewController)])
+            return ((CSQuickActionsViewController *)delegate).coverSheetViewController;
+        return ((SBDashBoardQuickActionsViewController *)delegate).dashBoardViewController;
     }
 
     - (void)setAlpha:(CGFloat)alpha {
         if ([self isShowingNextUp] &&
-            [self.delegate.dashBoardViewController isShowingMediaControls] &&
+            [self isShowingMediaControls] &&
             [manager.preferences[kHideXButtons] boolValue])
             return %orig(0.0);
         %orig;
@@ -361,7 +374,7 @@ void preferencesChanged(notificationArguments) {
 
 /* ColorFlow 4 support */
 %group ColorFlow
-    %hook SBDashBoardMediaControlsViewController
+    %hook MediaControlsViewController
     - (void)cfw_colorize:(CFWColorInfo *)colorInfo {
         %orig;
 
@@ -649,6 +662,29 @@ static inline void initTrial() {
     %init(CheckTrialEnded);
 }
 
+static inline void initLockscren(Class platterClass) {
+    Class mediaControlsViewControllerClass = %c(CSMediaControlsViewController);
+    if (!mediaControlsViewControllerClass)
+        mediaControlsViewControllerClass = %c(SBDashBoardMediaControlsViewController);
+
+    Class adjunctListViewControllerClass = %c(CSNotificationAdjunctListViewController);
+    if (!adjunctListViewControllerClass)
+        adjunctListViewControllerClass = %c(SBDashBoardNotificationAdjunctListViewController);
+
+    Class quickActionsViewClass = %c(CSQuickActionsView);
+    if (!quickActionsViewClass)
+        quickActionsViewClass = %c(SBDashBoardQuickActionsView);
+    %init(Lockscreen, MediaControlsViewController = mediaControlsViewControllerClass,
+                      NotificationAdjunctListViewController = adjunctListViewControllerClass,
+                      QuickActionsView = quickActionsViewClass);
+
+    if ([mediaControlsViewControllerClass instancesRespondToSelector:@selector(cfw_colorize:)])
+        %init(ColorFlow, MediaControlsViewController = mediaControlsViewControllerClass);
+
+    if ([platterClass instancesRespondToSelector:@selector(nrdUpdate)])
+        %init(Nereid, PanelViewController = platterClass);
+}
+
 %ctor {
     if (fromUntrustedSource(package$bs()))
         %init(PackagePirated);
@@ -676,24 +712,17 @@ static inline void initTrial() {
     // ---
     [manager setup];
 
-    Class c = %c(MRPlatterViewController);
-    if (!c)
-        c = %c(MediaControlsPanelViewController);
-    %init(PanelViewController = c);
+    Class platterClass = %c(MRPlatterViewController);
+    if (!platterClass)
+        platterClass = %c(MediaControlsPanelViewController);
+    %init(PanelViewController = platterClass);
 
     %init(CustomViews);
     if (!manager.preferences[kControlCenter] || [manager.preferences[kControlCenter] boolValue])
         %init(ControlCenter);
 
-    if (!manager.preferences[kLockscreen] || [manager.preferences[kLockscreen] boolValue]) {
-        %init(Lockscreen);
-
-        if ([%c(SBDashBoardMediaControlsViewController) instancesRespondToSelector:@selector(cfw_colorize:)])
-            %init(ColorFlow);
-
-        if ([c instancesRespondToSelector:@selector(nrdUpdate)])
-            %init(Nereid, PanelViewController = c);
-    }
+    if (!manager.preferences[kLockscreen] || [manager.preferences[kLockscreen] boolValue])
+        initLockscren(platterClass);
 
     if (!manager.preferences[kHapticFeedbackOther] || [manager.preferences[kHapticFeedbackOther] boolValue])
         %init(HapticFeedback);

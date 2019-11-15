@@ -137,21 +137,39 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 
 
 /* Lockscreen */
-@interface SBDashBoardViewController : UIViewController
+@protocol CoverSheetViewController
 @property (nonatomic, assign, getter=isShowingMediaControls) BOOL showingMediaControls;
+@end
+
+@interface CSCoverSheetViewController : UIViewController<CoverSheetViewController>
+@end
+
+@interface SBDashBoardViewController : UIViewController<CoverSheetViewController>
+@end
+
+@interface CSQuickActionsViewController : UIViewController
+@property (assign, nonatomic) CSCoverSheetViewController *coverSheetViewController;
 @end
 
 @interface SBDashBoardQuickActionsViewController : UIViewController
 @property (assign, nonatomic) SBDashBoardViewController *dashBoardViewController;
 @end
 
-@interface SBDashBoardQuickActionsView : UIView
+
+@protocol QuickActionsView
 @property (nonatomic, retain) SBDashBoardQuickActionsViewController *delegate;
 @property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
 @end
 
+@interface CSQuickActionsView : UIView<QuickActionsView>
+@end
 
-@interface SBDashBoardMediaControlsViewController : UIViewController
+@interface SBDashBoardQuickActionsView : UIView<QuickActionsView>
+@end
+
+
+
+@protocol MediaControlsViewController
 @property (nonatomic, assign) BOOL shouldShowNextUp;
 @property (nonatomic, assign) BOOL nu_skipWidgetHeightIncrease;
 @property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
@@ -159,21 +177,41 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 - (void)initNextUp;
 - (void)addNextUpView;
 - (void)removeNextUpView;
-- (MediaControlsPanelViewController *)panelViewController;
+- (UIViewController<PanelViewController> *)panelViewController;
 @end
 
-@interface SBDashBoardAdjunctListItem : NSObject
+
+@interface CSMediaControlsViewController : UIViewController<MediaControlsViewController>
+@end
+
+@interface SBDashBoardMediaControlsViewController : UIViewController<MediaControlsViewController>
+@end
+
+@protocol AdjunctListItem
 @property (nonatomic, retain) UIView *platterView;
 @end
 
-@interface SBDashBoardNotificationAdjunctListViewController : UIViewController
+@interface CSAdjunctListItem : NSObject<AdjunctListItem>
+@end
+
+@interface SBDashBoardAdjunctListItem : NSObject<AdjunctListItem>
+@end
+
+
+@protocol NotificationAdjunctListViewController
 @property (nonatomic, assign, getter=isShowingMediaControls) BOOL showingMediaControls;
-@property (nonatomic, retain) NSMutableDictionary<NSString *, SBDashBoardAdjunctListItem *> *identifiersToItems;
-- (void)_insertItem:(SBDashBoardAdjunctListItem *)item animated:(BOOL)animate;
-- (void)_removeItem:(SBDashBoardAdjunctListItem *)item animated:(BOOL)animate;
+@property (nonatomic, retain) NSMutableDictionary<NSString *, id<AdjunctListItem>> *identifiersToItems;
+- (void)_insertItem:(id<AdjunctListItem>)item animated:(BOOL)animate;
+- (void)_removeItem:(id<AdjunctListItem>)item animated:(BOOL)animate;
 - (void)reloadMediaWidget;
 - (void)nowPlayingController:(id)controller didChangeToState:(NSInteger)state;
-- (SBDashBoardMediaControlsViewController *)mediaControlsViewController;
+- (id<MediaControlsViewController>)mediaControlsViewController;
+@end
+
+@interface CSNotificationAdjunctListViewController : UIViewController
+@end
+
+@interface SBDashBoardNotificationAdjunctListViewController : UIViewController
 @end
 
 
@@ -182,8 +220,14 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @end
 
 
-@interface SBDashBoardNowPlayingController : UIViewController
-@property (nonatomic, readonly) SBDashBoardMediaControlsViewController *controlsViewController;
+@protocol NowPlayingController
+@property (nonatomic, readonly) id<MediaControlsViewController> controlsViewController;
+@end
+
+@interface CSNowPlayingController : UIViewController<NowPlayingController>
+@end
+
+@interface SBDashBoardNowPlayingController : UIViewController<NowPlayingController>
 @end
 // ---
 
