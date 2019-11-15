@@ -1,6 +1,7 @@
 #import "SettingsKeys.h"
 #import "Headers.h"
 #import "Common.h"
+#import <notify.h>
 
 @implementation NextUpViewController {
     UIColor *_textColor;
@@ -138,7 +139,7 @@
         [self.hapticGenerator impactOccurred];
 
     NSString *skipNext = [NSString stringWithFormat:@"%@/%@/%@", NEXTUP_IDENTIFIER, kSkipNext, _manager.mediaApplication];
-    notify(skipNext);
+    notify_post([skipNext UTF8String]);
 
     [[%c(SBIdleTimerGlobalCoordinator) sharedInstance] resetIdleTimer];
 }

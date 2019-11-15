@@ -1,12 +1,6 @@
 #import "NextUpManager.h"
 
 /* Common */
-@interface SBMediaController (Addition)
-@property (nonatomic, retain) NSDictionary *nextUpPrefs;
-- (BOOL)shouldActivateForApplicationID:(NSString *)bundleID;
-@end
-
-
 @interface SBIdleTimerGlobalCoordinator
 + (id)sharedInstance;
 - (void)resetIdleTimer;

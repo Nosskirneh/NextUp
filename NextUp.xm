@@ -8,38 +8,6 @@
 
 NextUpManager *manager;
 
-void preferencesChanged(notificationArguments) {
-    [manager reloadPreferences];
-}
-
-/* Listen on changes of now playing app */
-%hook SBMediaController
-
-%new
-- (BOOL)shouldActivateForApplicationID:(NSString *)bundleID {
-    return [manager.enabledApps containsObject:bundleID] &&
-           (!manager.preferences[bundleID] || [manager.preferences[bundleID] boolValue]);
-}
-
-- (void)_setNowPlayingApplication:(SBApplication *)app {
-    NSString *bundleID = app.bundleIdentifier;
-    if ([self shouldActivateForApplicationID:bundleID] && !manager.trialEnded) {
-        [manager setMediaApplication:bundleID];
-
-        // If we should not hide on empty, we show NextUp from the beginning.
-        // In the other case, this is done from the NextUpViewController
-        if (![manager hideOnEmpty])
-            [[NSNotificationCenter defaultCenter] postNotificationName:kShowNextUp object:nil];
-    } else {
-        [manager setMediaApplication:nil];
-        [[NSNotificationCenter defaultCenter] postNotificationName:kHideNextUp object:nil];
-    }
-
-    %orig;
-}
-
-%end
-
 /* Adding the widget */
 %hook PanelViewController
 
@@ -662,7 +630,7 @@ static inline void initTrial() {
     %init(CheckTrialEnded);
 }
 
-static inline void initLockscren(Class platterClass) {
+static inline void initLockscreen(Class platterClass) {
     Class mediaControlsViewControllerClass = %c(CSMediaControlsViewController);
     if (!mediaControlsViewControllerClass)
         mediaControlsViewControllerClass = %c(SBDashBoardMediaControlsViewController);
@@ -718,14 +686,15 @@ static inline void initLockscren(Class platterClass) {
     %init(PanelViewController = platterClass);
 
     %init(CustomViews);
-    if (!manager.preferences[kControlCenter] || [manager.preferences[kControlCenter] boolValue])
+    NSNumber *current = manager.preferences[kControlCenter];
+    if (!current || [current boolValue])
         %init(ControlCenter);
 
-    if (!manager.preferences[kLockscreen] || [manager.preferences[kLockscreen] boolValue])
-        initLockscren(platterClass);
+    current = manager.preferences[kLockscreen];
+    if (!current || [current boolValue])
+        initLockscreen(platterClass);
 
-    if (!manager.preferences[kHapticFeedbackOther] || [manager.preferences[kHapticFeedbackOther] boolValue])
+    current = manager.preferences[kHapticFeedbackOther];
+    if (!current || [current boolValue])
         %init(HapticFeedback);
-
-    subscribe(preferencesChanged, kPrefChanged);
 }

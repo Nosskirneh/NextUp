@@ -4,7 +4,7 @@ ARCHS = arm64 arm64e
 include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = NextUp
-$(TWEAK_NAME)_FILES = NextUp.xm SettingsKeys.m Common.xm NextUpManager.xm NextUpViewController.xm
+$(TWEAK_NAME)_FILES = NextUp.xm NextUpManager.xm NextUpViewController.xm Common.xm SettingsKeys.m
 $(TWEAK_NAME)_CFLAGS = -fobjc-arc
 $(TWEAK_NAME)_LIBRARIES = rocketbootstrap
 $(TWEAK_NAME)_PRIVATE_FRAMEWORKS = AppSupport
