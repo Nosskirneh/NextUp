@@ -32,11 +32,7 @@
     );
 
     // ColorFlow
-    if ([%c(SBDashBoardMediaControlsViewController) instancesRespondToSelector:@selector(cfw_colorize:)]) {
-        NSString *cfPrefPath = [NSString stringWithFormat:@"%@/Library/Preferences/com.golddavid.colorflow4.plist", NSHomeDirectory()];
-        NSDictionary *cfPrefs = [NSDictionary dictionaryWithContentsOfFile:cfPrefPath];
-        _cfLockscreen = !cfPrefs || !cfPrefs[@"LockScreenEnabled"] || [cfPrefs[@"LockScreenEnabled"] boolValue];
-    }
+    _cfLockscreen = %c(CFWPrefsManager) && [%c(CFWPrefsManager) sharedInstance].lockScreenEnabled;
 
     _enabledApps = [NSMutableSet new];
     [self reloadPreferences];
