@@ -5,6 +5,7 @@
 #import <SpringBoard/SBMediaController.h>
 #import "SettingsKeys.h"
 #import "Common.h"
+#import "Headers.h"
 
 #define kSBMediaNowPlayingAppChangedNotification @"SBMediaNowPlayingAppChangedNotification"
 
@@ -32,7 +33,8 @@
     );
 
     // ColorFlow
-    _cfLockscreen = %c(CFWPrefsManager) && [%c(CFWPrefsManager) sharedInstance].lockScreenEnabled;
+    _cfLockscreen = %c(CFWPrefsManager) &&
+                    ((CFWPrefsManager *)[%c(CFWPrefsManager) sharedInstance]).lockScreenEnabled;
 
     _enabledApps = [NSMutableSet new];
     [self reloadPreferences];
