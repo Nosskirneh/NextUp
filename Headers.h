@@ -202,10 +202,10 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 - (id<MediaControlsViewController>)mediaControlsViewController;
 @end
 
-@interface CSNotificationAdjunctListViewController : UIViewController
+@interface CSNotificationAdjunctListViewController : UIViewController<NotificationAdjunctListViewController>
 @end
 
-@interface SBDashBoardNotificationAdjunctListViewController : UIViewController
+@interface SBDashBoardNotificationAdjunctListViewController : UIViewController<NotificationAdjunctListViewController>
 @end
 
 
