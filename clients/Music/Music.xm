@@ -77,18 +77,22 @@ static void fetchNextUpItem(NUMediaItem *item, block artworkBlock) {
     %hook MPCQueueController
 
     - (id)init {
-        %log;
         self = %orig;
 
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(skipNext)
                                                      name:kSkipNext
                                                    object:nil];
-        [[NSNotificationCenter defaultCenter] addObserver:self.queueCoordinator
+        return self;
+    }
+
+    - (void)setQueueCoordinator:(MPAVQueueCoordinator *)coordinator {
+        %orig;
+
+        [[NSNotificationCenter defaultCenter] addObserver:coordinator
                                                  selector:@selector(fetchNextUp)
                                                      name:kManualUpdate
                                                    object:nil];
-        return self;
     }
 
     %new
