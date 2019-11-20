@@ -12,7 +12,6 @@ NextUpManager *manager;
 %hook PanelViewController
 
 %property (nonatomic, retain) NextUpViewController *nextUpViewController;
-%property (nonatomic, assign, getter=isNextUpInitialized) BOOL nextUpInitialized;
 
 - (void)setDelegate:(id)delegate {
     %orig;
@@ -35,12 +34,11 @@ NextUpManager *manager;
 %new
 - (void)initNextUp {
     UIViewController<PanelViewController> *controller = (UIViewController<PanelViewController> *)self;
-    if (![controller isNextUpInitialized]) {
-        BOOL controlCenter = [controller NU_isControlCenter];
+    if (!controller.nextUpViewController) {
+        BOOL controlCenter = [self NU_isControlCenter];
         controller.nextUpViewController = [[%c(NextUpViewController) alloc] initWithControlCenter:controlCenter
                                                                                      defaultStyle:controller.style
                                                                                           manager:manager];
-
         if (controlCenter) {
             MediaControlsContainerView *containerView;
             if ([controller.parentContainerView respondsToSelector:@selector(mediaControlsContainerView)])
@@ -63,7 +61,6 @@ NextUpManager *manager;
             }
         }
 
-        controller.nextUpInitialized = YES;
         [[NSNotificationCenter defaultCenter] postNotificationName:kNextUpDidInitialize
                                                             object:nil
                                                           userInfo:nil];

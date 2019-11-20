@@ -116,7 +116,6 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @property (nonatomic, retain) MediaControlsParentContainerView *parentContainerView;
 @property (assign, nonatomic) long long style;
 
-@property (nonatomic, assign, getter=isNextUpInitialized) BOOL nextUpInitialized;
 - (void)initNextUp;
 - (BOOL)NU_isControlCenter;
 @end
