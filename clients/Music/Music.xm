@@ -25,7 +25,6 @@ static NSDictionary *serializeTrack(NUMediaItem *item, UIImage *image) {
     }
 
     metadata[kSubtitle] = item.artist;
-    HBLogDebug(@"metadata: %@", metadata);
     metadata[kArtwork] = UIImagePNGRepresentation(artwork);
     return metadata;
 }
