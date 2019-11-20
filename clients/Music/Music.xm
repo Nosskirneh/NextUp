@@ -71,6 +71,14 @@ static void fetchNextUpItem(NUMediaItem *item, block artworkBlock) {
         fetchNextUpItem(next, [next artworkCatalogBlock]);
     }
 
+    /* 7 is the magic number.
+       This is done as it otherwise just has the next track in the queue.
+       If users switch quickly, NextUp will send an empty queue message
+       which will cause the media widget to hide and show very often. */
+    - (unsigned long long)_preferredQueueDepthWithFirstItem:(id)firstItem {
+        return 7;
+    }
+
     %end
 
 
