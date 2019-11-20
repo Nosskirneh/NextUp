@@ -6,6 +6,7 @@
 
 
 @interface NUMediaItem : MPMediaItem
+@property (nonatomic, copy) NSString *contentItemID;
 - (NSString *)mainTitle;
 - (id)artworkCatalogBlock;
 @end
@@ -22,20 +23,34 @@
 typedef MPArtworkCatalog *(^block)(void);
 
 
+// iOS 13
+@interface MPAVQueueCoordinator : NSObject
+@property (nonatomic, readonly) NSArray *items;
+- (NUMediaItem *)nextItem;
+- (void)fetchNextUp;
+@end
+
+@interface MPCQueueController : NSObject
+@property (nonatomic, retain) MPAVQueueCoordinator *queueCoordinator;
+- (void)removeContentItemID:(NSString *)contentItemID
+                 completion:(void(^)())completion;
+@end
+// ---
+
+
+// iOS 12
 @interface MPCMediaPlayerLegacyPlaylistManager
 @property (assign, nonatomic) long long nextCurrentIndex;
 - (void)removeItemAtPlaybackIndex:(long long)arg;
 - (id)metadataItemForPlaylistIndex:(long long)arg;
 - (long long)currentIndex;
 
-- (NSDictionary *)serializeTrack:(id)item image:(UIImage *)image;
 - (void)fetchNextUp;
-- (void)fetchNextUpItem:(id)item withArtworkCatalog:(block)artworkBlock;
 - (void)skipNext;
 @end
-
 
 @interface MPCModelQueueFeeder : NSObject
 @end
 
 typedef void (^queueFeederBlock)(MPCModelQueueFeeder *queueFeeder);
+// ---

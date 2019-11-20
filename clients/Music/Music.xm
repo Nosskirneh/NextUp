@@ -10,84 +10,9 @@ void manualUpdate(notificationArguments) {
     [[NSNotificationCenter defaultCenter] postNotificationName:kManualUpdate object:nil];
 }
 
-%hook MPCMediaPlayerLegacyPlaylistManager
 
-- (id)init {
-    self = %orig;
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(skipNext)
-                                                 name:kSkipNext
-                                               object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(fetchNextUp)
-                                                 name:kManualUpdate
-                                               object:nil];
-    return self;
-}
-
-- (void)player:(id)player currentItemDidChangeFromItem:(MPMediaItem *)from toItem:(MPMediaItem *)to {
-    %orig;
-    [self fetchNextUp];
-}
-
-- (void)queueFeederDidInvalidateRealShuffleType:(MPCModelQueueFeeder *)queueFeeder {
-    %orig;
-    [self fetchNextUp];
-}
-
-- (void)addPlaybackContext:(id)context toQueueWithInsertionType:(long long)type completionHandler:(queueFeederBlock)completion {
-    queueFeederBlock block = ^(MPCModelQueueFeeder *queueFeeder) {
-        completion(queueFeeder);
-        [self fetchNextUp];
-    };
-    %orig(context, type, block);
-}
-
-- (void)moveItemAtPlaybackIndex:(long long)from toPlaybackIndex:(long long)to intoHardQueue:(BOOL)hardQueue {
-    %orig;
-    long nextIndex = [self currentIndex] + 1;
-    if (from == nextIndex || to == nextIndex)
-        [self fetchNextUp];
-}
-
-- (void)removeItemAtPlaybackIndex:(long long)index {
-    %orig;
-    long nextIndex = [self currentIndex] + 1;
-    if (index == nextIndex)
-        [self fetchNextUp];
-}
-
-%new
-- (void)fetchNextUp {
-    NUMediaItem *next = [self metadataItemForPlaylistIndex:[self currentIndex] + 1];
-
-    if (!next)
-        return sendNextTrackMetadata(nil);
-
-    [self fetchNextUpItem:next withArtworkCatalog:[next artworkCatalogBlock]];
-}
-
-%new
-- (void)skipNext {
-    int nextIndex = [self currentIndex] + 1;
-    if (![self metadataItemForPlaylistIndex:nextIndex]) {
-        nextIndex = 0;
-
-        if ([self currentIndex] == nextIndex)
-            return [self fetchNextUp]; // This means we have no tracks left in the queue
-    }
-
-    [self removeItemAtPlaybackIndex:nextIndex];
-
-    NUMediaItem *next = [self metadataItemForPlaylistIndex:nextIndex];
-    if (next) 
-        [self fetchNextUpItem:next withArtworkCatalog:[next artworkCatalogBlock]];
-}
-
-%new
-- (NSDictionary *)serializeTrack:(NUMediaItem *)item image:(UIImage *)image {
+static NSDictionary *serializeTrack(NUMediaItem *item, UIImage *image) {
     NSMutableDictionary *metadata = [NSMutableDictionary new];
-
     UIImage *artwork = image;
 
     if ([item isKindOfClass:%c(MPCModelGenericAVItem)])
@@ -100,18 +25,18 @@ void manualUpdate(notificationArguments) {
     }
 
     metadata[kSubtitle] = item.artist;
+    HBLogDebug(@"metadata: %@", metadata);
     metadata[kArtwork] = UIImagePNGRepresentation(artwork);
     return metadata;
 }
 
-%new
-- (void)fetchNextUpItem:(MPMediaItem *)item withArtworkCatalog:(block)artworkBlock {
+static void fetchNextUpItem(NUMediaItem *item, block artworkBlock) {
     MPArtworkCatalog *catalog = artworkBlock();
 
     // Local track with no artwork?
     if (!catalog) {
         UIImage *image = [%c(MPPlaceholderArtwork) noArtPlaceholderImageForMediaType:1];
-        NSDictionary *metadata = [self serializeTrack:item image:image];
+        NSDictionary *metadata = serializeTrack(item, image);
         sendNextTrackMetadata(metadata);
         return;
     }
@@ -120,11 +45,155 @@ void manualUpdate(notificationArguments) {
     catalog.destinationScale = [UIScreen mainScreen].scale;
 
     [catalog requestImageWithCompletionHandler:^(UIImage *image) {
-        NSDictionary *metadata = [self serializeTrack:item image:image];
+        NSDictionary *metadata = serializeTrack(item, image);
         sendNextTrackMetadata(metadata);
     }];
 }
 
+
+%group iOS13
+    %hook MPAVQueueCoordinator
+
+    %new
+    - (NUMediaItem *)nextItem {
+        NSArray *items = self.items;
+        if (!items || items.count < 2)
+            return nil;
+
+        return items[1];
+    }
+
+    %new
+    - (void)fetchNextUp {
+        NUMediaItem *next = [self nextItem];
+        if (!next)
+            return sendNextTrackMetadata(nil);
+
+        fetchNextUpItem(next, [next artworkCatalogBlock]);
+    }
+
+    %end
+
+
+    %hook MPCQueueController
+
+    - (id)init {
+        %log;
+        self = %orig;
+
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(skipNext)
+                                                     name:kSkipNext
+                                                   object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self.queueCoordinator
+                                                 selector:@selector(fetchNextUp)
+                                                     name:kManualUpdate
+                                                   object:nil];
+        return self;
+    }
+
+    %new
+    - (void)skipNext {
+        NUMediaItem *next = [self.queueCoordinator nextItem];
+        if (!next)
+            return;
+
+        NSString *nextContentItemID = next.contentItemID;
+        [self removeContentItemID:nextContentItemID completion:^{
+            [self.queueCoordinator fetchNextUp];
+        }];
+    }
+
+    - (void)queueCoordinatorDidChangeItems:(MPAVQueueCoordinator *)coordinator {
+        %orig;
+
+        [coordinator fetchNextUp];
+    }
+
+    %end
+%end
+
+
+%group iOS12
+    %hook MPCMediaPlayerLegacyPlaylistManager
+
+    - (id)init {
+        self = %orig;
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(skipNext)
+                                                     name:kSkipNext
+                                                   object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(fetchNextUp)
+                                                     name:kManualUpdate
+                                                   object:nil];
+        return self;
+    }
+
+    - (void)player:(id)player currentItemDidChangeFromItem:(MPMediaItem *)from toItem:(MPMediaItem *)to {
+        %orig;
+        [self fetchNextUp];
+    }
+
+    - (void)queueFeederDidInvalidateRealShuffleType:(MPCModelQueueFeeder *)queueFeeder {
+        %orig;
+        [self fetchNextUp];
+    }
+
+    - (void)addPlaybackContext:(id)context
+      toQueueWithInsertionType:(long long)type
+             completionHandler:(queueFeederBlock)completion {
+        queueFeederBlock block = ^(MPCModelQueueFeeder *queueFeeder) {
+            completion(queueFeeder);
+            [self fetchNextUp];
+        };
+        %orig(context, type, block);
+    }
+
+    - (void)moveItemAtPlaybackIndex:(long long)from
+                    toPlaybackIndex:(long long)to
+                      intoHardQueue:(BOOL)hardQueue {
+        %orig;
+        long nextIndex = [self currentIndex] + 1;
+        if (from == nextIndex || to == nextIndex)
+            [self fetchNextUp];
+    }
+
+    - (void)removeItemAtPlaybackIndex:(long long)index {
+        %orig;
+        long nextIndex = [self currentIndex] + 1;
+        if (index == nextIndex)
+            [self fetchNextUp];
+    }
+
+    %new
+    - (void)fetchNextUp {
+        NUMediaItem *next = [self metadataItemForPlaylistIndex:[self currentIndex] + 1];
+
+        if (!next)
+            return sendNextTrackMetadata(nil);
+
+        fetchNextUpItem(next, [next artworkCatalogBlock]);
+    }
+
+    %new
+    - (void)skipNext {
+        int nextIndex = [self currentIndex] + 1;
+        if (![self metadataItemForPlaylistIndex:nextIndex]) {
+            nextIndex = 0;
+
+            if ([self currentIndex] == nextIndex)
+                return [self fetchNextUp]; // This means we have no tracks left in the queue
+        }
+
+        [self removeItemAtPlaybackIndex:nextIndex];
+
+        NUMediaItem *next = [self metadataItemForPlaylistIndex:nextIndex];
+        if (next) 
+            fetchNextUpItem(next, [next artworkCatalogBlock]);
+    }
+
+    %end
 %end
 
 
@@ -132,4 +201,9 @@ void manualUpdate(notificationArguments) {
     NSString *bundleID = [NSBundle mainBundle].bundleIdentifier;
     if (!initClient(bundleID, &skipNext, &manualUpdate))
         return;
+
+    if (%c(MPCMediaPlayerLegacyPlaylistManager))
+        %init(iOS12);
+    else
+        %init(iOS13);
 }
