@@ -51,7 +51,8 @@
     }
     // Add license specifier
     NSMutableArray *mspecs = (NSMutableArray *)[_specifiers mutableCopy];
-    _specifiers = addDRMSpecifiers(mspecs, self, licensePath$bs(), kPrefPath, package$bs(), licenseFooterText$bs(), trialFooterText$bs());
+    _specifiers = addDRMSpecifiers(mspecs, self, licensePath$bs(), kPrefPath,
+                                   package$bs(), licenseFooterText$bs(), trialFooterText$bs());
 
     return _specifiers;
 }
@@ -144,6 +145,10 @@
 
 - (void)sendEmail {
     openURL([NSURL URLWithString:@"mailto:andreaskhenriksson@gmail.com?subject=NextUp%202"]);
+}
+
+- (void)followTwitter {
+    openTwitter();
 }
 
 - (void)purchase {
