@@ -90,10 +90,14 @@
 }
 
 - (void)activate {
-    presentMultiTweakQuestionWithInfo(self, @[[UIAlertAction actionWithTitle:OBFS_NSSTR(nextUpDisplayName$bs()) style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+    presentMultiTweakQuestionWithInfo(self, @[[UIAlertAction actionWithTitle:OBFS_NSSTR(nextUpDisplayName$bs())
+                                                                       style:UIAlertActionStyleDefault
+                                                                     handler:^(UIAlertAction *action) {
         activateWithUpgradePackagePromptEmail(licensePath$bs(), package$bs(), nextup$bs(), self);
     }],
-    [UIAlertAction actionWithTitle:OBFS_NSSTR(nextUp2DisplayName$bs()) style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+    [UIAlertAction actionWithTitle:OBFS_NSSTR(nextUp2DisplayName$bs())
+                             style:UIAlertActionStyleDefault
+                           handler:^(UIAlertAction *action) {
         activate(licensePath$bs(), package$bs(), self);
     }]], choosingTheWrongProductWillNOTWork$bs());
 }
