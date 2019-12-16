@@ -165,4 +165,9 @@
     }
 }
 
+// Needed in order to show on iOS 13.3+ lockscreen
+- (BOOL)_canShowWhileLocked {
+    return YES;
+}
+
 @end
