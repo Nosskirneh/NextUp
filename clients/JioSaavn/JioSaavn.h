@@ -5,10 +5,16 @@
 
 @interface SDWebImageManager : NSObject
 + (id)sharedManager;
+// Old version
 - (id)downloadImageWithURL:(NSURL *)URL
                    options:(NSUInteger)options
                   progress:(id)progress
                  completed:(id)completion;
+// New version
+- (id)loadImageWithURL:(NSURL *)URL
+               options:(NSUInteger)options
+              progress:(id)progress
+             completed:(id)completion;
 @end
 
 

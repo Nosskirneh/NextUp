@@ -54,7 +54,6 @@ void manualUpdate(notificationArguments) {
 
 
 %ctor {
-    NSString *bundleID = [NSBundle mainBundle].bundleIdentifier;
-    if (!initClient(bundleID, NULL, &manualUpdate))
-        return;
+    if (initClient(NULL, &manualUpdate))
+        %init;
 }

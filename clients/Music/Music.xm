@@ -209,9 +209,8 @@ static void fetchNextUpItem(NUMediaItem *item, block artworkBlock) {
 
 
 %ctor {
-    NSString *bundleID = [NSBundle mainBundle].bundleIdentifier;
-    if (!initClient(bundleID, &skipNext, &manualUpdate))
-        return;
+    if (initClient(&skipNext, &manualUpdate))
+        %init;
 
     if (%c(MPCMediaPlayerLegacyPlaylistManager))
         %init(iOS12);
