@@ -76,12 +76,21 @@ void manualUpdate(notificationArguments) {
         NSString *imageURLString = song[@"image"];
         UIImage *image = [[%c(SDImageCache) sharedImageCache] imageFromDiskCacheForKey:imageURLString];
         if (!image) {
-            [[%c(SDWebImageManager) sharedManager] downloadImageWithURL:[NSURL URLWithString:imageURLString]
-                                                                options:0
-                                                               progress:nil
-                                                              completed:^(UIImage *image, NSError *error, NSURL *url) {
+            SDWebImageManager *imageManager = [%c(SDWebImageManager) sharedManager];
+            id completion = ^(UIImage *image, NSError *error, NSURL *url) {
                 sendNextTrackMetadata([self serializeSong:song image:image]);
-            }];
+            };
+
+            if ([imageManager respondsToSelector:@selector(downloadImageWithURL:options:progress:completed:)])
+                [imageManager downloadImageWithURL:[NSURL URLWithString:imageURLString]
+                                           options:0
+                                          progress:nil
+                                         completed:completion];
+            else if ([imageManager respondsToSelector:@selector(loadImageWithURL:options:progress:completed:)])
+                [imageManager loadImageWithURL:[NSURL URLWithString:imageURLString]
+                                       options:0
+                                      progress:nil
+                                     completed:completion];
         } else {
             sendNextTrackMetadata([self serializeSong:song image:image]);
         }
