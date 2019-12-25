@@ -15,8 +15,12 @@
     CPDistributedMessagingCenter *c = [CPDistributedMessagingCenter centerNamed:NEXTUP_IDENTIFIER];
     rocketbootstrap_distributedmessagingcenter_apply(c);
     [c runServerOnCurrentThread];
-    [c registerForMessageName:kRegisterApp target:self selector:@selector(handleIncomingMessage:withUserInfo:)];
-    [c registerForMessageName:kNextTrackMessage target:self selector:@selector(handleIncomingMessage:withUserInfo:)];
+    [c registerForMessageName:kRegisterApp
+                       target:self
+                     selector:@selector(handleIncomingMessage:withUserInfo:)];
+    [c registerForMessageName:kNextTrackMessage
+                       target:self
+                     selector:@selector(handleIncomingMessage:withUserInfo:)];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(nowPlayingAppChanged:)
@@ -84,7 +88,8 @@
                                                         object:nil];
 
     // Refetch for the new app
-    NSString *manualUpdate = [NSString stringWithFormat:@"%@/%@/%@", NEXTUP_IDENTIFIER, kManualUpdate, app];
+    NSString *manualUpdate = [NSString stringWithFormat:@"%@/%@/%@",
+                              NEXTUP_IDENTIFIER, kManualUpdate, app];
     notify_post([manualUpdate UTF8String]);
 }
 
