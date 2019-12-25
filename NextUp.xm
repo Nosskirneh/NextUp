@@ -472,7 +472,11 @@ NextUpManager *manager;
     }
 
     %new
-    - (CGRect)rectForMaxWidth:(CGRect)frame maxWidth:(CGFloat)maxWidth fallbackOriginX:(CGFloat)fallbackOriginX bonusWidth:(CGFloat)bonusWidth bonusOriginX:(CGFloat)bonusOriginX {
+    - (CGRect)rectForMaxWidth:(CGRect)frame
+                     maxWidth:(CGFloat)maxWidth
+              fallbackOriginX:(CGFloat)fallbackOriginX
+                   bonusWidth:(CGFloat)bonusWidth
+                 bonusOriginX:(CGFloat)bonusOriginX {
         frame.size.width += bonusWidth;
         if (maxWidth < frame.size.width) {
             if ([UIApplication sharedApplication].userInterfaceLayoutDirection == UIUserInterfaceLayoutDirectionRightToLeft)
@@ -528,12 +532,20 @@ NextUpManager *manager;
 
         // Primary label
         CGRect frame = self.primaryMarqueeView.frame;
-        frame = [self rectForMaxWidth:frame maxWidth:maxWidth fallbackOriginX:fallbackOriginX bonusWidth:bonusWidth bonusOriginX:bonusOriginX];
+        frame = [self rectForMaxWidth:frame
+                             maxWidth:maxWidth
+                      fallbackOriginX:fallbackOriginX
+                           bonusWidth:bonusWidth
+                         bonusOriginX:bonusOriginX];
         self.primaryMarqueeView.frame = frame;
 
         // Secondary label
         frame = self.secondaryMarqueeView.frame;
-        frame = [self rectForMaxWidth:frame maxWidth:maxWidth fallbackOriginX:fallbackOriginX bonusWidth:bonusWidth bonusOriginX:bonusOriginX];
+        frame = [self rectForMaxWidth:frame
+                             maxWidth:maxWidth
+                      fallbackOriginX:fallbackOriginX
+                           bonusWidth:bonusWidth
+                         bonusOriginX:bonusOriginX];
         self.secondaryMarqueeView.frame = frame;
 
         self.buttonBackground.hidden = YES;

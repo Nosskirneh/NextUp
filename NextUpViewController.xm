@@ -11,7 +11,9 @@
 
 @dynamic view;
 
-- (id)initWithControlCenter:(BOOL)controlCenter defaultStyle:(long long)style manager:(NextUpManager *)manager {
+- (id)initWithControlCenter:(BOOL)controlCenter
+               defaultStyle:(long long)style
+                    manager:(NextUpManager *)manager {
     if (self == [super init]) {
         _controlCenter = controlCenter;
         _style = style;
@@ -36,7 +38,8 @@
         _textColor = UIColor.blackColor;
         _skipBackgroundColor = [UIColor.grayColor colorWithAlphaComponent:0.5];
 
-        if (!_manager.preferences[kHapticFeedbackSkip] || [_manager.preferences[kHapticFeedbackSkip] boolValue])
+        if (!_manager.preferences[kHapticFeedbackSkip] ||
+            [_manager.preferences[kHapticFeedbackSkip] boolValue])
             self.hapticGenerator = [[%c(UIImpactFeedbackGenerator) alloc] initWithStyle:UIImpactFeedbackStyleMedium];
 
         self.bundle = [NSBundle bundleWithPath:@"/Library/Application Support/NextUp.bundle"];
@@ -103,12 +106,15 @@
 
         self.headerLabel.translatesAutoresizingMaskIntoConstraints = NO;
         [self.headerLabel.topAnchor constraintEqualToAnchor:self.contentView.topAnchor].active = YES;
-        [self.headerLabel.bottomAnchor constraintEqualToAnchor:self.contentView.topAnchor constant:20].active = YES;
+        [self.headerLabel.bottomAnchor constraintEqualToAnchor:self.contentView.topAnchor
+                                                      constant:20].active = YES;
         // Right to left language (RTL), such as Arabic
         if ([UIApplication sharedApplication].userInterfaceLayoutDirection == UIUserInterfaceLayoutDirectionRightToLeft)
-            [self.headerLabel.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor constant:-15].active = YES;
+            [self.headerLabel.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor
+                                                         constant:-15].active = YES;
         else
-            [self.headerLabel.leftAnchor constraintEqualToAnchor:self.contentView.leftAnchor constant:15].active = YES;
+            [self.headerLabel.leftAnchor constraintEqualToAnchor:self.contentView.leftAnchor
+                                                         constant:15].active = YES;
 
         lowestTopAnchor = self.headerLabel.bottomAnchor;
     } else if (self.controlCenter) {
@@ -118,10 +124,13 @@
     }
 
     // Media view constraints
-    [_mediaView.topAnchor constraintEqualToAnchor:lowestTopAnchor constant:verticalConstant].active = YES;
+    [_mediaView.topAnchor constraintEqualToAnchor:lowestTopAnchor
+                                         constant:verticalConstant].active = YES;
     [_mediaView.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor].active = YES;
-    [_mediaView.leftAnchor constraintEqualToAnchor:self.contentView.leftAnchor constant:horizontalPadding].active = YES;
-    [_mediaView.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor constant:-horizontalPadding].active = YES;
+    [_mediaView.leftAnchor constraintEqualToAnchor:self.contentView.leftAnchor
+                                          constant:horizontalPadding].active = YES;
+    [_mediaView.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor
+                                           constant:-horizontalPadding].active = YES;
 
     [self.view addArrangedSubview:self.contentView];
 
@@ -138,7 +147,8 @@
     if (self.hapticGenerator)
         [self.hapticGenerator impactOccurred];
 
-    NSString *skipNext = [NSString stringWithFormat:@"%@/%@/%@", NEXTUP_IDENTIFIER, kSkipNext, _manager.mediaApplication];
+    NSString *skipNext = [NSString stringWithFormat:@"%@/%@/%@",
+                          NEXTUP_IDENTIFIER, kSkipNext, _manager.mediaApplication];
     notify_post([skipNext UTF8String]);
 
     [[%c(SBIdleTimerGlobalCoordinator) sharedInstance] resetIdleTimer];
