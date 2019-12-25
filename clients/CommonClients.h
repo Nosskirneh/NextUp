@@ -12,7 +12,7 @@ extern "C" {
 #endif
 
 void sendNextTrackMetadata(NSDictionary *metadata);
-BOOL initClient(NSString *bundleID, CFNotificationCallback skipNextCallback, CFNotificationCallback manualUpdateCallback);
+BOOL initClient(CFNotificationCallback skipNextCallback, CFNotificationCallback manualUpdateCallback);
 
 #ifdef __cplusplus
 }

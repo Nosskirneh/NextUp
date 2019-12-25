@@ -25,8 +25,9 @@ void registerApp(NSString *bundleID) {
     }];
 }
 
-BOOL initClient(NSString *bundleID, CFNotificationCallback skipNextCallback, CFNotificationCallback manualUpdateCallback) {
+BOOL initClient(CFNotificationCallback skipNextCallback, CFNotificationCallback manualUpdateCallback) {
     NSDictionary *preferences = [NSDictionary dictionaryWithContentsOfFile:kPrefPath];
+    NSString *bundleID = [NSBundle mainBundle].bundleIdentifier;
     if (preferences[bundleID] && ![preferences[bundleID] boolValue])
         return NO;
 
