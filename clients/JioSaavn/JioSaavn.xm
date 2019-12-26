@@ -26,6 +26,12 @@ void manualUpdate(notificationArguments) {
     [self fetchNextUp];
 }
 
+- (void)refreshQueueAtCurrentSong:(int)arg1 {
+    %orig;
+
+    [self fetchNextUp];
+}
+
 - (void)playSongAtIndex:(long long)arg1 {
     %orig;
 
