@@ -6,6 +6,13 @@
 - (id)CDVStringByXMLUnquoting;
 @end
 
+// Pro status (debugging)
+// %hook UserData
+// - (void)setProStatus:(BOOL)status {
+//     %orig(YES);
+// }
+// %end
+
 PlayerVC *getPlayerVC() {
     return [(AppDelegate *)[[UIApplication sharedApplication] delegate] getPlayerVC];
 }
