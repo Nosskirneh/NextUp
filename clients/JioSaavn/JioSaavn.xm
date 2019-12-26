@@ -6,6 +6,13 @@
 - (id)CDVStringByXMLUnquoting;
 @end
 
+// Pro status (debugging)
+// %hook UserData
+// - (void)setProStatus:(BOOL)status {
+//     %orig(YES);
+// }
+// %end
+
 PlayerVC *getPlayerVC() {
     return [(AppDelegate *)[[UIApplication sharedApplication] delegate] getPlayerVC];
 }
@@ -21,6 +28,12 @@ void manualUpdate(notificationArguments) {
 %hook PlayerVC
 
 - (void)updateQueueWithoutChangingSong {
+    %orig;
+
+    [self fetchNextUp];
+}
+
+- (void)refreshQueueAtCurrentSong:(int)arg1 {
     %orig;
 
     [self fetchNextUp];
