@@ -36,7 +36,17 @@
 
         _textAlpha = 1.0f;
         _textColor = UIColor.whiteColor;
-        _skipBackgroundColor = [UIColor.whiteColor colorWithAlphaComponent:0.16];
+        if (@available(iOS 13, *)) {
+            [[NSNotificationCenter defaultCenter] addObserver:self
+                                                     selector:@selector(_traitCollectionDidChange)
+                                                         name:@"_UIScreenDefaultTraitCollectionDidChangeNotification"
+                                                       object:nil];
+
+            if ([UIScreen mainScreen].traitCollection.userInterfaceStyle == UIUserInterfaceStyleLight)
+                _textColor = UIColor.blackColor;
+        }
+
+        _skipBackgroundColor = [_textColor colorWithAlphaComponent:0.16];
 
         if (!_manager.preferences[kHapticFeedbackSkip] ||
             [_manager.preferences[kHapticFeedbackSkip] boolValue])
@@ -46,6 +56,14 @@
     }
 
     return self;
+}
+
+- (void)_traitCollectionDidChange {
+    _textColor = [UIScreen mainScreen].traitCollection.userInterfaceStyle == UIUserInterfaceStyleLight ?
+                 UIColor.blackColor : UIColor.whiteColor;
+    _skipBackgroundColor = [_textColor colorWithAlphaComponent:0.16];
+    [self.mediaView updateTextColor:_textColor];
+    [self.mediaView updateSkipBackgroundColor:_skipBackgroundColor];
 }
 
 - (void)showNextUp {

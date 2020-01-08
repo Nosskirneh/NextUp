@@ -1,6 +1,16 @@
 #import "NextUpManager.h"
 
 /* Common */
+typedef enum UIUserInterfaceStyle : NSInteger {
+    UIUserInterfaceStyleUnspecified,
+    UIUserInterfaceStyleLight,
+    UIUserInterfaceStyleDark
+} UIUserInterfaceStyle;
+
+@interface UITraitCollection (iOS12_13)
+@property (nonatomic, readonly) UIUserInterfaceStyle userInterfaceStyle;
+@end
+
 @interface SBIdleTimerGlobalCoordinator
 + (id)sharedInstance;
 - (void)resetIdleTimer;
