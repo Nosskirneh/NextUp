@@ -33,7 +33,9 @@ GIMMe *gimme() {
                                                object:nil];
 }
 
-- (unsigned long long)addQueueItems:(NSArray *)items numItemsToReveal:(long long)reveal atIndex:(unsigned long long)index {
+- (unsigned long long)addQueueItems:(NSArray *)items
+                   numItemsToReveal:(long long)reveal
+                            atIndex:(unsigned long long)index {
     unsigned long long orig = %orig;
 
     if (index == self.nextVideoIndex)
@@ -76,11 +78,26 @@ GIMMe *gimme() {
     [self fetchNextUp];
 }
 
-- (void)playItemAtIndex:(unsigned long long)index autoPlaySource:(int)autoplay atStartTime:(double)starttime {
+%group PlayItemAtIndex_Old
+- (void)playItemAtIndex:(unsigned long long)index
+         autoPlaySource:(int)autoplay
+            atStartTime:(double)starttime {
     %orig;
 
     [self fetchNextUp];
 }
+%end
+
+%group PlayItemAtIndex_New
+- (void)playItemAtIndex:(unsigned long long)index
+         autoPlaySource:(int)autoplay
+isPlaybackControllerInternalTransition:(BOOL)transition
+            atStartTime:(double)starttime {
+    %orig;
+
+    [self fetchNextUp];
+}
+%end
 
 %new
 - (void)fetchNextUp {
@@ -141,6 +158,15 @@ GIMMe *gimme() {
 
 
 %ctor {
-    if (initClient(&skipNext, &manualUpdate))
+    if (initClient(&skipNext, &manualUpdate)) {
         %init;
+
+        if ([%c(YTMQueueController) instancesRespondToSelector:@selector(playItemAtIndex:
+                                                                         autoPlaySource:
+                                                                         isPlaybackControllerInternalTransition:
+                                                                         atStartTime:)])
+            %init(PlayItemAtIndex_New);
+        else
+            %init(PlayItemAtIndex_Old);
+    }
 }
