@@ -3,7 +3,7 @@ Name: NextUp
 Depends: mobilesubstrate, com.rpetrich.rocketbootstrap (>= 1.0.2), preferenceloader
 Version: 1.0.3
 Architecture: iphoneos-arm
-Description: See and change the next track
+Description: View and skip the next track
 Maintainer: Andreas Henriksson
 Author: Andreas Henriksson
 Section: Tweaks
