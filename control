@@ -4,7 +4,7 @@ Depends: mobilesubstrate, com.rpetrich.rocketbootstrap (>> 1.0.6), firmware (>= 
 Version: 1.1.1
 Depiction: https://henrikssonbrothers.com/cydia/repo/depictions/?p=se.nosskirneh.nextup2
 Architecture: iphoneos-arm
-Description: See and change the next track
+Description: View and skip the next track
 Maintainer: Andreas Henriksson
 Author: Andreas Henriksson
 Section: Tweaks
