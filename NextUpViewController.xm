@@ -36,14 +36,16 @@
 
         _textAlpha = 1.0f;
         _textColor = UIColor.whiteColor;
-        if (@available(iOS 13, *)) {
-            [[NSNotificationCenter defaultCenter] addObserver:self
-                                                     selector:@selector(_traitCollectionDidChange)
-                                                         name:@"_UIScreenDefaultTraitCollectionDidChangeNotification"
-                                                       object:nil];
+        if (!controlCenter) {
+            if (@available(iOS 13, *)) {
+                [[NSNotificationCenter defaultCenter] addObserver:self
+                                                         selector:@selector(_traitCollectionDidChange)
+                                                             name:@"_UIScreenDefaultTraitCollectionDidChangeNotification"
+                                                           object:nil];
 
-            if ([UIScreen mainScreen].traitCollection.userInterfaceStyle == UIUserInterfaceStyleLight)
-                _textColor = UIColor.blackColor;
+                if ([UIScreen mainScreen].traitCollection.userInterfaceStyle == UIUserInterfaceStyleLight)
+                    _textColor = UIColor.blackColor;
+            }
         }
 
         _skipBackgroundColor = [_textColor colorWithAlphaComponent:0.16];
