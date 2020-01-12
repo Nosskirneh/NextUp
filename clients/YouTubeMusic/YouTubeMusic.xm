@@ -78,6 +78,12 @@ GIMMe *gimme() {
     [self fetchNextUp];
 }
 
+- (void)updateMDXPlaybackOrder {
+    %orig;
+
+    [self fetchNextUp];
+}
+
 %group PlayItemAtIndex_Old
 - (void)playItemAtIndex:(unsigned long long)index
          autoPlaySource:(int)autoplay
