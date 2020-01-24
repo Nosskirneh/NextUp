@@ -183,6 +183,21 @@
             <key>default</key>
             <true/>
             <key>icon</key>
+            <string>audiomack.png</string>
+            <key>key</key>
+            <string>com.audiomack.iphone</string>
+            <key>label</key>
+            <string>AudioMack</string>
+        </dict>
+
+        <dict>
+            <key>cell</key>
+            <string>PSSwitchCell</string>
+            <key>cellClass</key>
+            <string>NextUpSwitchTableCell</string>
+            <key>default</key>
+            <true/>
+            <key>icon</key>
             <string>soundcloud.png</string>
             <key>key</key>
             <string>com.soundcloud.TouchApp</string>
