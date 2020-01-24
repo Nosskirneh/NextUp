@@ -64,7 +64,11 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @property (nonatomic, retain) UIColor *textColor;
 @property (nonatomic, assign) CGFloat textAlpha;
 @property (nonatomic, retain) UIColor *skipBackgroundColor;
-- (CGRect)rectForMaxWidth:(CGRect)frame maxWidth:(CGFloat)maxWidth fallbackOriginX:(CGFloat)fallbackOriginX bonusWidth:(CGFloat)bonusWidth bonusOriginX:(CGFloat)bonusOriginX;
+- (CGRect)rectForMaxWidth:(CGRect)frame
+                 maxWidth:(CGFloat)maxWidth
+          fallbackOriginX:(CGFloat)fallbackOriginX
+               bonusWidth:(CGFloat)bonusWidth
+             bonusOriginX:(CGFloat)bonusOriginX;
 - (void)updateTextColor:(UIColor *)color;
 - (void)updateSkipBackgroundColor:(UIColor *)color;
 @end
@@ -83,7 +87,9 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @property (nonatomic, assign) BOOL showsHeader;
 @property (nonatomic, assign) BOOL controlCenter;
 @property (assign, nonatomic) long long style;
-- (id)initWithControlCenter:(BOOL)controlCenter defaultStyle:(long long)style manager:(NextUpManager *)manager;
+- (id)initWithControlCenter:(BOOL)controlCenter
+               defaultStyle:(long long)style
+                    manager:(NextUpManager *)manager;
 @end
 // ---
 

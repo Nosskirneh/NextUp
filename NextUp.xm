@@ -16,8 +16,10 @@ NextUpManager *manager;
 - (void)setDelegate:(id)delegate {
     %orig;
 
-    // This has to be done in `setDelegate` as it seems like the only way to know if its CC/LS is by comparing the delegate class.
-    // Not ideal, but it works. Thus, we have to use `setDelegate` as it's executed after `viewDidLoad`.
+    /* This has to be done in `setDelegate` as it seems to be the
+       only way to know if its CC/LS is by comparing the delegate
+       class. Not ideal, but it works. Thus, we have to use
+       `setDelegate` as it's executed after `viewDidLoad`. */
     [self initNextUp];
 }
 
