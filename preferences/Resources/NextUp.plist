@@ -93,11 +93,11 @@
             <key>default</key>
             <true/>
             <key>icon</key>
-            <string>spotify.png</string>
+            <string>deezer.png</string>
             <key>key</key>
-            <string>com.spotify.client</string>
+            <string>com.deezer.Deezer</string>
             <key>label</key>
-            <string>Spotify</string>
+            <string>Deezer</string>
         </dict>
 
         <dict>
@@ -108,11 +108,11 @@
             <key>default</key>
             <true/>
             <key>icon</key>
-            <string>deezer.png</string>
+            <string>spotify.png</string>
             <key>key</key>
-            <string>com.deezer.Deezer</string>
+            <string>com.spotify.client</string>
             <key>label</key>
-            <string>Deezer</string>
+            <string>Spotify</string>
         </dict>
 
         <dict>
