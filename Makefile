@@ -27,6 +27,7 @@ SUBPROJECTS += clients/VOX
 SUBPROJECTS += clients/Musi
 SUBPROJECTS += clients/Napster
 SUBPROJECTS += clients/AudioMack
+SUBPROJECTS += clients/JetAudio
 SUBPROJECTS += clients/Spotify
 SUBPROJECTS += preferences
 
