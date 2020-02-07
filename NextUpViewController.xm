@@ -48,7 +48,7 @@
             }
         }
 
-        _skipBackgroundColor = [_textColor colorWithAlphaComponent:0.16];
+        [self _initSkipBackgroundColor];
 
         if (!_manager.preferences[kHapticFeedbackSkip] ||
             [_manager.preferences[kHapticFeedbackSkip] boolValue])
@@ -60,10 +60,14 @@
     return self;
 }
 
+- (void)_initSkipBackgroundColor {
+    _skipBackgroundColor = [_textColor colorWithAlphaComponent:0.16];
+}
+
 - (void)_traitCollectionDidChange {
     _textColor = [UIScreen mainScreen].traitCollection.userInterfaceStyle == UIUserInterfaceStyleLight ?
                  UIColor.blackColor : UIColor.whiteColor;
-    _skipBackgroundColor = [_textColor colorWithAlphaComponent:0.16];
+    [self _initSkipBackgroundColor];
     [self.mediaView updateTextColor:_textColor];
     [self.mediaView updateSkipBackgroundColor:_skipBackgroundColor];
 }
