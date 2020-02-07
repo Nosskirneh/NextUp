@@ -74,7 +74,8 @@
 
 - (void)setPreferenceValue:(id)value specifier:(PSSpecifier *)specifier {
     NSMutableDictionary *preferences = [NSMutableDictionary dictionaryWithContentsOfFile:kPrefPath];
-    if (!preferences) preferences = [NSMutableDictionary new];
+    if (!preferences)
+        preferences = [NSMutableDictionary new];
     NSString *key = [specifier propertyForKey:kKey];
 
     [preferences setObject:value forKey:key];
@@ -162,11 +163,13 @@
 }
 
 - (void)myTweaks {
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://henrikssonbrothers.com/cydia/repo/packages.html"]];
+    [[UIApplication sharedApplication] openURL:
+        [NSURL URLWithString:@"https://henrikssonbrothers.com/cydia/repo/packages.html"]];
 }
 
 - (void)troubleshoot {
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://github.com/Nosskirneh/NextUp-Public/blob/master/README.md#troubleshooting--faq"]];
+    [[UIApplication sharedApplication] openURL:
+        [NSURL URLWithString:@"https://github.com/Nosskirneh/NextUp-Public/blob/master/README.md#troubleshooting--faq"]];
 }
 
 - (void)safariViewControllerDidFinish:(id)arg1 {
@@ -221,17 +224,41 @@
         [self setBackgroundColor:[UIColor clearColor]];
         
         // Setup constraints
-        NSLayoutConstraint *leftConstraint = [NSLayoutConstraint constraintWithItem:_label attribute:NSLayoutAttributeLeft relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeLeft multiplier:1.0 constant:0.0];
-        NSLayoutConstraint *rightConstraint = [NSLayoutConstraint constraintWithItem:_label attribute:NSLayoutAttributeRight relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeRight multiplier:1.0 constant:0.0];
-        NSLayoutConstraint *bottomConstraint = [NSLayoutConstraint constraintWithItem:_label attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeBottom multiplier:1.0 constant:0.0];
-        NSLayoutConstraint *topConstraint = [NSLayoutConstraint constraintWithItem:_label attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeTop multiplier:1.0 constant:0.0];
-        [self addConstraints:[NSArray arrayWithObjects:leftConstraint, rightConstraint, bottomConstraint, topConstraint, nil]];
+        NSLayoutConstraint *leftConstraint = [NSLayoutConstraint constraintWithItem:_label
+                                                                          attribute:NSLayoutAttributeLeft
+                                                                          relatedBy:NSLayoutRelationEqual
+                                                                             toItem:self
+                                                                          attribute:NSLayoutAttributeLeft
+                                                                         multiplier:1.0
+                                                                           constant:0.0];
+        NSLayoutConstraint *rightConstraint = [NSLayoutConstraint constraintWithItem:_label
+                                                                           attribute:NSLayoutAttributeRight
+                                                                           relatedBy:NSLayoutRelationEqual
+                                                                              toItem:self
+                                                                           attribute:NSLayoutAttributeRight
+                                                                          multiplier:1.0
+                                                                            constant:0.0];
+        NSLayoutConstraint *bottomConstraint = [NSLayoutConstraint constraintWithItem:_label
+                                                                            attribute:NSLayoutAttributeBottom
+                                                                            relatedBy:NSLayoutRelationEqual
+                                                                               toItem:self
+                                                                            attribute:NSLayoutAttributeBottom
+                                                                           multiplier:1.0
+                                                                             constant:0.0];
+        NSLayoutConstraint *topConstraint = [NSLayoutConstraint constraintWithItem:_label
+                                                                         attribute:NSLayoutAttributeTop
+                                                                         relatedBy:NSLayoutRelationEqual
+                                                                            toItem:self
+                                                                         attribute:NSLayoutAttributeTop
+                                                                        multiplier:1.0
+                                                                          constant:0.0];
+        [self addConstraints:@[leftConstraint, rightConstraint, bottomConstraint, topConstraint]];
     }
     return self;
 }
 
-- (CGFloat)preferredHeightForWidth:(CGFloat)arg1 {
-    // Return a custom cell height.
+// Return a custom cell height.
+- (CGFloat)preferredHeightForWidth:(CGFloat)width {
     return 140.f;
 }
 

@@ -124,12 +124,11 @@ isPlaybackControllerInternalTransition:(BOOL)transition
                 break;
         }
 
-        NSString *URL = pickedThumbnail.URL;
+        NSURL *URL = [NSURL URLWithString:pickedThumbnail.URL];
 
         YTImageServiceImpl *imageService = [gimme() instanceForType:%c(YTImageService)];
-        [imageService makeImageRequestWithURL:[NSURL URLWithString:URL] responseBlock:^(UIImage *image) {
-            NSDictionary *metadata = [self serializeTrack:next image:image];
-            sendNextTrackMetadata(metadata);
+        [imageService makeImageRequestWithURL:URL responseBlock:^(UIImage *image) {
+            sendNextTrackMetadata([self serializeTrack:next image:image]);
         } errorBlock:nil];
     } else {
         sendNextTrackMetadata(nil);
