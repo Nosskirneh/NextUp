@@ -3,6 +3,7 @@ extern const char *kSettingsChanged;
 extern NSString *const kControlCenter;
 extern NSString *const kLockscreen;
 extern NSString *const kHideXButtons;
+extern NSString *const kHideHomeBar;
 extern NSString *const kSlimmedLSMode;
 extern NSString *const kHideOnEmpty;
 extern NSString *const kHideArtwork;

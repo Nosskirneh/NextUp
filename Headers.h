@@ -142,6 +142,9 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
 @end
 
+@interface SBDashBoardHomeAffordanceView : UIView
+@property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
+@end
 
 @interface SBDashBoardMediaControlsViewController : UIViewController
 @property (nonatomic, assign) BOOL shouldShowNextUp;
@@ -210,4 +213,4 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @property (nonatomic, retain) UIColor *mainColor;
 + (instancetype)sharedInstance;
 @end
-/* */
+// ---
