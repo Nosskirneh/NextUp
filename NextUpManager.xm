@@ -9,7 +9,18 @@
 
 #define kSBMediaNowPlayingAppChangedNotification @"SBMediaNowPlayingAppChangedNotification"
 
+
+SBDashBoardViewController *getDashBoardViewController() {
+    SBLockScreenManager *lockscreenManager = (SBLockScreenManager *)[%c(SBLockScreenManager) sharedInstance];
+    return lockscreenManager.dashBoardViewController;
+}
+
 @implementation NextUpManager
+
++ (BOOL)isShowingMediaControls {
+    SBDashBoardViewController *dashBoardViewController = getDashBoardViewController();
+    return [dashBoardViewController isShowingMediaControls];
+}
 
 - (void)setup {
     CPDistributedMessagingCenter *c = [CPDistributedMessagingCenter centerNamed:NEXTUP_IDENTIFIER];

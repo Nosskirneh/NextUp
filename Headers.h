@@ -133,12 +133,12 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @property (nonatomic, assign, getter=isShowingMediaControls) BOOL showingMediaControls;
 @end
 
-@interface SBDashBoardQuickActionsViewController : UIViewController
-@property (assign, nonatomic) SBDashBoardViewController *dashBoardViewController;
+@interface SBLockScreenManager : NSObject
++ (id)sharedInstance;
+@property (nonatomic, readonly) SBDashBoardViewController *dashBoardViewController;
 @end
 
 @interface SBDashBoardQuickActionsView : UIView
-@property (nonatomic, retain) SBDashBoardQuickActionsViewController *delegate;
 @property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
 @end
 

@@ -288,7 +288,7 @@ NextUpManager *manager;
 
     - (void)setAlpha:(CGFloat)alpha {
         if ([self isShowingNextUp] &&
-            [self.delegate.dashBoardViewController isShowingMediaControls] &&
+            [[manager class] isShowingMediaControls] &&
             [manager.preferences[kHideXButtons] boolValue])
             return %orig(0.0);
         %orig;
