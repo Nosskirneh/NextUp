@@ -7,6 +7,7 @@
 @end
 
 
+#if __IPHONE_OS_VERSION_MAX_ALLOWED < 100000
 typedef enum UIImpactFeedbackStyle : NSInteger {
     UIImpactFeedbackStyleHeavy,
     UIImpactFeedbackStyleLight,
@@ -17,6 +18,7 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 - (id)initWithStyle:(UIImpactFeedbackStyle)style;
 - (void)impactOccurred;
 @end
+#endif
 
 
 @interface MediaControlsTransportButton : UIButton
