@@ -163,13 +163,11 @@
 }
 
 - (void)myTweaks {
-    [[UIApplication sharedApplication] openURL:
-        [NSURL URLWithString:@"https://henrikssonbrothers.com/cydia/repo/packages.html"]];
+    openURL([NSURL URLWithString:@"https://henrikssonbrothers.com/cydia/repo/packages.html"]);
 }
 
 - (void)troubleshoot {
-    [[UIApplication sharedApplication] openURL:
-        [NSURL URLWithString:@"https://github.com/Nosskirneh/NextUp-Public/blob/master/README.md#troubleshooting--faq"]];
+    openURL([NSURL URLWithString:@"https://github.com/Nosskirneh/NextUp-Public/blob/master/README.md#troubleshooting--faq"]);
 }
 
 - (void)safariViewControllerDidFinish:(id)arg1 {
