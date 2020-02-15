@@ -70,6 +70,7 @@
     [self _initSkipBackgroundColor];
     [self.mediaView updateTextColor:_textColor];
     [self.mediaView updateSkipBackgroundColor:_skipBackgroundColor];
+    self.headerLabel.textColor = _textColor;
 }
 
 - (void)showNextUp {

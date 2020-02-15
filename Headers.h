@@ -1,11 +1,13 @@
 #import "NextUpManager.h"
 
 /* Common */
+#if __IPHONE_OS_VERSION_MAX_ALLOWED < 100000
 typedef enum UIUserInterfaceStyle : NSInteger {
     UIUserInterfaceStyleUnspecified,
     UIUserInterfaceStyleLight,
     UIUserInterfaceStyleDark
 } UIUserInterfaceStyle;
+#endif
 
 @interface UITraitCollection (iOS12_13)
 @property (nonatomic, readonly) UIUserInterfaceStyle userInterfaceStyle;
@@ -158,17 +160,16 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @interface SBDashBoardViewController : UIViewController<CoverSheetViewController>
 @end
 
-@interface CSQuickActionsViewController : UIViewController
-@property (assign, nonatomic) CSCoverSheetViewController *coverSheetViewController;
-@end
 
-@interface SBDashBoardQuickActionsViewController : UIViewController
-@property (assign, nonatomic) SBDashBoardViewController *dashBoardViewController;
+@interface SBLockScreenManager : NSObject
+@property (nonatomic, readonly) SBDashBoardViewController *dashBoardViewController; // iOS 11 & 12
+@property (nonatomic, readonly) CSCoverSheetViewController *coverSheetViewController; // iOS 13
+@property (readonly) BOOL isLockScreenVisible;
++ (id)sharedInstance;
 @end
 
 
 @protocol QuickActionsView
-@property (nonatomic, retain) SBDashBoardQuickActionsViewController *delegate;
 @property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
 @end
 
@@ -176,6 +177,17 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @end
 
 @interface SBDashBoardQuickActionsView : UIView<QuickActionsView>
+@end
+
+
+@protocol HomeAffordanceView
+@property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
+@end
+
+@interface CSHomeAffordanceView : UIView<HomeAffordanceView>
+@end
+
+@interface SBDashBoardHomeAffordanceView : UIView<HomeAffordanceView>
 @end
 
 

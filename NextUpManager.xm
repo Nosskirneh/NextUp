@@ -10,16 +10,19 @@
 #define kSBMediaNowPlayingAppChangedNotification @"SBMediaNowPlayingAppChangedNotification"
 
 
-SBDashBoardViewController *getDashBoardViewController() {
+UIViewController<CoverSheetViewController> *getCoverSheetViewController() {
     SBLockScreenManager *lockscreenManager = (SBLockScreenManager *)[%c(SBLockScreenManager) sharedInstance];
+    if ([lockscreenManager respondsToSelector:@selector(coverSheetViewController)])
+        return lockscreenManager.coverSheetViewController;
     return lockscreenManager.dashBoardViewController;
 }
 
 @implementation NextUpManager
 
+
 + (BOOL)isShowingMediaControls {
-    SBDashBoardViewController *dashBoardViewController = getDashBoardViewController();
-    return [dashBoardViewController isShowingMediaControls];
+    UIViewController<CoverSheetViewController> *coverSheetViewController = getCoverSheetViewController();
+    return [coverSheetViewController isShowingMediaControls];
 }
 
 - (void)setup {

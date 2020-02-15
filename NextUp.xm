@@ -297,19 +297,57 @@ NextUpManager *manager;
         ((UIView<QuickActionsView> *)self).showingNextUp = NO;
     }
 
-    %new
-    - (BOOL)isShowingMediaControls {
-        id delegate = ((UIView<QuickActionsView> *)self).delegate;
-        if ([delegate respondsToSelector:@selector(coverSheetViewController)])
-            return ((CSQuickActionsViewController *)delegate).coverSheetViewController;
-        return ((SBDashBoardQuickActionsViewController *)delegate).dashBoardViewController;
-    }
-
     - (void)setAlpha:(CGFloat)alpha {
         if ([self isShowingNextUp] &&
             [[manager class] isShowingMediaControls] &&
             [manager.preferences[kHideXButtons] boolValue])
             return %orig(0.0);
+        %orig;
+    }
+
+    %end
+    // ---
+
+
+    /* Hide home bar */
+    %hook HomeAffordanceView
+
+    %property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
+
+    - (id)init {
+        self = %orig;
+
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(showNextUp)
+                                                     name:kShowNextUp
+                                                   object:nil];
+
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(hideNextUp)
+                                                     name:kHideNextUp
+                                                   object:nil];
+
+        return self;
+    }
+
+    %new
+    - (void)showNextUp {
+        ((UIView<HomeAffordanceView> *)self).showingNextUp = YES;
+        [self setAlpha:0];
+    }
+
+    %new
+    - (void)hideNextUp {
+        ((UIView<HomeAffordanceView> *)self).showingNextUp = NO;
+    }
+
+    - (void)setAlpha:(CGFloat)alpha {
+        if ([[%c(SBLockScreenManager) sharedInstance] isLockScreenVisible] &&
+            [self isShowingNextUp] &&
+            [[manager class] isShowingMediaControls] &&
+            [manager.preferences[kHideHomeBar] boolValue])
+            return %orig(0.0);
+
         %orig;
     }
 
@@ -699,9 +737,14 @@ static inline void initLockscreen(Class platterClass) {
     Class quickActionsViewClass = %c(CSQuickActionsView);
     if (!quickActionsViewClass)
         quickActionsViewClass = %c(SBDashBoardQuickActionsView);
+
+    Class homeAffordanceViewClass = %c(CSHomeAffordanceView);
+    if (!homeAffordanceViewClass)
+        homeAffordanceViewClass = %c(SBDashBoardHomeAffordanceView);
     %init(Lockscreen, MediaControlsViewController = mediaControlsViewControllerClass,
                       NotificationAdjunctListViewController = adjunctListViewControllerClass,
-                      QuickActionsView = quickActionsViewClass);
+                      QuickActionsView = quickActionsViewClass,
+                      HomeAffordanceView = homeAffordanceViewClass);
 
     if ([mediaControlsViewControllerClass instancesRespondToSelector:@selector(cfw_colorize:)])
         %init(ColorFlow, MediaControlsViewController = mediaControlsViewControllerClass);
