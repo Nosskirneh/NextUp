@@ -2,16 +2,8 @@
 #import "../CommonClients.h"
 
 
-ANGPlayQueue *getQueue() {
+static ANGPlayQueue *getQueue() {
     return [%c(PlayQueueSingleton) currentPlayQueue];
-}
-
-void skipNext(notificationArguments) {
-    [getQueue() skipNext];
-}
-
-void manualUpdate(notificationArguments) {
-    [getQueue() manuallyUpdate];
 }
 
 %hook ANGPlayQueue
@@ -83,6 +75,13 @@ void manualUpdate(notificationArguments) {
 
 
 %ctor {
-    if (initClient(&skipNext, &manualUpdate))
+    if (shouldInitClient(kAnghamiBundleID)) {
+        registerNotify(^(int _) {
+            [getQueue() skipNext];
+        },
+        ^(int _) {
+            [getQueue() manuallyUpdate];
+        });
         %init;
+    }
 }

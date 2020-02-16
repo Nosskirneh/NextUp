@@ -1,9 +1,6 @@
 #import "SoundCloud.h"
 #import "../CommonClients.h"
 
-void manualUpdate(notificationArguments) {
-    [[%c(PlaybackService) sharedInstance] fetchNextUp];
-}
 
 %hook PlaybackService
 %property (nonatomic, retain) _TtC2UI11ImageLoader *imageLoader;
@@ -30,14 +27,19 @@ void manualUpdate(notificationArguments) {
     if (!item)
         return;
 
-    [[self getImageLoader] loadImageFrom:item.artworkURL successCompletion:^(UIImage *image) {
-        NSDictionary *metadata = [self serializeTrack:item image:image skipable:NO];
+    [[self getImageLoader] loadImageFrom:item.artworkURL
+                       successCompletion:^(UIImage *image) {
+        NSDictionary *metadata = [self serializeTrack:item
+                                                image:image
+                                             skipable:NO];
         sendNextTrackMetadata(metadata);
     } failureCompletion:nil];
 }
 
 %new
-- (NSDictionary *)serializeTrack:(_TtC8Playback10PlayerItem *)item image:(UIImage *)image skipable:(BOOL)skipable {
+- (NSDictionary *)serializeTrack:(_TtC8Playback10PlayerItem *)item
+                           image:(UIImage *)image
+                        skipable:(BOOL)skipable {
     NSMutableDictionary *metadata = [NSMutableDictionary new];
 
     metadata[kTitle] = item.title;
@@ -54,6 +56,10 @@ void manualUpdate(notificationArguments) {
 
 
 %ctor {
-    if (initClient(NULL, &manualUpdate))
+    if (shouldInitClient(kSoundCloudBundleID)) {
+        registerNotify(NULL, ^(int _) {
+            [[%c(PlaybackService) sharedInstance] fetchNextUp];
+        });
         %init;
+    }
 }

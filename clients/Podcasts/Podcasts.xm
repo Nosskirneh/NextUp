@@ -2,21 +2,11 @@
 #import "../CommonClients.h"
 
 
-void skipNext(notificationArguments) {
-    [[%c(MTPlaybackQueueController) sharedInstance] skipNext];
-}
-
-void manualUpdate(notificationArguments) {
-    MTPlaybackQueueController *queueController = [%c(MTPlaybackQueueController) sharedInstance];
-    queueController.lastSentEpisode = nil;
-    [queueController fetchNextUp];
-}
-
-
 %hook MTAppDelegate_Shared
 
 - (BOOL)application:(id)arg didFinishLaunchingWithOptions:(id)options {
-    [%c(MTPlaybackQueueController) sharedInstance]; // Makes sure its init method gets called
+    // This makes sure its init method gets called
+    [%c(MTPlaybackQueueController) sharedInstance];
     return %orig;
 }
 
@@ -36,7 +26,9 @@ void manualUpdate(notificationArguments) {
 }
 
 %new
-- (NSDictionary *)serializeTrack:(MTPlayerItem *)item image:(UIImage *)image skipable:(BOOL)skipable {
+- (NSDictionary *)serializeTrack:(MTPlayerItem *)item
+                           image:(UIImage *)image
+                        skipable:(BOOL)skipable {
     NSMutableDictionary *metadata = [NSMutableDictionary new];
 
     metadata[kTitle] = item.title;
@@ -123,6 +115,15 @@ void manualUpdate(notificationArguments) {
 
 
 %ctor {
-    if (initClient(&skipNext, &manualUpdate))
+    if (shouldInitClient(kPodcastsBundleID)) {
+        registerNotify(^(int _) {
+            [[%c(MTPlaybackQueueController) sharedInstance] skipNext];
+        },
+        ^(int _) {
+            MTPlaybackQueueController *queueController = [%c(MTPlaybackQueueController) sharedInstance];
+            queueController.lastSentEpisode = nil;
+            [queueController fetchNextUp];
+        });
         %init;
+    }
 }

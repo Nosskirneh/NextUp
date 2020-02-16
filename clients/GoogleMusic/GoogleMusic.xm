@@ -2,24 +2,16 @@
 #import "../CommonClients.h"
 
 
-AppDelegate *getGPMAppDelegate() {
+static AppDelegate *getGPMAppDelegate() {
     return (AppDelegate *)[[UIApplication sharedApplication] delegate];
 }
 
-GPMImageFetcher *getImageFetcher() {
+static GPMImageFetcher *getImageFetcher() {
     return getGPMAppDelegate().appServiceManager.imageFetcher;
 }
 
-MusicQueueManager *getQueueManager() {
+static MusicQueueManager *getQueueManager() {
     return getGPMAppDelegate().musicQueueManager;
-}
-
-void skipNext(notificationArguments) {
-    [getQueueManager() skipNext];
-}
-
-void manualUpdate(notificationArguments) {
-    [getQueueManager() manuallyUpdate];
 }
 
 %hook MusicQueueManager
@@ -85,6 +77,13 @@ void manualUpdate(notificationArguments) {
 
 
 %ctor {
-    if (initClient(&skipNext, &manualUpdate))
+    if (shouldInitClient(kGoogleMusicBundleID)) {
+        registerNotify(^(int _) {
+            [getQueueManager() skipNext];
+        },
+        ^(int _) {
+            [getQueueManager() manuallyUpdate];
+        });
         %init;
+    }
 }

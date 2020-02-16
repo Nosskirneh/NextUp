@@ -1,13 +1,6 @@
 #import "VOX.h"
 #import "../CommonClients.h"
 
-void skipNext(notificationArguments) {
-    [[NSNotificationCenter defaultCenter] postNotificationName:kSkipNext object:nil];
-}
-
-void manualUpdate(notificationArguments) {
-    [[NSNotificationCenter defaultCenter] postNotificationName:kManualUpdate object:nil];
-}
 
 %hook VOXPlayerQueue
 
@@ -49,7 +42,9 @@ void manualUpdate(notificationArguments) {
 
     VOXImageFetcher *imageFetcher = [%c(VOXImageFetcher) fetcherURL:[NSURL URLWithString:next.artworkURL]];
 
-    [[%c(HNKCache) sharedCache] fetchImageForFetcher:imageFetcher formatName:@"smallArtworkCache" success:^(UIImage *image) {
+    [[%c(HNKCache) sharedCache] fetchImageForFetcher:imageFetcher
+                                          formatName:@"smallArtworkCache"
+                                             success:^(UIImage *image) {
         sendNextTrackMetadata([self serializeTrack:next image:image]);
     } failure:^() {
         sendNextTrackMetadata([self serializeTrack:next image:nil]);
@@ -73,6 +68,13 @@ void manualUpdate(notificationArguments) {
 
 
 %ctor {
-    if (initClient(&skipNext, &manualUpdate))
+    if (shouldInitClient(kVOXBundleID)) {
+        registerNotify(^(int _) {
+            [[NSNotificationCenter defaultCenter] postNotificationName:kSkipNext object:nil];
+        },
+        ^(int _) {
+            [[NSNotificationCenter defaultCenter] postNotificationName:kManualUpdate object:nil];
+        });
         %init;
+    }
 }

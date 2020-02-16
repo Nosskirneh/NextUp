@@ -2,15 +2,6 @@
 #import "../CommonClients.h"
 
 
-void skipNext(notificationArguments) {
-    [[NSNotificationCenter defaultCenter] postNotificationName:kSkipNext object:nil];
-}
-
-void manualUpdate(notificationArguments) {
-    [[NSNotificationCenter defaultCenter] postNotificationName:kManualUpdate object:nil];
-}
-
-
 %hook JAudioPlayer
 
 - (id)init {
@@ -86,6 +77,13 @@ void manualUpdate(notificationArguments) {
 %end
 
 %ctor {
-    if (initClient(&skipNext, &manualUpdate))
+    if (shouldInitClient(kJetAudioBundleID)) {
+        registerNotify(^(int _) {
+            [[NSNotificationCenter defaultCenter] postNotificationName:kSkipNext object:nil];
+        },
+        ^(int _) {
+            [[NSNotificationCenter defaultCenter] postNotificationName:kManualUpdate object:nil];
+        });
         %init;
+    }
 }

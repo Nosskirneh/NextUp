@@ -3,14 +3,6 @@
 
 #define kSongChanged @"songChanged"
 
-void skipNext(notificationArguments) {
-    [[%c(AMNowPlayingViewController) sharedInstance] skipNext];
-}
-
-void manualUpdate(notificationArguments) {
-    [[%c(AMNowPlayingViewController) sharedInstance] fetchNextUp];
-}
-
 /* For testing only */
 // %hook PremiumRepository
 
@@ -146,6 +138,13 @@ void manualUpdate(notificationArguments) {
 
 
 %ctor {
-    if (initClient(&skipNext, &manualUpdate))
+    if (shouldInitClient(kAudioMackBundleID)) {
+        registerNotify(^(int _) {
+            [[%c(AMNowPlayingViewController) sharedInstance] skipNext];
+        },
+        ^(int _) {
+            [[%c(AMNowPlayingViewController) sharedInstance] fetchNextUp];
+        });
         %init(/*PremiumRepository = objc_getClass("audiomack_iphone.PremiumRepository")*/);
+    }
 }

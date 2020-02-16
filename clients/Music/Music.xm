@@ -2,15 +2,6 @@
 #import "../CommonClients.h"
 
 
-void skipNext(notificationArguments) {
-    [[NSNotificationCenter defaultCenter] postNotificationName:kSkipNext object:nil];
-}
-
-void manualUpdate(notificationArguments) {
-    [[NSNotificationCenter defaultCenter] postNotificationName:kManualUpdate object:nil];
-}
-
-
 static NSDictionary *serializeTrack(NUMediaItem *item, UIImage *image) {
     NSMutableDictionary *metadata = [NSMutableDictionary new];
     UIImage *artwork = image;
@@ -209,7 +200,13 @@ static void fetchNextUpItem(NUMediaItem *item, block artworkBlock) {
 
 
 %ctor {
-    if (initClient(&skipNext, &manualUpdate))
+    if (shouldInitClient(kMusicBundleID)) {
+        registerNotify(^(int _) {
+            [[NSNotificationCenter defaultCenter] postNotificationName:kSkipNext object:nil];
+        },
+        ^(int _) {
+            [[NSNotificationCenter defaultCenter] postNotificationName:kManualUpdate object:nil];
+        });
         %init;
 
     if (%c(MPCMediaPlayerLegacyPlaylistManager))

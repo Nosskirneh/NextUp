@@ -2,30 +2,20 @@
 #import "../CommonClients.h"
 #import <substrate.h>
 
-void skipNext(notificationArguments) {
-    [getQueueImplementation() skipNext];
-}
 
-void manualUpdate(notificationArguments) {
-    SPTQueueViewModelImplementation *queueViewModel = getQueueImplementation();
-    if (!queueViewModel)
-        return;
-    [queueViewModel fetchNextUp];
-}
-
-SpotifyApplication *getSpotifyApplication() {
+static SpotifyApplication *getSpotifyApplication() {
     return (SpotifyApplication *)[UIApplication sharedApplication];
 }
 
-NowPlayingFeatureImplementation *getRemoteDelegate() {
+static NowPlayingFeatureImplementation *getRemoteDelegate() {
     return getSpotifyApplication().remoteControlDelegate;
 }
 
-SPTQueueServiceImplementation *getQueueService() {
+static SPTQueueServiceImplementation *getQueueService() {
     return getRemoteDelegate().queueService;
 }
 
-SPTQueueViewModelImplementation *getQueueImplementation() {
+static SPTQueueViewModelImplementation *getQueueImplementation() {
     return getRemoteDelegate().queueInteractor.target;
 }
 
@@ -37,7 +27,8 @@ SPTQueueViewModelImplementation *getQueueImplementation() {
 
     // Load image loader
     SPTQueueViewModelImplementation *queueViewModel = getQueueImplementation();
-    queueViewModel.imageLoader = [getQueueService().glueImageLoaderFactory createImageLoaderForSourceIdentifier:@"se.nosskirneh.nextup"];
+    queueViewModel.imageLoader = [getQueueService().glueImageLoaderFactory
+                                     createImageLoaderForSourceIdentifier:@"se.nosskirneh.nextup"];
 
     // Add observer (otherwise this is only done as late as when opening the now playing view)
     SPTPlayerImpl *player = MSHookIvar<SPTPlayerImpl *>(queueViewModel, "_player");
@@ -55,7 +46,9 @@ SPTQueueViewModelImplementation *getQueueImplementation() {
 %property (nonatomic, retain) SPTGLUEImageLoader *imageLoader;
 %property (nonatomic, retain) SPTPlayerTrack *lastSentTrack;
 
-- (void)player:(SPTPlayerImpl *)player stateDidChange:(SPTPlayerState *)newState fromState:(SPTPlayerState *)oldState {
+- (void)player:(SPTPlayerImpl *)player
+stateDidChange:(SPTPlayerState *)newState
+     fromState:(SPTPlayerState *)oldState {
     %orig;
 
     [self fetchNextUpForState:newState];
@@ -107,7 +100,9 @@ SPTQueueViewModelImplementation *getQueueImplementation() {
 
     // Do this lastly
     if ([self.imageLoader respondsToSelector:@selector(loadImageForURL:imageSize:completion:)]) {
-        [self.imageLoader loadImageForURL:track.coverArtURL imageSize:ARTWORK_SIZE completion:^(UIImage *img) {
+        [self.imageLoader loadImageForURL:track.coverArtURL
+                                imageSize:ARTWORK_SIZE
+                               completion:^(UIImage *img) {
             if (img)
                 image = img;
 
@@ -121,7 +116,9 @@ SPTQueueViewModelImplementation *getQueueImplementation() {
 
 %hook GaiaLocalAudioSessionController
 
-- (void)player:(SPTPlayerImpl *)player stateDidChange:(SPTPlayerState *)newState fromState:(SPTPlayerState *)oldState {
+- (void)player:(SPTPlayerImpl *)player
+stateDidChange:(SPTPlayerState *)newState
+     fromState:(SPTPlayerState *)oldState {
     %orig;
 
     [getQueueImplementation() fetchNextUpForState:newState];
@@ -131,6 +128,16 @@ SPTQueueViewModelImplementation *getQueueImplementation() {
 
 
 %ctor {
-    if (initClient(&skipNext, &manualUpdate))
+    if (shouldInitClient(kSpotifyBundleID)) {
+        registerNotify(^(int _) {
+            [getQueueImplementation() skipNext];
+        },
+        ^(int _) {
+            SPTQueueViewModelImplementation *queueViewModel = getQueueImplementation();
+            if (!queueViewModel)
+                return;
+            [queueViewModel fetchNextUp];
+        });
         %init;
+    }
 }

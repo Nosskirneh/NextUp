@@ -1,0 +1,21 @@
+{
+    Filter = {
+        Bundles = (
+            "com.anghami.anghami",
+            "com.audiomack.iphone",
+            "com.deezer.Deezer",
+            "com.google.PlayMusic",
+            "com.jetappfactory.jetaudio",
+            "com.Saavn.Saavn",
+            "com.feelthemusi.musi",
+            "com.apple.Music",
+            "com.rhapsody.iphone.Napster3",
+            "com.apple.podcasts",
+            "com.soundcloud.TouchApp",
+            "com.spotify.client",
+            "com.aspiro.TIDAL",
+            "com.coppertino.VoxMobile",
+            "com.google.ios.youtubemusic"
+        );
+    };
+}
