@@ -132,7 +132,9 @@ static void fetchNextUpItem(NUMediaItem *item, block artworkBlock) {
         return self;
     }
 
-    - (void)player:(id)player currentItemDidChangeFromItem:(MPMediaItem *)from toItem:(MPMediaItem *)to {
+    - (void)player:(id)player
+            currentItemDidChangeFromItem:(MPMediaItem *)from
+            toItem:(MPMediaItem *)to {
         %orig;
         [self fetchNextUp];
     }
@@ -143,8 +145,8 @@ static void fetchNextUpItem(NUMediaItem *item, block artworkBlock) {
     }
 
     - (void)addPlaybackContext:(id)context
-      toQueueWithInsertionType:(long long)type
-             completionHandler:(queueFeederBlock)completion {
+            toQueueWithInsertionType:(long long)type
+            completionHandler:(queueFeederBlock)completion {
         queueFeederBlock block = ^(MPCModelQueueFeeder *queueFeeder) {
             completion(queueFeeder);
             [self fetchNextUp];
@@ -209,8 +211,9 @@ static void fetchNextUpItem(NUMediaItem *item, block artworkBlock) {
         });
         %init;
 
-    if (%c(MPCMediaPlayerLegacyPlaylistManager))
-        %init(iOS12);
-    else
-        %init(iOS13);
+        if (%c(MPCMediaPlayerLegacyPlaylistManager))
+            %init(iOS12);
+        else
+            %init(iOS13);
+    }
 }
