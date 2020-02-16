@@ -2,19 +2,11 @@
 #import "../CommonClients.h"
 
 
-void skipNext(notificationArguments) {
-    [[NSNotificationCenter defaultCenter] postNotificationName:kSkipNext object:nil];
-}
-
-void manualUpdate(notificationArguments) {
-    [[NSNotificationCenter defaultCenter] postNotificationName:kManualUpdate object:nil];
-}
-
-YTMAppDelegate *getYTMAppDelegate() {
+static YTMAppDelegate *getYTMAppDelegate() {
     return (YTMAppDelegate *)[[UIApplication sharedApplication] delegate];
 }
 
-GIMMe *gimme() {
+static GIMMe *gimme() {
     return getYTMAppDelegate().gimme;
 }
 
@@ -58,14 +50,17 @@ GIMMe *gimme() {
         [self fetchNextUp];
 }
 
-- (void)automixController:(id)controller didRemoveRenderersAtIndexes:(NSIndexSet *)indexes {
+- (void)automixController:(id)controller
+        didRemoveRenderersAtIndexes:(NSIndexSet *)indexes {
     %orig;
 
     if ([indexes containsIndex:self.nextVideoIndex])
         [self fetchNextUp];
 }
 
-- (void)automixController:(id)controller didInsertRenderersAtIndexes:(NSIndexSet *)indexes response:(id)arg3 {
+- (void)automixController:(id)controller
+        didInsertRenderersAtIndexes:(NSIndexSet *)indexes
+        response:(id)arg3 {
     %orig;
 
     if ([indexes containsIndex:self.nextVideoIndex])
@@ -96,9 +91,9 @@ GIMMe *gimme() {
 
 %group PlayItemAtIndex_New
 - (void)playItemAtIndex:(unsigned long long)index
-         autoPlaySource:(int)autoplay
-isPlaybackControllerInternalTransition:(BOOL)transition
-            atStartTime:(double)starttime {
+        autoPlaySource:(int)autoplay
+        isPlaybackControllerInternalTransition:(BOOL)transition
+        atStartTime:(double)starttime {
     %orig;
 
     [self fetchNextUp];
@@ -109,7 +104,8 @@ isPlaybackControllerInternalTransition:(BOOL)transition
 - (void)fetchNextUp {
     YTIPlaylistPanelVideoRenderer *next;
 
-    if ([self respondsToSelector:@selector(nextVideo)]) // Earlier YouTube Music version
+    // Using an earlier YouTube Music version?
+    if ([self respondsToSelector:@selector(nextVideo)])
         next = self.nextVideo;
     else
         next = [self nextVideoWithAutoplay:[self hasAutoplayVideo]];
@@ -136,7 +132,8 @@ isPlaybackControllerInternalTransition:(BOOL)transition
 }
 
 %new
-- (NSDictionary *)serializeTrack:(YTIPlaylistPanelVideoRenderer *)item image:(UIImage *)image {
+- (NSDictionary *)serializeTrack:(YTIPlaylistPanelVideoRenderer *)item
+                           image:(UIImage *)image {
     NSMutableDictionary *metadata = [NSMutableDictionary new];
 
     if (item.hasTitle)
@@ -163,7 +160,13 @@ isPlaybackControllerInternalTransition:(BOOL)transition
 
 
 %ctor {
-    if (initClient(&skipNext, &manualUpdate)) {
+    if (shouldInitClient(kYouTubeMusicBundleID)) {
+        registerNotify(^(int _) {
+            [[NSNotificationCenter defaultCenter] postNotificationName:kSkipNext object:nil];
+        },
+        ^(int _) {
+            [[NSNotificationCenter defaultCenter] postNotificationName:kManualUpdate object:nil];
+        });
         %init;
 
         if ([%c(YTMQueueController) instancesRespondToSelector:@selector(playItemAtIndex:

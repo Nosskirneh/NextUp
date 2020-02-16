@@ -87,18 +87,3 @@
 @interface UIImage (SPT)
 + (id)trackSPTPlaceholderWithSize:(NSInteger)size;
 @end
-
-
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-    SpotifyApplication *getSpotifyApplication();
-    NowPlayingFeatureImplementation *getRemoteDelegate();
-    SPTQueueServiceImplementation *getQueueService();
-    SPTQueueViewModelImplementation *getQueueImplementation();
-
-#ifdef __cplusplus
-}
-#endif

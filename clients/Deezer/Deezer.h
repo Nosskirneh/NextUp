@@ -38,12 +38,3 @@
 @property (nonatomic, strong, readwrite) DZRPlaybackQueuer *queuer;
 + (DZRAudioPlayer *)sharedPlayer;
 @end
-
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-    DZRPlaybackQueuer *getQueuer();
-#ifdef __cplusplus
-}
-#endif

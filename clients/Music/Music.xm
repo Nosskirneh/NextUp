@@ -2,14 +2,6 @@
 #import "../CommonClients.h"
 
 
-void skipNext(notificationArguments) {
-    [[NSNotificationCenter defaultCenter] postNotificationName:kSkipNext object:nil];
-}
-
-void manualUpdate(notificationArguments) {
-    [[NSNotificationCenter defaultCenter] postNotificationName:kManualUpdate object:nil];
-}
-
 %hook MPCMediaPlayerLegacyPlaylistManager
 
 - (id)init {
@@ -35,7 +27,9 @@ void manualUpdate(notificationArguments) {
     [self fetchNextUp];
 }
 
-- (void)addPlaybackContext:(id)context toQueueWithInsertionType:(long long)type completionHandler:(queueFeederBlock)completion {
+- (void)addPlaybackContext:(id)context
+  toQueueWithInsertionType:(long long)type
+         completionHandler:(queueFeederBlock)completion {
     queueFeederBlock block = ^(MPCModelQueueFeeder *queueFeeder) {
         completion(queueFeeder);
         [self fetchNextUp];
@@ -43,7 +37,9 @@ void manualUpdate(notificationArguments) {
     %orig(context, type, block);
 }
 
-- (void)moveItemAtPlaybackIndex:(long long)from toPlaybackIndex:(long long)to intoHardQueue:(BOOL)hardQueue {
+- (void)moveItemAtPlaybackIndex:(long long)from
+                toPlaybackIndex:(long long)to
+                  intoHardQueue:(BOOL)hardQueue {
     %orig;
     long nextIndex = [self currentIndex] + 1;
     if (from == nextIndex || to == nextIndex)
@@ -129,6 +125,12 @@ void manualUpdate(notificationArguments) {
 
 
 %ctor {
-    if (initClient(&skipNext, &manualUpdate))
+    if (shouldInitClient(kMusicBundleID)) {
+        registerNotify(^(int _) {
+            [[NSNotificationCenter defaultCenter] postNotificationName:kSkipNext object:nil];
+        },
+        ^(int _) {
+            [[NSNotificationCenter defaultCenter] postNotificationName:kManualUpdate object:nil];
+        });
         %init;
 }

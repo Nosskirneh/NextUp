@@ -13,16 +13,8 @@
 // }
 // %end
 
-PlayerVC *getPlayerVC() {
+static PlayerVC *getPlayerVC() {
     return [(AppDelegate *)[[UIApplication sharedApplication] delegate] getPlayerVC];
-}
-
-void skipNext(notificationArguments) {
-    [getPlayerVC() skipNext];
-}
-
-void manualUpdate(notificationArguments) {
-    [getPlayerVC() fetchNextUp];
 }
 
 %hook PlayerVC
@@ -112,7 +104,15 @@ void manualUpdate(notificationArguments) {
 
 %end
 
+
 %ctor {
-    if (initClient(&skipNext, &manualUpdate))
+    if (shouldInitClient(kJioSaavnBundleID)) {
+        registerNotify(^(int _) {
+            [getPlayerVC() skipNext];
+        },
+        ^(int _) {
+            [getPlayerVC() fetchNextUp];
+        });
         %init;
+    }
 }

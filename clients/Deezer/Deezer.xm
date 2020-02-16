@@ -2,15 +2,7 @@
 #import "../CommonClients.h"
 
 
-void skipNext(notificationArguments) {
-    [getQueuer() skipNext];
-}
-
-void manualUpdate(notificationArguments) {
-    [getQueuer() fetchNextUp];
-}
-
-DZRPlaybackQueuer *getQueuer() {
+static DZRPlaybackQueuer *getQueuer() {
     return [%c(DZRAudioPlayer) sharedPlayer].queuer;
 }
 
@@ -47,7 +39,9 @@ DZRPlaybackQueuer *getQueuer() {
     [self fetchNextUp];
 }
 
-- (void)replacePlayables:(id)arg1 shuffledTracksIDs:(id)arg2 currentTrackIndex:(unsigned long long)index {
+- (void)replacePlayables:(id)arg1
+       shuffledTracksIDs:(id)arg2
+       currentTrackIndex:(unsigned long long)index {
     %orig;
 
     if (index == self.currentTrackIndex + 1)
@@ -61,10 +55,12 @@ DZRPlaybackQueuer *getQueuer() {
         [self fetchNextUp];
 }
 
-- (void)movePlayableAtIndex:(unsigned long long)from toIndex:(unsigned long long)to {
+- (void)movePlayableAtIndex:(unsigned long long)from
+                    toIndex:(unsigned long long)to {
     %orig;
 
-    if (from == self.currentTrackIndex + 1 || to == self.currentTrackIndex + 1)
+    if (from == self.currentTrackIndex + 1 ||
+        to == self.currentTrackIndex + 1)
         [self fetchNextUp];
 }
 
@@ -132,7 +128,8 @@ DZRPlaybackQueuer *getQueuer() {
     [%c(_TtC6Deezer19IllustrationManager) fetchImageFor:illustration
                                                    size:ARTWORK_SIZE
                                                  effect:nil
-                                                success:^(_TtC6Deezer18DeezerIllustration *illustration, UIImage *image) {
+                                                success:^(_TtC6Deezer18DeezerIllustration *illustration,
+                                                          UIImage *image) {
                                                     completion(image);
                                               } failure:nil];
 }
@@ -141,6 +138,13 @@ DZRPlaybackQueuer *getQueuer() {
 
 
 %ctor {
-    if (initClient(&skipNext, &manualUpdate))
+    if (shouldInitClient(kDeezerBundleID)) {
+        registerNotify(^(int _) {
+            [getQueuer() skipNext];
+        },
+        ^(int _) {
+            [getQueuer() fetchNextUp];
+        });
         %init;
+    }
 }
