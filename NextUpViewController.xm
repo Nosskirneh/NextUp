@@ -20,7 +20,7 @@
         _manager = manager;
 
         [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(updateLabels)
+                                                 selector:@selector(metadataChanged:)
                                                      name:kUpdateLabels
                                                    object:nil];
 
@@ -140,7 +140,7 @@
     [self.contentView.leftAnchor constraintEqualToAnchor:self.view.leftAnchor].active = YES;
     [self.contentView.rightAnchor constraintEqualToAnchor:self.view.rightAnchor].active = YES;
 
-    [self updateLabels];
+    [self updateLabels:_manager.metadata];
 }
 
 - (void)skipTrack:(UIButton *)sender {
@@ -154,8 +154,11 @@
     [[%c(SBIdleTimerGlobalCoordinator) sharedInstance] resetIdleTimer];
 }
 
-- (void)updateLabels {
-    NSDictionary *metadata = _manager.metadata;
+- (void)metadataChanged:(NSNotification *)notification {
+    [self updateLabels:notification.object];
+}
+
+- (void)updateLabels:(NSDictionary *)metadata {
     if (metadata) {
         _mediaView.primaryString = metadata[kTitle];
         _mediaView.secondaryString = metadata[kSubtitle];

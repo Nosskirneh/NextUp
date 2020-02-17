@@ -82,12 +82,13 @@ SBDashBoardViewController *getDashBoardViewController() {
     if ([name isEqualToString:kNextTrackMessage]) {
         // For example if Spotify is running in background and changed track on a
         // Connect device, but Deezer is playing music at the device: do nothing
-        if (self.mediaApplication && ![dict[kApp] isEqualToString:self.mediaApplication])
+        if (!self.mediaApplication ||
+            ![dict[kApp] isEqualToString:self.mediaApplication])
             return;
 
         _metadata = dict[kMetadata];
         [[NSNotificationCenter defaultCenter] postNotificationName:kUpdateLabels
-                                                            object:nil];
+                                                            object:_metadata];
     }
 }
 
