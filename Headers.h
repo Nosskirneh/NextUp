@@ -119,6 +119,10 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @property (nonatomic, retain) UIView *nextUpView;
 @property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
 @property (nonatomic, assign) BOOL shouldShowNextUp;
+@property (nonatomic, assign) float nextUpHeight;
+@property (nonatomic, assign) float heightWithNextUpActive;
+- (void)prepareFramesForNextUp;
+- (CGRect)revertFrameForNextUp;
 - (void)addNextUpView;
 @end
 

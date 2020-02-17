@@ -1,5 +1,6 @@
 #import "YouTubeMusic.h"
 #import "../CommonClients.h"
+#import <MediaPlayer/MPNowPlayingInfoCenter.h>
 
 
 static YTMAppDelegate *getYTMAppDelegate() {
@@ -154,6 +155,18 @@ static GIMMe *gimme() {
 %new
 - (void)skipNext {
     [self removeVideoAtIndex:self.nextVideoIndex];
+}
+
+/* Fixes an issue where the timestamp slider would get reverted
+   to a previous checkpoint when skipping the next track. */
+- (void)contentVideoMediaTimeDidChangeToTime:(double)time totalMediaTime:(double)totalTime {
+    %orig;
+
+    MPNowPlayingInfoCenter *center = [MPNowPlayingInfoCenter defaultCenter];
+    NSMutableDictionary *nowPlayingInfo = [center.nowPlayingInfo mutableCopy];
+    nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = @(time);
+
+    center.nowPlayingInfo = nowPlayingInfo;
 }
 
 %end
