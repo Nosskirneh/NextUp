@@ -44,6 +44,9 @@ NextUpManager *manager;
         if (controlCenter) {
             MediaControlsContainerView *containerView = self.parentContainerView.mediaControlsContainerView;
 
+            containerView.nextUpHeight = 105.0;
+            containerView.heightWithNextUpActive = 102.0;
+
             if ([containerView respondsToSelector:@selector(nextUpView)]) {
                 [[NSNotificationCenter defaultCenter] addObserver:containerView
                                                          selector:@selector(showNextUp)
@@ -68,8 +71,10 @@ NextUpManager *manager;
 %end
 // ---
 
-// The remaining parts (CC/LS) is for changing the heights/y-coordinates of their respective views.
-// Can't be done in the panelViewController as they are fundamentally different views.
+
+/* The remaining parts (CC/LS) is for changing the height/y-coordinate
+   of their respective views. Can't be done in the panelViewController
+   as they are fundamentally different views. */
 %group ControlCenter
     %hook CCUIContentModuleContainerViewController
 
@@ -87,23 +92,37 @@ NextUpManager *manager;
     %property (nonatomic, retain) UIView *nextUpView;
     %property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
     %property (nonatomic, assign) BOOL shouldShowNextUp;
+    %property (nonatomic, assign) float nextUpHeight;
+    %property (nonatomic, assign) float heightWithNextUpActive;
 
     - (void)layoutSubviews {
         %orig;
 
         if (manager.controlCenterExpanded && self.shouldShowNextUp) {
-            CGRect frame = self.frame;
-            frame.size.height = 101.0;
-            self.frame = frame;
-
-            self.nextUpView.frame = CGRectMake(frame.origin.x,
-                                               frame.origin.y + frame.size.height,
-                                               frame.size.width,
-                                               105);
+            [self prepareFramesForNextUp];
 
             if (!self.showingNextUp)
                 [self addNextUpView];
         }
+    }
+
+    %new
+    - (void)prepareFramesForNextUp {
+        CGRect frame = self.frame;
+        frame.size.height = self.heightWithNextUpActive;
+        self.frame = frame;
+
+        self.nextUpView.frame = CGRectMake(frame.origin.x,
+                                           frame.origin.y + frame.size.height,
+                                           frame.size.width,
+                                           self.nextUpHeight);
+    }
+
+    %new
+    - (CGRect)revertFrameForNextUp {
+        CGRect frame = self.frame;
+        frame.size.height = self.nextUpHeight + self.heightWithNextUpActive;
+        return frame;
     }
 
     %new
@@ -115,15 +134,34 @@ NextUpManager *manager;
     %new
     - (void)showNextUp {
         self.shouldShowNextUp = YES;
-        if (!self.showingNextUp)
-            [self layoutSubviews];
+        if (!self.showingNextUp) {
+            [self addNextUpView];
+            self.nextUpView.alpha = 0.0f;
+
+            [UIView animateWithDuration:0.25 animations:^{
+                [self prepareFramesForNextUp];
+                [self layoutIfNeeded];
+
+                self.nextUpView.alpha = 1.0f;
+            } completion:nil];
+        }
     }
 
     %new
     - (void)hideNextUp {
         self.shouldShowNextUp = NO;
-        if (self.showingNextUp)
-            [self layoutSubviews];
+        if (self.showingNextUp && manager.controlCenterExpanded) {
+            CGRect frame = [self revertFrameForNextUp];
+            self.showingNextUp = NO;
+            [UIView animateWithDuration:0.25 animations:^{
+                self.frame = frame;
+                [self layoutIfNeeded];
+
+                self.nextUpView.alpha = 0.0f;
+            } completion:^(BOOL finished) {
+                [self.nextUpView removeFromSuperview];
+            }];
+        }
     }
 
     %end
