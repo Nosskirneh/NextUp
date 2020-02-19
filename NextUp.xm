@@ -490,6 +490,7 @@ NextUpManager *manager;
 
         self.routingButton.clear.strokeColor = colorInfo.backgroundColor.CGColor;
         self.routingButton.backgroundColor = colorInfo.primaryColor;
+        [self _updateStyle];
     }
 
     - (void)cfw_revert {
@@ -497,6 +498,7 @@ NextUpManager *manager;
 
         self.routingButton.clear.strokeColor = self.textColor.CGColor;
         self.routingButton.backgroundColor = self.skipBackgroundColor;
+        [self updateTextColor];
     }
 
     %end

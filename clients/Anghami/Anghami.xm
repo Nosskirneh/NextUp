@@ -16,7 +16,9 @@ static ANGPlayQueue *getQueue() {
 }
 
 // This seems to be called on all usable methods in PlayQueueSingleton (move, add, clear etc)
-- (BOOL)setCurrentIndex:(unsigned long long)index userAction:(BOOL)userAction report:(BOOL)report {
+- (BOOL)setCurrentIndex:(unsigned long long)index
+             userAction:(BOOL)userAction
+                 report:(BOOL)report {
     BOOL orig = %orig;
     [self fetchNextUp];
 
@@ -46,7 +48,8 @@ static ANGPlayQueue *getQueue() {
     ANGImageDownloader *imageDownloader = [%c(ANGImageDownloader) sharedInstance];
     [imageDownloader getImage:spec callback:^(void) {
         BOOL thumbnail = YES;
-        UIImage *image = [imageDownloader imageFromCacheForSpec:spec thumbnail:&thumbnail];
+        UIImage *image = [imageDownloader imageFromCacheForSpec:spec
+                                                      thumbnail:&thumbnail];
         NSDictionary *metadata = [self serializeTrack:item image:image];
         sendNextTrackMetadata(metadata);
     }];
