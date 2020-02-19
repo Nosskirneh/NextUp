@@ -68,7 +68,7 @@
     _textColor = [UIScreen mainScreen].traitCollection.userInterfaceStyle == UIUserInterfaceStyleLight ?
                  UIColor.blackColor : UIColor.whiteColor;
     [self _initSkipBackgroundColor];
-    [self.mediaView updateTextColor:_textColor];
+    [self.mediaView setNewTextColor:_textColor];
     [self.mediaView updateSkipBackgroundColor:_skipBackgroundColor];
     self.headerLabel.textColor = _textColor;
 }
