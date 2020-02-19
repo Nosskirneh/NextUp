@@ -1,5 +1,6 @@
 #import "CommonClients.h"
 #import "../Common.h"
+#import "../SettingsKeys.h"
 #import <AppSupport/CPDistributedMessagingCenter.h>
 #import <rocketbootstrap/rocketbootstrap.h>
 
