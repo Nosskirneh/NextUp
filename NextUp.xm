@@ -500,6 +500,18 @@ NextUpManager *manager;
     }
 
     %end
+
+
+    /* ColorFlow 5 calls these methods, as it believes the button is a routing button. */
+    %hook NUSkipButton
+
+    %new
+    - (void)cfw_colorize:(CFWColorInfo *)colorInfo {}
+
+    %new
+    - (void)cfw_revert {}
+
+    %end
 %end
 // ---
 
