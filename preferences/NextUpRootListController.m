@@ -1,6 +1,6 @@
+#import "NUSettingsListController.h"
 #import <Preferences/Preferences.h>
 #import <UIKit/UITableViewLabel.h>
-#import "../Common.h"
 #import "../DRMOptions.mm"
 #import "../../DRM/PFStatusBarAlert/PFStatusBarAlert.h"
 #import <spawn.h>
@@ -8,21 +8,14 @@
 #import "../../TwitterStuff/Prompt.h"
 #import "../SettingsKeys.h"
 
-#define NextUpColor [UIColor colorWithRed:0.00 green:0.65 blue:1.00 alpha:1.0] // #00A5FF
 #define kPostNotification @"PostNotification"
 
-@interface NextUpRootListController : PSListController <PFStatusBarAlertDelegate, DRMDelegate> {
-    UIWindow *settingsView;
-}
+@interface NextUpRootListController : NUSettingsListController <PFStatusBarAlertDelegate, DRMDelegate>
 @property (nonatomic, strong) PFStatusBarAlert *statusAlert;
 @property (nonatomic, weak) UIAlertAction *okAction;
 @property (nonatomic, weak) NSString *okRegex;
 @property (nonatomic, strong) UIAlertController *giveawayAlertController;
 @end
-
-#define kIconImage @"iconImage"
-#define kKey @"key"
-#define kDefault @"default"
 
 @implementation NextUpRootListController
 
@@ -48,7 +41,8 @@
             UIImage *image = [UIImage imageNamed:imageName inBundle:[NSBundle bundleWithPath:preferencesFrameworkPath]];
             if (image)
                 [spec setProperty:image forKey:kIconImage];
-        } else if ([[specifier propertyForKey:kKey] isEqualToString:kHideArtwork]) {
+        } else if ([[specifier propertyForKey:kKey] isEqualToString:kHideArtwork] &&
+                   [UIApplication sharedApplication].userInterfaceLayoutDirection == UIUserInterfaceLayoutDirectionRightToLeft) {
             [specifier setProperty:@(NO) forKey:@"enabled"];
         }
     }
@@ -61,37 +55,29 @@
     return _specifiers;
 }
 
+- (id)readPreferenceValue:(PSSpecifier *)specifier {
+    id value = [super readPreferenceValue:specifier];
+
+    NSString *key = [specifier propertyForKey:kKey];
+    if ([key isEqualToString:kLockscreen])
+        [self enableLockscreenSpecifiers:[value boolValue]];
+
+    return value;
+}
+
+- (void)preferenceValueChanged:(id)value specifier:(PSSpecifier *)specifier {
+    NSString *key = [specifier propertyForKey:kKey];
+    if ([key isEqualToString:kLockscreen])
+        [self enableLockscreenSpecifiers:[value boolValue]];
+}
+
+- (void)enableLockscreenSpecifiers:(BOOL)enabled {
+    [self setEnabled:enabled forSpecifiersInGroupID:@"lockscreen-settings"];
+}
+
 - (void)loadView {
     [super loadView];
     presentFollowAlert(kPrefPath, self);
-}
-
-- (id)readPreferenceValue:(PSSpecifier *)specifier {
-    NSDictionary *preferences = [NSDictionary dictionaryWithContentsOfFile:kPrefPath];
-    NSString *key = [specifier propertyForKey:kKey];
-
-    if (preferences[key])
-        return preferences[key];
-
-    return specifier.properties[kDefault];
-}
-
-- (void)setPreferenceValue:(id)value specifier:(PSSpecifier *)specifier {
-    NSMutableDictionary *preferences = [NSMutableDictionary dictionaryWithContentsOfFile:kPrefPath];
-    if (!preferences)
-        preferences = [NSMutableDictionary new];
-    NSString *key = [specifier propertyForKey:kKey];
-
-    [preferences setObject:value forKey:key];
-    [preferences writeToFile:kPrefPath atomically:YES];
-    
-    NSString *notificationString = specifier.properties[kPostNotification];
-    if (notificationString)
-        notify_post([notificationString UTF8String]);
-}
-
-- (void)respring {
-    respring(NO);
 }
 
 - (void)activate {
@@ -127,17 +113,11 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
 
-    // Tint
-    settingsView = [[UIApplication sharedApplication] keyWindow];
-    settingsView.tintColor = NextUpColor;
-
     [self reloadSpecifiers];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
-    settingsView = [[UIApplication sharedApplication] keyWindow];
-    settingsView.tintColor = nil;
 
     if (self.statusAlert)
         [self.statusAlert hideOverlay];
