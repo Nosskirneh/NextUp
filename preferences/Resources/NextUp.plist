@@ -329,7 +329,7 @@
             <key>id</key>
             <string>lockscreen-settings</string>
             <key>footerText</key>
-            <string>Slimmed mode decreases the height and hides the "Next Up" label.
+            <string>Slimmed mode decreases the used height and hides the "Next Up" label.
 Hiding elements is useful with ColorFlow's extended media artwork view. Elements are only hidden when the media controls are visible.</string>
         </dict>
 
