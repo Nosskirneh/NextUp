@@ -71,8 +71,9 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
           fallbackOriginX:(CGFloat)fallbackOriginX
                bonusWidth:(CGFloat)bonusWidth
              bonusOriginX:(CGFloat)bonusOriginX;
-- (void)updateTextColor:(UIColor *)color;
 - (void)updateSkipBackgroundColor:(UIColor *)color;
+- (void)setNewTextColor:(UIColor *)color;
+- (void)updateTextColor;
 @end
 
 
