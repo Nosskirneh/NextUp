@@ -100,7 +100,7 @@
     self.mediaView = [[%c(NextUpMediaHeaderView) alloc] initWithFrame:CGRectZero];
     self.mediaView.style = self.style;
     self.mediaView.textAlpha = _textAlpha;
-    [self.mediaView updateTextColor:_textColor];
+    [self.mediaView setNewTextColor:_textColor];
     [self.mediaView updateSkipBackgroundColor:_skipBackgroundColor];
 
     if ([_mediaView respondsToSelector:@selector(setShouldEnableMarquee:)])

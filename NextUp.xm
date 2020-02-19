@@ -526,7 +526,7 @@ NextUpManager *manager;
         UIColor *color = ((NRDManager *)[%c(NRDManager) sharedInstance]).mainColor;
         NextUpViewController *nextUpViewController = ((UIViewController<PanelViewController> *)self).nextUpViewController;
         nextUpViewController.headerLabel.textColor = color;
-        [nextUpViewController.mediaView updateTextColor:color];
+        [nextUpViewController.mediaView setNewTextColor:color];
     }
 
     %end
@@ -622,9 +622,16 @@ NextUpManager *manager;
     }
 
     %new
-    - (void)updateTextColor:(UIColor *)color {
+    - (void)setNewTextColor:(UIColor *)color {
         self.textColor = color;
+        [self updateTextColor];
+    }
 
+    %new
+    - (void)updateTextColor {
+    	UIColor *color = self.textColor;
+        self.primaryLabel.textColor = color;
+        self.secondaryLabel.textColor = color;
         self.routingButton.clear.strokeColor = color.CGColor;
     }
 
@@ -713,10 +720,8 @@ NextUpManager *manager;
         self.secondaryLabel.alpha = self.textAlpha;
 
         // Do not color the labels if ColorFlow is active
-        if (![manager colorFlowEnabled]) {
-            self.primaryLabel.textColor = self.textColor;
-            self.secondaryLabel.textColor = self.textColor;
-        }
+        if (![manager colorFlowEnabled])
+        	[self updateTextColor];
 
         self.routingButton.alpha = 0.95;
         self.routingButton.userInteractionEnabled = YES;
