@@ -658,7 +658,7 @@ NextUpManager *manager;
         self.secondaryLabel.alpha = self.textAlpha;
 
         // Do not color the labels if ColorFlow is active
-        if (![manager colorFlowEnabled])
+        if (!manager.colorFlowEnabled)
         	[self updateTextColor];
 
         self.routingButton.alpha = 0.95;
@@ -753,6 +753,10 @@ static inline void initLockscreen() {
             return;
     }
     // ---
+
+    /* Load other tweaks if any. */
+    dlopen("/Library/MobileSubstrate/DynamicLibraries/ColorFlow4.dylib", RTLD_NOW);
+
     [manager setup];
 
     %init();

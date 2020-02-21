@@ -48,8 +48,8 @@ SBDashBoardViewController *getDashBoardViewController() {
     );
 
     // ColorFlow
-    _cfLockscreen = %c(CFWPrefsManager) &&
-                    ((CFWPrefsManager *)[%c(CFWPrefsManager) sharedInstance]).lockScreenEnabled;
+    _colorFlowEnabled = %c(CFWPrefsManager) &&
+                        ((CFWPrefsManager *)[%c(CFWPrefsManager) sharedInstance]).lockScreenEnabled;
 
     _enabledApps = [NSMutableSet new];
     [self reloadPreferences];
@@ -111,10 +111,6 @@ SBDashBoardViewController *getDashBoardViewController() {
 
 - (void)setTrialEnded {
     _trialEnded = YES;
-}
-
-- (BOOL)colorFlowEnabled {
-    return _cfLockscreen;
 }
 
 - (BOOL)slimmedLSMode {
