@@ -50,7 +50,6 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @property (nonatomic, retain) NSString *secondaryString;
 - (void)setShouldEnableMarquee:(BOOL)arg1; // 11.1.2
 - (void)setMarqueeEnabled:(BOOL)arg1; // 11.3.1
-- (void)_updateStyle;
 
 // MASQ
 @property (nonatomic, retain) UIView *masqArtwork;
