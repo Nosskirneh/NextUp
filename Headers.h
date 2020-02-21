@@ -145,6 +145,9 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 
 @interface SBDashBoardQuickActionsView : UIView
 @property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
+- (void)animateHide:(BOOL)hide;
+- (BOOL)shouldHideWithNextUp;
+- (BOOL)shouldOverrideAlpha;
 @end
 
 @interface SBDashBoardHomeAffordanceView : UIView

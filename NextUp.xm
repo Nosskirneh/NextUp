@@ -321,18 +321,40 @@ NextUpManager *manager;
     %new
     - (void)showNextUp {
         self.showingNextUp = YES;
-        [self setAlpha:0];
+        if ([self shouldHideWithNextUp])
+            [self animateHide:YES];
     }
 
     %new
     - (void)hideNextUp {
         self.showingNextUp = NO;
+        if ([self shouldHideWithNextUp])
+            [self animateHide:NO];
+    }
+
+    %new
+    - (void)animateHide:(BOOL)hide {
+        CGFloat alpha = hide ? 0.0f : 1.0f;
+        [UIView animateWithDuration:0.2
+                animations:^{
+                    self.alpha = alpha;
+                }
+                completion:nil];
+    }
+
+    %new
+    - (BOOL)shouldHideWithNextUp {
+        return [[manager class] isShowingMediaControls] &&
+               [manager.preferences[kHideXButtons] boolValue];
+    }
+
+    %new
+    - (BOOL)shouldOverrideAlpha {
+        return [self isShowingNextUp] && [self shouldHideWithNextUp];
     }
 
     - (void)setAlpha:(CGFloat)alpha {
-        if ([self isShowingNextUp] &&
-            [[manager class] isShowingMediaControls] &&
-            [manager.preferences[kHideXButtons] boolValue])
+        if (alpha == 1.0f && [self shouldOverrideAlpha])
             return %orig(0.0);
         %orig;
     }
