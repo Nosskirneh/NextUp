@@ -176,6 +176,9 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 
 @protocol QuickActionsView
 @property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
+- (void)animateHide:(BOOL)hide;
+- (BOOL)shouldHideWithNextUp;
+- (BOOL)shouldOverrideAlpha;
 @end
 
 @interface CSQuickActionsView : UIView<QuickActionsView>
