@@ -10,11 +10,13 @@
 @property (nonatomic, assign, readwrite) NSString *mediaApplication;
 @property (nonatomic, assign, readwrite) BOOL controlCenterExpanded;
 @property (nonatomic, assign, readonly) BOOL trialEnded;
+@property (nonatomic, assign, readonly) BOOL colorFlowEnabled;
 + (BOOL)isShowingMediaControls;
 - (void)setup;
 - (void)setTrialEnded;
 - (BOOL)slimmedLSMode;
 - (BOOL)hideOnEmpty;
 - (BOOL)hideArtwork;
-- (BOOL)colorFlowEnabled;
+- (BOOL)controlCenterEnabled;
+- (BOOL)lockscreenEnabled;
 @end

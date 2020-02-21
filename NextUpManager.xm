@@ -51,8 +51,8 @@ UIViewController<CoverSheetViewController> *getCoverSheetViewController() {
     );
 
     // ColorFlow
-    _cfLockscreen = %c(CFWPrefsManager) &&
-                    ((CFWPrefsManager *)[%c(CFWPrefsManager) sharedInstance]).lockScreenEnabled;
+    _colorFlowEnabled = %c(CFWPrefsManager) &&
+                        ((CFWPrefsManager *)[%c(CFWPrefsManager) sharedInstance]).lockScreenEnabled;
 
     _enabledApps = [NSMutableSet new];
     [self reloadPreferences];
@@ -116,10 +116,6 @@ UIViewController<CoverSheetViewController> *getCoverSheetViewController() {
     _trialEnded = YES;
 }
 
-- (BOOL)colorFlowEnabled {
-    return _cfLockscreen;
-}
-
 - (BOOL)slimmedLSMode {
     return self.preferences[kSlimmedLSMode] && [self.preferences[kSlimmedLSMode] boolValue];
 }
@@ -130,6 +126,16 @@ UIViewController<CoverSheetViewController> *getCoverSheetViewController() {
 
 - (BOOL)hideArtwork {
     return self.preferences[kHideArtwork] && [self.preferences[kHideArtwork] boolValue];
+}
+
+- (BOOL)controlCenterEnabled {
+    NSNumber *value = self.preferences[kControlCenter];
+    return !value || [value boolValue];
+}
+
+- (BOOL)lockscreenEnabled {
+    NSNumber *value = self.preferences[kLockscreen];
+    return !value || [value boolValue];
 }
 
 @end

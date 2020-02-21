@@ -64,12 +64,12 @@ static void _registerNotify(NSString *bundleID,
     if (skipNextHandler)
         notify_register_dispatch(CFSkipNextID(bundleID),
                                  &_,
-                                 dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0l),
+                                 dispatch_get_main_queue(),
                                  skipNextHandler);
     if (manualUpdateHandler)
         notify_register_dispatch(CFManualUpdateID(bundleID),
                                  &_,
-                                 dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0l),
+                                 dispatch_get_main_queue(),
                                  manualUpdateHandler);
 }
 

@@ -19,7 +19,13 @@ NextUpManager *manager;
        only way to know if its CC/LS is by comparing the delegate
        class. Not ideal, but it works. Thus, we have to use
        `setDelegate` as it's executed after `viewDidLoad`. */
-    [(UIViewController<PanelViewController> *)self initNextUp];
+
+    BOOL controlCenter = [self NU_isControlCenter];
+    /* If the current mode is not enabled, return here */
+    if ((!controlCenter && ![manager lockscreenEnabled]) ||
+        (controlCenter && ![manager controlCenterEnabled]))
+        return;
+    [(UIViewController<PanelViewController> *)self initNextUpInControlCenter:controlCenter];
 }
 
 %new
@@ -33,10 +39,9 @@ NextUpManager *manager;
 }
 
 %new
-- (void)initNextUp {
+- (void)initNextUpInControlCenter:(BOOL)controlCenter {
     UIViewController<PanelViewController> *controller = (UIViewController<PanelViewController> *)self;
     if (!controller.nextUpViewController) {
-        BOOL controlCenter = [self NU_isControlCenter];
         controller.nextUpViewController = [[%c(NextUpViewController) alloc] initWithControlCenter:controlCenter
                                                                                      defaultStyle:controller.style
                                                                                           manager:manager];
@@ -489,7 +494,6 @@ NextUpManager *manager;
 
         self.routingButton.clear.strokeColor = colorInfo.backgroundColor.CGColor;
         self.routingButton.backgroundColor = colorInfo.primaryColor;
-        [self _updateStyle];
     }
 
     - (void)cfw_revert {
@@ -721,7 +725,7 @@ NextUpManager *manager;
         self.secondaryLabel.alpha = self.textAlpha;
 
         // Do not color the labels if ColorFlow is active
-        if (![manager colorFlowEnabled])
+        if (!manager.colorFlowEnabled)
         	[self updateTextColor];
 
         self.routingButton.alpha = 0.95;
@@ -815,7 +819,8 @@ static inline void initLockscreen(Class platterClass) {
 
     manager = [[NextUpManager alloc] init];
 
-    // License check – if no license found, present message. If no valid license found, do not init
+    /* License check – if no license found, present message.
+       If no valid license was found, do not init. */
     switch (check_lic(licensePath$bs(), package$bs())) {
         case CheckNoLicense:
             %init(Welcome);
@@ -834,6 +839,10 @@ static inline void initLockscreen(Class platterClass) {
             return;
     }
     // ---
+
+    /* Load other tweaks if any. */
+    dlopen("/Library/MobileSubstrate/DynamicLibraries/ColorFlow4.dylib", RTLD_NOW);
+
     [manager setup];
 
     Class platterClass = %c(MRPlatterViewController);
@@ -842,15 +851,13 @@ static inline void initLockscreen(Class platterClass) {
     %init(PanelViewController = platterClass);
 
     %init(CustomViews);
-    NSNumber *current = manager.preferences[kControlCenter];
-    if (!current || [current boolValue])
+    if ([manager controlCenterEnabled])
         %init(ControlCenter);
 
-    current = manager.preferences[kLockscreen];
-    if (!current || [current boolValue])
+    if ([manager lockscreenEnabled])
         initLockscreen(platterClass);
 
-    current = manager.preferences[kHapticFeedbackOther];
-    if (!current || [current boolValue])
+    NSNumber *haptic = manager.preferences[kHapticFeedbackOther];
+    if (!haptic || [haptic boolValue])
         %init(HapticFeedback);
 }
