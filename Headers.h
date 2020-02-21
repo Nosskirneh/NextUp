@@ -128,7 +128,7 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @property (nonatomic, retain) MediaControlsParentContainerView *parentContainerView;
 @property (assign, nonatomic) long long style;
 
-- (void)initNextUp;
+- (void)initNextUpInControlCenter:(BOOL)controlCenter;
 - (BOOL)NU_isControlCenter;
 @end
 // ---
@@ -157,7 +157,6 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @property (nonatomic, assign) BOOL nu_skipWidgetHeightIncrease;
 @property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
 @property (nonatomic, assign) float nextUpHeight;
-- (void)initNextUp;
 - (void)addNextUpView;
 - (void)removeNextUpView;
 - (MediaControlsPanelViewController *)panelViewController;

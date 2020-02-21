@@ -19,7 +19,13 @@ NextUpManager *manager;
        only way to know if its CC/LS is by comparing the delegate
        class. Not ideal, but it works. Thus, we have to use
        `setDelegate` as it's executed after `viewDidLoad`. */
-    [self initNextUp];
+
+    BOOL controlCenter = [self NU_isControlCenter];
+    /* If the current mode is not enabled, return here */
+    if ((!controlCenter && ![manager lockscreenEnabled]) ||
+        (controlCenter && ![manager controlCenterEnabled]))
+        return;
+    [(UIViewController<PanelViewController> *)self initNextUpInControlCenter:controlCenter];
 }
 
 %new
@@ -34,12 +40,12 @@ NextUpManager *manager;
 }
 
 %new
-- (void)initNextUp {
-    if (!self.nextUpViewController) {
-        BOOL controlCenter = [self NU_isControlCenter];
-        self.nextUpViewController = [[%c(NextUpViewController) alloc] initWithControlCenter:controlCenter
-                                                                               defaultStyle:self.style
-                                                                                    manager:manager];
+- (void)initNextUpInControlCenter:(BOOL)controlCenter {
+    UIViewController<PanelViewController> *controller = (UIViewController<PanelViewController> *)self;
+    if (!controller.nextUpViewController) {
+        controller.nextUpViewController = [[%c(NextUpViewController) alloc] initWithControlCenter:controlCenter
+                                                                                     defaultStyle:controller.style
+                                                                                          manager:manager];
         if (controlCenter) {
             MediaControlsContainerView *containerView = self.parentContainerView.mediaControlsContainerView;
 
