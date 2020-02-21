@@ -125,4 +125,14 @@ SBDashBoardViewController *getDashBoardViewController() {
     return self.preferences[kHideArtwork] && [self.preferences[kHideArtwork] boolValue];
 }
 
+- (BOOL)controlCenterEnabled {
+    NSNumber *value = self.preferences[kControlCenter];
+    return !value || [value boolValue];
+}
+
+- (BOOL)lockscreenEnabled {
+    NSNumber *value = self.preferences[kLockscreen];
+    return !value || [value boolValue];
+}
+
 @end

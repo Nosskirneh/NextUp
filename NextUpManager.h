@@ -17,4 +17,6 @@
 - (BOOL)slimmedLSMode;
 - (BOOL)hideOnEmpty;
 - (BOOL)hideArtwork;
+- (BOOL)controlCenterEnabled;
+- (BOOL)lockscreenEnabled;
 @end

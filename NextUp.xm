@@ -733,7 +733,8 @@ static inline void initLockscreen() {
 
     manager = [[NextUpManager alloc] init];
 
-    // License check – if no license found, present message. If no valid license found, do not init
+    /* License check – if no license found, present message.
+       If no valid license was found, do not init. */
     switch (check_lic(licensePath$bs(), package$bs())) {
         case CheckNoLicense:
             %init(Welcome);
@@ -760,15 +761,13 @@ static inline void initLockscreen() {
 
     %init();
     %init(CustomViews);
-    NSNumber *current = manager.preferences[kControlCenter];
-    if (!current || [current boolValue])
+    if ([manager controlCenterEnabled])
         %init(ControlCenter);
 
-    current = manager.preferences[kLockscreen];
-    if (!current || [current boolValue])
-        initLockscreen();
+    if ([manager lockscreenEnabled])
+        initLockscreen(platterClass);
 
-    current = manager.preferences[kHapticFeedbackOther];
-    if (!current || [current boolValue])
+    NSNumber *haptic = manager.preferences[kHapticFeedbackOther];
+    if (!haptic || [haptic boolValue])
         %init(HapticFeedback);
 }
