@@ -11,6 +11,7 @@
 @property (nonatomic, assign, readwrite) BOOL controlCenterExpanded;
 @property (nonatomic, assign, readonly) BOOL trialEnded;
 @property (nonatomic, assign, readonly) BOOL colorFlowEnabled;
+@property (nonatomic, assign, readonly) BOOL flowEnabled;
 + (BOOL)isShowingMediaControls;
 - (void)setup;
 - (void)setTrialEnded;

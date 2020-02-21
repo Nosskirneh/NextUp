@@ -19,7 +19,6 @@ UIViewController<CoverSheetViewController> *getCoverSheetViewController() {
 
 @implementation NextUpManager
 
-
 + (BOOL)isShowingMediaControls {
     UIViewController<CoverSheetViewController> *coverSheetViewController = getCoverSheetViewController();
     return [coverSheetViewController isShowingMediaControls];
@@ -50,9 +49,11 @@ UIViewController<CoverSheetViewController> *getCoverSheetViewController() {
         }
     );
 
-    // ColorFlow
+    // ColorFlow & Flow support
     _colorFlowEnabled = %c(CFWPrefsManager) &&
                         ((CFWPrefsManager *)[%c(CFWPrefsManager) sharedInstance]).lockScreenEnabled;
+
+    _flowEnabled = %c(MMServer) != nil;
 
     _enabledApps = [NSMutableSet new];
     [self reloadPreferences];

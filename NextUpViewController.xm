@@ -36,7 +36,7 @@
 
         _textAlpha = 1.0f;
         _textColor = UIColor.whiteColor;
-        if (!controlCenter) {
+        if (!controlCenter && !manager.flowEnabled) {
             if (@available(iOS 13, *)) {
                 [[NSNotificationCenter defaultCenter] addObserver:self
                                                          selector:@selector(_traitCollectionDidChange)

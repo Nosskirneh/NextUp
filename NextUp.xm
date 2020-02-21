@@ -843,6 +843,7 @@ static inline void initLockscreen(Class platterClass) {
     /* Load other tweaks if any. */
     dlopen("/Library/MobileSubstrate/DynamicLibraries/ColorFlow4.dylib", RTLD_NOW);
     dlopen("/Library/MobileSubstrate/DynamicLibraries/ColorFlow5.dylib", RTLD_NOW);
+    dlopen("/Library/MobileSubstrate/DynamicLibraries/Flow.dylib", RTLD_NOW);
 
     [manager setup];
 
