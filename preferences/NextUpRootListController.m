@@ -72,7 +72,9 @@
 }
 
 - (void)enableLockscreenSpecifiers:(BOOL)enabled {
-    [self setEnabled:enabled forSpecifiersInGroupID:@"lockscreen-settings"];
+    [self setEnabled:enabled forSpecifier:[self specifierForID:kHideXButtons]];
+    [self setEnabled:enabled forSpecifier:[self specifierForID:kHideHomeBar]];
+    [self setEnabled:enabled forSpecifier:[self specifierForID:kSlimmedLSMode]];
 }
 
 - (void)loadView {
@@ -84,7 +86,9 @@
     activate(licensePath$bs(), package$bs(), self);
 }
 
-- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
+- (BOOL)textField:(UITextField *)textField
+        shouldChangeCharactersInRange:(NSRange)range
+        replacementString:(NSString *)string {
     [self textFieldChanged:textField];
     return YES;
 }
@@ -105,7 +109,10 @@
                                                         notification:nil
                                                               action:@selector(respring)
                                                               target:self];
-        self.statusAlert.backgroundColor = [UIColor colorWithHue:0.590 saturation:1 brightness:1 alpha:0.9];
+        self.statusAlert.backgroundColor = [UIColor colorWithHue:0.590
+                                                      saturation:1
+                                                      brightness:1
+                                                           alpha:0.9];
         self.statusAlert.textColor = [UIColor whiteColor];
     }
 }
@@ -132,7 +139,9 @@
 }
 
 - (void)purchase {
-    fetchPrice(package$bs(), self, ^(const NSString *respondingServer, const NSString *price, const NSString *URL) {
+    fetchPrice(package$bs(), self, ^(const NSString *respondingServer,
+                                     const NSString *price,
+                                     const NSString *URL) {
         redirectToCheckout(respondingServer, URL, self);
     });
 }
@@ -179,6 +188,7 @@
 @end
 
 @implementation NextUpSettingsHeaderCell
+
 - (id)initWithSpecifier:(PSSpecifier *)specifier {
     self = [super initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"headerCell" specifier:specifier];
     if (self) {
