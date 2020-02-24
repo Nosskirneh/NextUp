@@ -113,6 +113,9 @@
         return;
 
     NSIndexPath *indexPath = [self indexPathForSpecifier:specifier];
+    if (indexPath.row == NSNotFound)
+        return;
+
     PSTableCell *cell = [self tableView:self.table cellForRowAtIndexPath:indexPath];
     if (cell) {
         cell.userInteractionEnabled = enabled;
@@ -146,12 +149,6 @@
         if (![excludedIdentifiers containsObject:specifier.identifier])
             [self setEnabled:enabled forSpecifier:specifier];
     }
-}
-
-- (void)setEnabled:(BOOL)enabled forSpecifiersInGroupID:(NSString *)groupID {
-    NSRange range = [self rangeOfSpecifiersInGroupID:groupID];
-    for (int i = range.location + 1; i < range.location + range.length; i++)
-        [self setEnabled:enabled forSpecifier:_specifiers[i]];
 }
 
 - (void)presentOKAlertWithTitle:(NSString *)title message:(NSString *)message {

@@ -326,14 +326,14 @@
             <string>PSGroupCell</string>
             <key>label</key>
             <string>Lockscreen</string>
-            <key>id</key>
-            <string>lockscreen-settings</string>
             <key>footerText</key>
             <string>Slimmed mode decreases the used height and hides the "Next Up" label.
 Hiding elements is useful with ColorFlow's extended media artwork view. Elements are only hidden when the media controls are visible.</string>
         </dict>
 
         <dict>
+            <key>id</key>
+            <string>slimmedLSMode</string>
             <key>cell</key>
             <string>PSSwitchCell</string>
             <key>cellClass</key>
@@ -351,6 +351,8 @@ Hiding elements is useful with ColorFlow's extended media artwork view. Elements
         </dict>
 
         <dict>
+            <key>id</key>
+            <string>hideXButtons</string>
             <key>cell</key>
             <string>PSSwitchCell</string>
             <key>cellClass</key>
@@ -366,6 +368,8 @@ Hiding elements is useful with ColorFlow's extended media artwork view. Elements
         </dict>
 
         <dict>
+            <key>id</key>
+            <string>hideHomeBar</string>
             <key>cell</key>
             <string>PSSwitchCell</string>
             <key>cellClass</key>
