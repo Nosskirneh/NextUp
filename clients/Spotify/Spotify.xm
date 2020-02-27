@@ -69,7 +69,7 @@ stateDidChange:(SPTPlayerState *)newState
             [self sendNextUpMetadata:next[0]];
         return;
     }
-    
+
     sendNextTrackMetadata(nil);
 }
 
@@ -110,6 +110,12 @@ stateDidChange:(SPTPlayerState *)newState
             sendNextTrackMetadata(metadata);
         }];
     }
+}
+
+- (void)disableUpdates {
+    /* This gets called by the Spotify app itself in some cases.
+       I have no idea why, but hooking it seems like a better
+       idea compared to always calling `enableUpdates`. */
 }
 
 %end
