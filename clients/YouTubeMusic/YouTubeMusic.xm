@@ -13,17 +13,36 @@ static GIMMe *gimme() {
 
 %hook YTMQueueController
 
+%property (nonatomic, assign) int skipNextNotifyToken;
+%property (nonatomic, assign) int manualUpdateNotifyToken;
+
 - (void)commonInit {
     %orig;
 
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(skipNext)
-                                                 name:kSkipNext
-                                               object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(fetchNextUp)
-                                                 name:kManualUpdate
-                                               object:nil];
+    int skipNextNotifyToken;
+    int manualUpdateNotifyToken;
+
+    registerNotifyTokens(^(int _) {
+            [self skipNext];
+        },
+        ^(int _) {
+            [self fetchNextUp];
+        },
+        &skipNextNotifyToken,
+        &manualUpdateNotifyToken);
+
+    self.skipNextNotifyToken = skipNextNotifyToken;
+    self.manualUpdateNotifyToken = manualUpdateNotifyToken;
+}
+
+/* This is necessary as it spawns two of these classes, one of which is
+   deallocated shortly after. When the `manualUpdate` notification call
+   comes, `self` is something entirely different which results in a crash. */
+- (void)dealloc {
+    notify_cancel(self.skipNextNotifyToken);
+    notify_cancel(self.manualUpdateNotifyToken);
+
+    %orig;
 }
 
 - (unsigned long long)addQueueItems:(NSArray *)items
@@ -174,12 +193,6 @@ static GIMMe *gimme() {
 
 %ctor {
     if (shouldInitClient(kYouTubeMusicBundleID)) {
-        registerNotify(^(int _) {
-            [[NSNotificationCenter defaultCenter] postNotificationName:kSkipNext object:nil];
-        },
-        ^(int _) {
-            [[NSNotificationCenter defaultCenter] postNotificationName:kManualUpdate object:nil];
-        });
         %init;
 
         if ([%c(YTMQueueController) instancesRespondToSelector:@selector(playItemAtIndex:

@@ -48,7 +48,11 @@ static MusicQueueManager *getQueueManager() {
     self.lastSentTrack = track;
 
     NSURL *artworkURL = [NSURL URLWithString:track.albumArtURLString];
-    [getImageFetcher() fetchImageWithURL:artworkURL size:ARTWORK_SIZE quality:1 operationSequence:[%c(GPMOperationSequence) new] completionHandler:^(UIImage *image) {
+    [getImageFetcher() fetchImageWithURL:artworkURL
+                                    size:ARTWORK_SIZE
+                                 quality:1
+                       operationSequence:[%c(GPMOperationSequence) new]
+                       completionHandler:^(UIImage *image) {
         NSDictionary *metadata = [self serializeTrack:track image:image];
         sendNextTrackMetadata(metadata);
     }];

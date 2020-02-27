@@ -7,20 +7,23 @@
 - (id)init {
     self = %orig;
 
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(skipNext)
-                                                 name:kSkipNext
-                                               object:nil];
-
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(fetchNextUp)
-                                                 name:kManualUpdate
-                                               object:nil];
+    registerNotify(^(int _) {
+            [self skipNext];
+        },
+        ^(int _) {
+            [self fetchNextUp];
+        });
 
     return self;
 }
 
 - (void)queueChanged {
+    %orig;
+
+    [self fetchNextUp];
+}
+
+- (void)notifyChangeTrackInfo:(int)track byEngine:(BOOL)engine {
     %orig;
 
     [self fetchNextUp];
@@ -44,6 +47,7 @@
 
     JMediaItem *nextItem = queue[nextIndex];
     NSDictionary *data = [self serializeSong:nextItem];
+
     sendNextTrackMetadata(data);
 }
 
@@ -77,13 +81,6 @@
 %end
 
 %ctor {
-    if (shouldInitClient(kJetAudioBundleID)) {
-        registerNotify(^(int _) {
-            [[NSNotificationCenter defaultCenter] postNotificationName:kSkipNext object:nil];
-        },
-        ^(int _) {
-            [[NSNotificationCenter defaultCenter] postNotificationName:kManualUpdate object:nil];
-        });
+    if (shouldInitClient(kJetAudioBundleID))
         %init;
-    }
 }

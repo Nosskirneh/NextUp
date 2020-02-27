@@ -12,6 +12,7 @@
 @interface VOXPlayerQueue : NSObject
 - (VoxPlayableItem *)nextPlayableItem;
 - (BOOL)removeItem:(VoxPlayableItem *)item;
+- (void)skipNext;
 - (void)fetchNextUp;
 - (NSDictionary *)serializeTrack:(VoxPlayableItem *)item image:(UIImage *)image;
 @end
