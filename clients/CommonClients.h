@@ -17,13 +17,20 @@ extern "C" {
 
 void sendNextTrackMetadata(NSDictionary *metadata);
 BOOL shouldInitClient(NSString *desiredBundleID);
-BOOL initClient(NSString *desiredBundleID,
-                CFNotificationCallback skipNextCallback,
-                CFNotificationCallback manualUpdateCallback);
 
+void registerCallbacks(CFNotificationCallback skipNextCallback,
+                       CFNotificationCallback manualUpdateCallback);
 void registerNotify(notify_handler_t skipNextHandler,
                     notify_handler_t manualUpdateHandler);
 
+void registerNotifyTokens(notify_handler_t skipNextHandler,
+                          notify_handler_t manualUpdateHandler,
+                          int *skipNextToken,
+                          int *manualUpdateToken);
+
+BOOL initClient(NSString *desiredBundleID,
+                CFNotificationCallback skipNextCallback,
+                CFNotificationCallback manualUpdateCallback);
 BOOL initClientNotify(NSString *desiredBundleID,
                       notify_handler_t skipNextHandler,
                       notify_handler_t manualUpdateHandler);

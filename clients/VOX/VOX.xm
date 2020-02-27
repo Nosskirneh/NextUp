@@ -7,14 +7,12 @@
 - (id)init {
     self = %orig;
 
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(skipNext)
-                                                 name:kSkipNext
-                                               object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(fetchNextUp)
-                                                 name:kManualUpdate
-                                               object:nil];
+    registerNotify(^(int _) {
+            [self skipNext];
+        },
+        ^(int _) {
+            [self fetchNextUp];
+        });
 
     return self;
 }
@@ -68,13 +66,6 @@
 
 
 %ctor {
-    if (shouldInitClient(kVOXBundleID)) {
-        registerNotify(^(int _) {
-            [[NSNotificationCenter defaultCenter] postNotificationName:kSkipNext object:nil];
-        },
-        ^(int _) {
-            [[NSNotificationCenter defaultCenter] postNotificationName:kManualUpdate object:nil];
-        });
+    if (shouldInitClient(kVOXBundleID))
         %init;
-    }
 }

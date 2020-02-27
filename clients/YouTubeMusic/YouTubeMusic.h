@@ -53,6 +53,10 @@
 - (unsigned long long)nextVideoIndex;
 - (void)removeVideoAtIndex:(unsigned long long)arg1;
 
+
+@property (nonatomic, assign) int skipNextNotifyToken;
+@property (nonatomic, assign) int manualUpdateNotifyToken;
+- (void)skipNext;
 - (void)fetchNextUp;
 - (NSDictionary *)serializeTrack:(YTIPlaylistPanelVideoRenderer *)item image:(UIImage *)image;
 @end
