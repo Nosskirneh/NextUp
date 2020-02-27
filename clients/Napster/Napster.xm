@@ -22,7 +22,6 @@ static RHPlayerController *getPlayerController() {
 
 %new
 - (void)fetchNextUp {
-    %log;
     [self sendNextUpMetadata:self.nextItem.playableEntity.playableTrack];
 }
 
