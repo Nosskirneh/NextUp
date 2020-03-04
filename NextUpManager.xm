@@ -5,6 +5,7 @@
 #import <SpringBoard/SBMediaController.h>
 #import "SettingsKeys.h"
 #import "Common.h"
+#import <MediaRemote/MediaRemote.h>
 #import "Headers.h"
 
 #define kSBMediaNowPlayingAppChangedNotification @"SBMediaNowPlayingAppChangedNotification"
@@ -17,7 +18,10 @@ UIViewController<CoverSheetViewController> *getCoverSheetViewController() {
     return lockscreenManager.dashBoardViewController;
 }
 
-@implementation NextUpManager
+
+@implementation NextUpManager {
+    NSString *_gumpInitialBundleID;
+}
 
 + (BOOL)isShowingMediaControls {
     UIViewController<CoverSheetViewController> *coverSheetViewController = getCoverSheetViewController();
@@ -52,21 +56,41 @@ UIViewController<CoverSheetViewController> *getCoverSheetViewController() {
     // ColorFlow & Flow support
     _colorFlowEnabled = %c(CFWPrefsManager) &&
                         ((CFWPrefsManager *)[%c(CFWPrefsManager) sharedInstance]).lockScreenEnabled;
-
     _flowEnabled = %c(MMServer) != nil;
+
+    // Gump support
+    [self fetchNowPlayingApp];
 
     _enabledApps = [NSMutableSet new];
     [self reloadPreferences];
 }
 
+- (void)fetchNowPlayingApp {
+    MRMediaRemoteGetNowPlayingApplicationPID(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0l),
+                                             ^(int pid) {
+        if (pid != 0) {
+            FBApplicationProcess *app = [[%c(FBProcessManager) sharedInstance] applicationProcessForPID:pid];
+            /* If the current media app is supported by NextUp,
+               it will respond to a manual update request. */
+            NSString *bundleID = app.bundleIdentifier;
+            _gumpInitialBundleID = bundleID;
+            [self sendManualUpdate:bundleID];
+        }
+    });
+}
+
 - (BOOL)shouldActivateForApplicationID:(NSString *)bundleID {
-    return [self.enabledApps containsObject:bundleID] &&
+    return [_enabledApps containsObject:bundleID] &&
            (!self.preferences[bundleID] || [self.preferences[bundleID] boolValue]);
 }
 
 - (void)nowPlayingAppChanged:(NSNotification *)notification {
     SBMediaController *mediaController = notification.object;
     NSString *bundleID = mediaController.nowPlayingApplication.bundleIdentifier;
+    [self shouldConfigureForMediaApplication:bundleID];
+}
+
+- (void)shouldConfigureForMediaApplication:(NSString *)bundleID {
     if ([self shouldActivateForApplicationID:bundleID] && !self.trialEnded) {
         [self setMediaApplication:bundleID];
 
@@ -81,13 +105,19 @@ UIViewController<CoverSheetViewController> *getCoverSheetViewController() {
 }
 
 - (void)handleIncomingMessage:(NSString *)name withUserInfo:(NSDictionary *)dict {
-    [_enabledApps addObject:dict[kApp]];
+    NSString *bundleID = dict[kApp];
+    [_enabledApps addObject:bundleID];
+
+    if ([_gumpInitialBundleID isEqualToString:bundleID]) {
+        _gumpInitialBundleID = nil;
+        [self shouldConfigureForMediaApplication:bundleID];
+    }
 
     if ([name isEqualToString:kNextTrackMessage]) {
         // For example if Spotify is running in background and changed track on a
         // Connect device, but Deezer is playing music at the device: do nothing
         if (!self.mediaApplication ||
-            ![dict[kApp] isEqualToString:self.mediaApplication])
+            ![bundleID isEqualToString:self.mediaApplication])
             return;
 
         _metadata = dict[kMetadata];
@@ -96,16 +126,18 @@ UIViewController<CoverSheetViewController> *getCoverSheetViewController() {
     }
 }
 
-- (void)setMediaApplication:(NSString *)app {
-    _mediaApplication = app;
+- (void)setMediaApplication:(NSString *)bundleID {
+    _mediaApplication = bundleID;
 
     _metadata = nil;
     [[NSNotificationCenter defaultCenter] postNotificationName:kUpdateLabels
                                                         object:nil];
+    [self sendManualUpdate:bundleID];
+}
 
-    // Refetch for the new app
+- (void)sendManualUpdate:(NSString *)bundleID {
     NSString *manualUpdate = [NSString stringWithFormat:@"%@/%@/%@",
-                              NEXTUP_IDENTIFIER, kManualUpdate, app];
+                              NEXTUP_IDENTIFIER, kManualUpdate, bundleID];
     notify_post([manualUpdate UTF8String]);
 }
 
