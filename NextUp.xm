@@ -46,6 +46,7 @@ NextUpManager *manager;
         controller.nextUpViewController = [[%c(NextUpViewController) alloc] initWithControlCenter:controlCenter
                                                                                      defaultStyle:controller.style
                                                                                           manager:manager];
+        NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
         if (controlCenter) {
             MediaControlsContainerView *containerView = self.parentContainerView.mediaControlsContainerView;
 
@@ -53,23 +54,23 @@ NextUpManager *manager;
             containerView.heightWithNextUpActive = 102.0;
 
             if ([containerView respondsToSelector:@selector(nextUpView)]) {
-                [[NSNotificationCenter defaultCenter] addObserver:containerView
-                                                         selector:@selector(showNextUp)
-                                                             name:kShowNextUp
-                                                           object:nil];
+                [center addObserver:containerView
+                           selector:@selector(showNextUp)
+                               name:kShowNextUp
+                             object:nil];
 
-                [[NSNotificationCenter defaultCenter] addObserver:containerView
-                                                         selector:@selector(hideNextUp)
-                                                             name:kHideNextUp
-                                                           object:nil];
+                [center addObserver:containerView
+                           selector:@selector(hideNextUp)
+                               name:kHideNextUp
+                             object:nil];
 
                 containerView.nextUpView = self.nextUpViewController.view;
             }
         }
 
-        [[NSNotificationCenter defaultCenter] postNotificationName:kNextUpDidInitialize
-                                                            object:nil
-                                                          userInfo:nil];
+        [center postNotificationName:kNextUpDidInitialize
+                              object:nil
+                            userInfo:nil];
     }
 }
 
@@ -179,15 +180,16 @@ NextUpManager *manager;
 
     - (id)init {
         self = %orig;
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(showNextUp)
-                                                     name:kShowNextUp
-                                                   object:nil];
+        NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+        [center addObserver:self
+                   selector:@selector(showNextUp)
+                       name:kShowNextUp
+                     object:nil];
 
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(hideNextUp)
-                                                     name:kHideNextUp
-                                                   object:nil];
+        [center addObserver:self
+                   selector:@selector(hideNextUp)
+                       name:kHideNextUp
+                     object:nil];
         return self;
     }
 
@@ -305,15 +307,16 @@ NextUpManager *manager;
     - (id)initWithFrame:(CGRect)frame delegate:(id)delegate {
         self = %orig;
 
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(showNextUp)
-                                                     name:kShowNextUp
-                                                   object:nil];
+        NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+        [center addObserver:self
+                   selector:@selector(showNextUp)
+                       name:kShowNextUp
+                     object:nil];
 
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(hideNextUp)
-                                                     name:kHideNextUp
-                                                   object:nil];
+        [center addObserver:self
+                   selector:@selector(hideNextUp)
+                       name:kHideNextUp
+                     object:nil];
 
         return self;
     }
@@ -371,15 +374,16 @@ NextUpManager *manager;
     - (id)init {
         self = %orig;
 
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(showNextUp)
-                                                     name:kShowNextUp
-                                                   object:nil];
+        NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+        [center addObserver:self
+                   selector:@selector(showNextUp)
+                       name:kShowNextUp
+                     object:nil];
 
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(hideNextUp)
-                                                     name:kHideNextUp
-                                                   object:nil];
+        [center addObserver:self
+                   selector:@selector(hideNextUp)
+                       name:kHideNextUp
+                     object:nil];
 
         return self;
     }
@@ -524,26 +528,26 @@ NextUpManager *manager;
         self.routingButton = [%c(NUSkipButton) buttonWithType:UIButtonTypeCustom];
         self.routingButton.size = size;
         self.routingButton.layer.cornerRadius = size / 2;
-        
+
         float ratio = 1/3.;
         float crossSize = size * ratio;
         float offset = (size - crossSize) / 2;
 
         float startPoint = offset;
         float endPoint = offset + crossSize;
-        
+
         UIBezierPath *firstLinePath = [UIBezierPath bezierPath];
         [firstLinePath moveToPoint:CGPointMake(startPoint, startPoint)];
         [firstLinePath addLineToPoint:CGPointMake(endPoint, endPoint)];
-        
+
         UIBezierPath *secondLinePath = [UIBezierPath bezierPath];
         [secondLinePath moveToPoint:CGPointMake(endPoint, startPoint)];
         [secondLinePath addLineToPoint:CGPointMake(startPoint, endPoint)];
-        
+
         [firstLinePath appendPath:secondLinePath];
-        
+
         float lineWidthAndRadius = size * 0.0875;
-        
+
         CAShapeLayer *clear = [CAShapeLayer layer];
         clear.frame = CGRectMake(0, 0, size, size);
         clear.lineCap = kCALineCapRound;
@@ -553,7 +557,7 @@ NextUpManager *manager;
         clear.cornerRadius = lineWidthAndRadius;
         clear.opacity = 1.0;
         [clear setMasksToBounds:YES];
-        
+
         [self.routingButton.layer addSublayer:clear];
         self.routingButton.clear = clear;
 

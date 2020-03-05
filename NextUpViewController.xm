@@ -19,20 +19,21 @@
         _style = style;
         _manager = manager;
 
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(metadataChanged:)
-                                                     name:kUpdateLabels
-                                                   object:nil];
+        NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+        [center addObserver:self
+                   selector:@selector(metadataChanged:)
+                       name:kUpdateLabels
+                     object:nil];
 
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(showNextUp)
-                                                     name:kShowNextUp
-                                                   object:nil];
+        [center addObserver:self
+                   selector:@selector(showNextUp)
+                       name:kShowNextUp
+                     object:nil];
 
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(hideNextUp)
-                                                     name:kHideNextUp
-                                                   object:nil];
+        [center addObserver:self
+                   selector:@selector(hideNextUp)
+                       name:kHideNextUp
+                     object:nil];
 
         _textAlpha = 0.63f;
         _textColor = UIColor.blackColor;
