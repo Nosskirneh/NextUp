@@ -39,10 +39,10 @@
         _textColor = UIColor.whiteColor;
         if (!controlCenter && !manager.flowEnabled) {
             if (@available(iOS 13, *)) {
-                [[NSNotificationCenter defaultCenter] addObserver:self
-                                                         selector:@selector(_traitCollectionDidChange)
-                                                             name:@"_UIScreenDefaultTraitCollectionDidChangeNotification"
-                                                           object:nil];
+                [center addObserver:self
+                           selector:@selector(_traitCollectionDidChange)
+                               name:@"_UIScreenDefaultTraitCollectionDidChangeNotification"
+                             object:nil];
 
                 if ([UIScreen mainScreen].traitCollection.userInterfaceStyle == UIUserInterfaceStyleLight)
                     _textColor = UIColor.blackColor;
