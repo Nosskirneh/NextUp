@@ -417,52 +417,6 @@ NextUpManager *manager;
 
     %end
     // ---
-
-
-    /* Hide home bar */
-    %hook SBDashBoardHomeAffordanceView
-
-    %property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
-
-    - (id)init {
-        self = %orig;
-
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(showNextUp)
-                                                     name:kShowNextUp
-                                                   object:nil];
-
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(hideNextUp)
-                                                     name:kHideNextUp
-                                                   object:nil];
-
-        return self;
-    }
-
-    %new
-    - (void)showNextUp {
-        self.showingNextUp = YES;
-        [self setAlpha:0];
-    }
-
-    %new
-    - (void)hideNextUp {
-        self.showingNextUp = NO;
-    }
-
-    - (void)setAlpha:(CGFloat)alpha {
-        if ([[%c(SBLockScreenManager) sharedInstance] isLockScreenVisible] &&
-            [self isShowingNextUp] &&
-            [[manager class] isShowingMediaControls] &&
-            [manager.preferences[kHideHomeBar] boolValue])
-            return %orig(0.0);
-
-        %orig;
-    }
-
-    %end
-    // ---
 %end
 // ---
 
