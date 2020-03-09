@@ -44,8 +44,7 @@ NextUpManager *manager;
     UIViewController<PanelViewController> *controller = (UIViewController<PanelViewController> *)self;
     if (!controller.nextUpViewController) {
         controller.nextUpViewController = [[%c(NextUpViewController) alloc] initWithControlCenter:controlCenter
-                                                                                     defaultStyle:controller.style
-                                                                                          manager:manager];
+                                                                                     defaultStyle:controller.style];
         NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
         if (controlCenter) {
             MediaControlsContainerView *containerView = self.parentContainerView.mediaControlsContainerView;

@@ -3,6 +3,8 @@
 #import "Common.h"
 #import <notify.h>
 
+extern NextUpManager *manager;
+
 @implementation NextUpViewController {
     UIColor *_textColor;
     CGFloat _textAlpha;
@@ -12,8 +14,7 @@
 @dynamic view;
 
 - (id)initWithControlCenter:(BOOL)controlCenter
-               defaultStyle:(long long)style
-                    manager:(NextUpManager *)manager {
+               defaultStyle:(long long)style {
     if (self == [super init]) {
         _controlCenter = controlCenter;
         _style = style;

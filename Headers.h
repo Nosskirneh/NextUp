@@ -91,8 +91,7 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @property (nonatomic, assign) BOOL controlCenter;
 @property (assign, nonatomic) long long style;
 - (id)initWithControlCenter:(BOOL)controlCenter
-               defaultStyle:(long long)style
-                    manager:(NextUpManager *)manager;
+               defaultStyle:(long long)style;
 @end
 // ---
 
