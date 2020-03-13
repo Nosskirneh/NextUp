@@ -40,8 +40,7 @@ extern NextUpManager *manager;
         _textColor = UIColor.blackColor;
         _skipBackgroundColor = [UIColor.grayColor colorWithAlphaComponent:0.5];
 
-        if (!_manager.preferences[kHapticFeedbackSkip] ||
-            [_manager.preferences[kHapticFeedbackSkip] boolValue])
+        if (manager.hapticFeedbackSkip)
             self.hapticGenerator = [[%c(UIImpactFeedbackGenerator) alloc] initWithStyle:UIImpactFeedbackStyleMedium];
 
         self.bundle = [NSBundle bundleWithPath:@"/Library/Application Support/NextUp.bundle"];

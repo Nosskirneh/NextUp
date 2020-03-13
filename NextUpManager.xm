@@ -15,7 +15,10 @@ SBDashBoardViewController *getDashBoardViewController() {
     return lockscreenManager.dashBoardViewController;
 }
 
-@implementation NextUpManager
+
+@implementation NextUpManager {
+    NSDictionary *_preferences;
+}
 
 + (BOOL)isShowingMediaControls {
     SBDashBoardViewController *dashBoardViewController = getDashBoardViewController();
@@ -56,8 +59,8 @@ SBDashBoardViewController *getDashBoardViewController() {
 }
 
 - (BOOL)shouldActivateForApplicationID:(NSString *)bundleID {
-    return [self.enabledApps containsObject:bundleID] &&
-           (!self.preferences[bundleID] || [self.preferences[bundleID] boolValue]);
+    return [_enabledApps containsObject:bundleID] &&
+           (!_preferences[bundleID] || [_preferences[bundleID] boolValue]);
 }
 
 - (void)nowPlayingAppChanged:(NSNotification *)notification {
@@ -114,24 +117,47 @@ SBDashBoardViewController *getDashBoardViewController() {
 }
 
 - (BOOL)slimmedLSMode {
-    return self.preferences[kSlimmedLSMode] && [self.preferences[kSlimmedLSMode] boolValue];
+    NSNumber *value = _preferences[kSlimmedLSMode];
+    return value && [value boolValue];
 }
 
 - (BOOL)hideOnEmpty {
-    return self.preferences[kHideOnEmpty] && [self.preferences[kHideOnEmpty] boolValue];
+    NSNumber *value = _preferences[kHideOnEmpty];
+    return value && [value boolValue];
 }
 
 - (BOOL)hideArtwork {
-    return self.preferences[kHideArtwork] && [self.preferences[kHideArtwork] boolValue];
+    NSNumber *value = _preferences[kHideArtwork];
+    return value && [value boolValue];
+}
+
+- (BOOL)hideXButtons {
+    NSNumber *value = _preferences[kHideXButtons];
+    return value && [value boolValue];
+}
+
+- (BOOL)hideHomeBar {
+    NSNumber *value = _preferences[kHideHomeBar];
+    return value && [value boolValue];
+}
+
+- (BOOL)hapticFeedbackSkip {
+    NSNumber *value = _preferences[kHapticFeedbackSkip];
+    return !value || [value boolValue];
+}
+
+- (BOOL)hapticFeedbackOther {
+    NSNumber *value = _preferences[kHapticFeedbackOther];
+    return !value || [value boolValue];
 }
 
 - (BOOL)controlCenterEnabled {
-    NSNumber *value = self.preferences[kControlCenter];
+    NSNumber *value = _preferences[kControlCenter];
     return !value || [value boolValue];
 }
 
 - (BOOL)lockscreenEnabled {
-    NSNumber *value = self.preferences[kLockscreen];
+    NSNumber *value = _preferences[kLockscreen];
     return !value || [value boolValue];
 }
 
