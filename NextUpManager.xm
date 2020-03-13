@@ -97,16 +97,18 @@ SBDashBoardViewController *getDashBoardViewController() {
     [_enabledApps addObject:bundleID];
 }
 
-- (void)setMediaApplication:(NSString *)app {
-    _mediaApplication = app;
+- (void)setMediaApplication:(NSString *)bundleID {
+    _mediaApplication = bundleID;
 
     _metadata = nil;
     [[NSNotificationCenter defaultCenter] postNotificationName:kUpdateLabels
                                                         object:nil];
+    [self sendManualUpdate:bundleID];
+}
 
-    // Refetch for the new app
+- (void)sendManualUpdate:(NSString *)bundleID {
     NSString *manualUpdate = [NSString stringWithFormat:@"%@/%@/%@",
-                              NEXTUP_IDENTIFIER, kManualUpdate, app];
+                              NEXTUP_IDENTIFIER, kManualUpdate, bundleID];
     notify_post([manualUpdate UTF8String]);
 }
 
