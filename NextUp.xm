@@ -25,7 +25,7 @@ NextUpManager *manager;
     if ((!controlCenter && ![manager lockscreenEnabled]) ||
         (controlCenter && ![manager controlCenterEnabled]))
         return;
-    [(UIViewController<PanelViewController> *)self initNextUpInControlCenter:controlCenter];
+    [self initNextUpInControlCenter:controlCenter];
 }
 
 %new
@@ -40,7 +40,7 @@ NextUpManager *manager;
 
 %new
 - (void)initNextUpInControlCenter:(BOOL)controlCenter {
-    UIViewController<PanelViewController> *controller = (UIViewController<PanelViewController> *)self;
+    UIViewController<PanelViewController> *controller = self;
     if (!controller.nextUpViewController) {
         controller.nextUpViewController = [[%c(NextUpViewController) alloc] initWithControlCenter:controlCenter
                                                                                      defaultStyle:controller.style];
@@ -356,8 +356,7 @@ NextUpManager *manager;
 
     %new
     - (BOOL)shouldHideWithNextUp {
-        return [[manager class] isShowingMediaControls] &&
-               [manager.preferences[kHideXButtons] boolValue];
+        return [[manager class] isShowingMediaControls] && manager.hideXButtons;
     }
 
     %new
@@ -412,7 +411,7 @@ NextUpManager *manager;
         if ([[%c(SBLockScreenManager) sharedInstance] isLockScreenVisible] &&
             [self isShowingNextUp] &&
             [[manager class] isShowingMediaControls] &&
-            [manager.preferences[kHideHomeBar] boolValue])
+            manager.hideHomeBar)
             return %orig(0.0);
 
         %orig;
@@ -832,13 +831,12 @@ static inline void initLockscreen(Class platterClass) {
     %init(PanelViewController = platterClass);
 
     %init(CustomViews);
-    if ([manager controlCenterEnabled])
+    if (manager.controlCenterEnabled)
         %init(ControlCenter);
 
-    if ([manager lockscreenEnabled])
+    if (manager.lockscreenEnabled)
         initLockscreen(platterClass);
 
-    NSNumber *haptic = manager.preferences[kHapticFeedbackOther];
-    if (!haptic || [haptic boolValue])
+    if (manager.hapticFeedbackOther)
         %init(HapticFeedback);
 }

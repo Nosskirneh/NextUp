@@ -52,8 +52,7 @@ extern NextUpManager *manager;
 
         [self _initSkipBackgroundColor];
 
-        if (!_manager.preferences[kHapticFeedbackSkip] ||
-            [_manager.preferences[kHapticFeedbackSkip] boolValue])
+        if (manager.hapticFeedbackSkip)
             self.hapticGenerator = [[%c(UIImpactFeedbackGenerator) alloc] initWithStyle:UIImpactFeedbackStyleMedium];
 
         self.bundle = [NSBundle bundleWithPath:@"/Library/Application Support/NextUp.bundle"];

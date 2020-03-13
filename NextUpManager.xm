@@ -1,11 +1,10 @@
 #import "NextUpManager.h"
-#import <AppSupport/CPDistributedMessagingCenter.h>
-#import <rocketbootstrap/rocketbootstrap.h>
 #import <notify.h>
 #import <SpringBoard/SBMediaController.h>
 #import "SettingsKeys.h"
 #import "Common.h"
 #import "Headers.h"
+#import "NUCenter.h"
 
 #define kSBMediaNowPlayingAppChangedNotification @"SBMediaNowPlayingAppChangedNotification"
 
@@ -17,8 +16,10 @@ UIViewController<CoverSheetViewController> *getCoverSheetViewController() {
     return lockscreenManager.dashBoardViewController;
 }
 
-
-@implementation NextUpManager
+@implementation NextUpManager {
+    NUCenter *_center;
+    NSDictionary *_preferences;
+}
 
 + (BOOL)isShowingMediaControls {
     UIViewController<CoverSheetViewController> *coverSheetViewController = getCoverSheetViewController();
@@ -26,15 +27,9 @@ UIViewController<CoverSheetViewController> *getCoverSheetViewController() {
 }
 
 - (void)setup {
-    CPDistributedMessagingCenter *c = [CPDistributedMessagingCenter centerNamed:NEXTUP_IDENTIFIER];
-    rocketbootstrap_distributedmessagingcenter_apply(c);
-    [c runServerOnCurrentThread];
-    [c registerForMessageName:kRegisterApp
-                       target:self
-                     selector:@selector(handleIncomingMessage:withUserInfo:)];
-    [c registerForMessageName:kNextTrackMessage
-                       target:self
-                     selector:@selector(handleIncomingMessage:withUserInfo:)];
+    _center = [NUCenter centerNamed:NEXTUP_IDENTIFIER];
+    [_center addTarget:self action:REGISTER_SELECTOR];
+    [_center addTarget:self action:NEXT_TRACK_SELECTOR];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(nowPlayingAppChanged:)
@@ -61,7 +56,7 @@ UIViewController<CoverSheetViewController> *getCoverSheetViewController() {
 
 - (BOOL)shouldActivateForApplicationID:(NSString *)bundleID {
     return [_enabledApps containsObject:bundleID] &&
-           (!self.preferences[bundleID] || [self.preferences[bundleID] boolValue]);
+           (!_preferences[bundleID] || [_preferences[bundleID] boolValue]);
 }
 
 - (void)nowPlayingAppChanged:(NSNotification *)notification {
@@ -71,7 +66,7 @@ UIViewController<CoverSheetViewController> *getCoverSheetViewController() {
 }
 
 - (void)shouldConfigureForMediaApplication:(NSString *)bundleID {
-    if ([self shouldActivateForApplicationID:bundleID] && !self.trialEnded) {
+    if ([self shouldActivateForApplicationID:bundleID] && !_trialEnded) {
         [self setMediaApplication:bundleID];
 
         // If we should not hide on empty, we show NextUp from the beginning.
@@ -84,30 +79,28 @@ UIViewController<CoverSheetViewController> *getCoverSheetViewController() {
     }
 }
 
-- (void)handleIncomingMessage:(NSString *)name withUserInfo:(NSDictionary *)dict {
+- (void)handleIncomingNextTrackMessage:(NSDictionary *)dict {
+    [self handleIncomingRegisterMessage:dict];
     NSString *bundleID = dict[kApp];
-    [_enabledApps addObject:bundleID];
 
-    if ([_gumpInitialBundleID isEqualToString:bundleID]) {
-        _gumpInitialBundleID = nil;
-        [self shouldConfigureForMediaApplication:bundleID];
-    }
+    // For example if Spotify is running in background and changed track on a
+    // Connect device, but Deezer is playing music at the device: do nothing
+    if (!self.mediaApplication ||
+        ![bundleID isEqualToString:self.mediaApplication])
+        return;
 
-    if ([name isEqualToString:kNextTrackMessage]) {
-        // For example if Spotify is running in background and changed track on a
-        // Connect device, but Deezer is playing music at the device: do nothing
-        if (!self.mediaApplication ||
-            ![bundleID isEqualToString:self.mediaApplication])
-            return;
-
-        _metadata = dict[kMetadata];
-        [[NSNotificationCenter defaultCenter] postNotificationName:kUpdateLabels
-                                                            object:_metadata];
-    }
+    _metadata = dict[kMetadata];
+    [[NSNotificationCenter defaultCenter] postNotificationName:kUpdateLabels
+                                                        object:_metadata];
 }
 
-- (void)setMediaApplication:(NSString *)bundleID {
-    _mediaApplication = bundleID;
+- (void)handleIncomingRegisterMessage:(NSDictionary *)dict {
+    NSString *bundleID = dict[kApp];
+    [_enabledApps addObject:bundleID];
+}
+
+- (void)setMediaApplication:(NSString *)app {
+    _mediaApplication = app;
 
     _metadata = nil;
     [[NSNotificationCenter defaultCenter] postNotificationName:kUpdateLabels
@@ -130,24 +123,47 @@ UIViewController<CoverSheetViewController> *getCoverSheetViewController() {
 }
 
 - (BOOL)slimmedLSMode {
-    return self.preferences[kSlimmedLSMode] && [self.preferences[kSlimmedLSMode] boolValue];
+    NSNumber *value = _preferences[kSlimmedLSMode];
+    return value && [value boolValue];
 }
 
 - (BOOL)hideOnEmpty {
-    return self.preferences[kHideOnEmpty] && [self.preferences[kHideOnEmpty] boolValue];
+    NSNumber *value = _preferences[kHideOnEmpty];
+    return value && [value boolValue];
 }
 
 - (BOOL)hideArtwork {
-    return self.preferences[kHideArtwork] && [self.preferences[kHideArtwork] boolValue];
+    NSNumber *value = _preferences[kHideArtwork];
+    return value && [value boolValue];
+}
+
+- (BOOL)hideXButtons {
+    NSNumber *value = _preferences[kHideXButtons];
+    return value && [value boolValue];
+}
+
+- (BOOL)hideHomeBar {
+    NSNumber *value = _preferences[kHideHomeBar];
+    return value && [value boolValue];
+}
+
+- (BOOL)hapticFeedbackSkip {
+    NSNumber *value = _preferences[kHapticFeedbackSkip];
+    return !value || [value boolValue];
+}
+
+- (BOOL)hapticFeedbackOther {
+    NSNumber *value = _preferences[kHapticFeedbackOther];
+    return !value || [value boolValue];
 }
 
 - (BOOL)controlCenterEnabled {
-    NSNumber *value = self.preferences[kControlCenter];
+    NSNumber *value = _preferences[kControlCenter];
     return !value || [value boolValue];
 }
 
 - (BOOL)lockscreenEnabled {
-    NSNumber *value = self.preferences[kLockscreen];
+    NSNumber *value = _preferences[kLockscreen];
     return !value || [value boolValue];
 }
 
