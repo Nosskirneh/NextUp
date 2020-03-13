@@ -99,8 +99,8 @@ UIViewController<CoverSheetViewController> *getCoverSheetViewController() {
     [_enabledApps addObject:bundleID];
 }
 
-- (void)setMediaApplication:(NSString *)app {
-    _mediaApplication = app;
+- (void)setMediaApplication:(NSString *)bundleID {
+    _mediaApplication = bundleID;
 
     _metadata = nil;
     [[NSNotificationCenter defaultCenter] postNotificationName:kUpdateLabels
