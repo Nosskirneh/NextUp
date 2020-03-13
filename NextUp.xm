@@ -25,7 +25,7 @@ NextUpManager *manager;
     if ((!controlCenter && ![manager lockscreenEnabled]) ||
         (controlCenter && ![manager controlCenterEnabled]))
         return;
-    [(UIViewController<PanelViewController> *)self initNextUpInControlCenter:controlCenter];
+    [self initNextUpInControlCenter:controlCenter];
 }
 
 %new
@@ -41,7 +41,7 @@ NextUpManager *manager;
 
 %new
 - (void)initNextUpInControlCenter:(BOOL)controlCenter {
-    UIViewController<PanelViewController> *controller = (UIViewController<PanelViewController> *)self;
+    UIViewController<PanelViewController> *controller = self;
     if (!controller.nextUpViewController) {
         controller.nextUpViewController = [[%c(NextUpViewController) alloc] initWithControlCenter:controlCenter
                                                                                      defaultStyle:controller.style];
