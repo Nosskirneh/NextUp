@@ -5,7 +5,6 @@
 #import <SpringBoard/SBMediaController.h>
 #import "SettingsKeys.h"
 #import "Common.h"
-#import <MediaRemote/MediaRemote.h>
 #import "Headers.h"
 
 #define kSBMediaNowPlayingAppChangedNotification @"SBMediaNowPlayingAppChangedNotification"
@@ -19,9 +18,7 @@ UIViewController<CoverSheetViewController> *getCoverSheetViewController() {
 }
 
 
-@implementation NextUpManager {
-    NSString *_gumpInitialBundleID;
-}
+@implementation NextUpManager
 
 + (BOOL)isShowingMediaControls {
     UIViewController<CoverSheetViewController> *coverSheetViewController = getCoverSheetViewController();
@@ -58,25 +55,8 @@ UIViewController<CoverSheetViewController> *getCoverSheetViewController() {
                         ((CFWPrefsManager *)[%c(CFWPrefsManager) sharedInstance]).lockScreenEnabled;
     _flowEnabled = %c(MMServer) != nil;
 
-    // Gump support
-    [self fetchNowPlayingApp];
-
     _enabledApps = [NSMutableSet new];
     [self reloadPreferences];
-}
-
-- (void)fetchNowPlayingApp {
-    MRMediaRemoteGetNowPlayingApplicationPID(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0l),
-                                             ^(int pid) {
-        if (pid != 0) {
-            FBApplicationProcess *app = [[%c(FBProcessManager) sharedInstance] applicationProcessForPID:pid];
-            /* If the current media app is supported by NextUp,
-               it will respond to a manual update request. */
-            NSString *bundleID = app.bundleIdentifier;
-            _gumpInitialBundleID = bundleID;
-            [self sendManualUpdate:bundleID];
-        }
-    });
 }
 
 - (BOOL)shouldActivateForApplicationID:(NSString *)bundleID {
