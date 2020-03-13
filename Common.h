@@ -14,3 +14,7 @@ extern NSString *const kArtwork;
 
 extern NSString *const kSkipNext;
 extern NSString *const kManualUpdate;
+
+
+#define REGISTER_SELECTOR @selector(handleIncomingRegisterMessage:)
+#define NEXT_TRACK_SELECTOR @selector(handleIncomingNextTrackMessage:)

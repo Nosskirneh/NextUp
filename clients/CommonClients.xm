@@ -1,26 +1,23 @@
 #import "CommonClients.h"
 #import "../Common.h"
 #import "../SettingsKeys.h"
-#import <AppSupport/CPDistributedMessagingCenter.h>
-#import <rocketbootstrap/rocketbootstrap.h>
+#import "../NUCenter.h"
+
+static inline NUCenter *getCenter() {
+    return [NUCenter centerNamed:NEXTUP_IDENTIFIER];
+}
 
 void sendNextTrackMetadata(NSDictionary *metadata) {
-    CPDistributedMessagingCenter *c = [%c(CPDistributedMessagingCenter) centerNamed:NEXTUP_IDENTIFIER];
-    rocketbootstrap_distributedmessagingcenter_apply(c);
-
     NSMutableDictionary *dict = [NSMutableDictionary new];
     dict[kApp] = [[NSBundle mainBundle] bundleIdentifier];
 
     if (metadata)
         dict[kMetadata] = metadata;
-    [c sendMessageName:kNextTrackMessage userInfo:dict];
+    [getCenter() callExternalMethod:NEXT_TRACK_SELECTOR withArguments:dict];
 }
 
 static void _registerApp(NSString *bundleID) {
-    CPDistributedMessagingCenter *c = [%c(CPDistributedMessagingCenter) centerNamed:NEXTUP_IDENTIFIER];
-    rocketbootstrap_distributedmessagingcenter_apply(c);
-
-    [c sendMessageName:kRegisterApp userInfo:@{
+    [getCenter() callExternalMethod:REGISTER_SELECTOR withArguments:@{
         kApp: bundleID
     }];
 }

@@ -1,11 +1,10 @@
 #import "NextUpManager.h"
-#import <AppSupport/CPDistributedMessagingCenter.h>
-#import <rocketbootstrap/rocketbootstrap.h>
 #import <notify.h>
 #import <SpringBoard/SBMediaController.h>
 #import "SettingsKeys.h"
 #import "Common.h"
 #import "Headers.h"
+#import "NUCenter.h"
 
 #define kSBMediaNowPlayingAppChangedNotification @"SBMediaNowPlayingAppChangedNotification"
 
@@ -17,6 +16,7 @@ SBDashBoardViewController *getDashBoardViewController() {
 
 
 @implementation NextUpManager {
+    NUCenter *_center;
     NSDictionary *_preferences;
 }
 
@@ -26,15 +26,9 @@ SBDashBoardViewController *getDashBoardViewController() {
 }
 
 - (void)setup {
-    CPDistributedMessagingCenter *c = [CPDistributedMessagingCenter centerNamed:NEXTUP_IDENTIFIER];
-    rocketbootstrap_distributedmessagingcenter_apply(c);
-    [c runServerOnCurrentThread];
-    [c registerForMessageName:kRegisterApp
-                       target:self
-                     selector:@selector(handleIncomingMessage:withUserInfo:)];
-    [c registerForMessageName:kNextTrackMessage
-                       target:self
-                     selector:@selector(handleIncomingMessage:withUserInfo:)];
+    _center = [NUCenter centerNamed:NEXTUP_IDENTIFIER];
+    [_center addTarget:self action:REGISTER_SELECTOR];
+    [_center addTarget:self action:NEXT_TRACK_SELECTOR];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(nowPlayingAppChanged:)
@@ -66,7 +60,11 @@ SBDashBoardViewController *getDashBoardViewController() {
 - (void)nowPlayingAppChanged:(NSNotification *)notification {
     SBMediaController *mediaController = notification.object;
     NSString *bundleID = mediaController.nowPlayingApplication.bundleIdentifier;
-    if ([self shouldActivateForApplicationID:bundleID] && !self.trialEnded) {
+    [self shouldConfigureForMediaApplication:bundleID];
+}
+
+- (void)shouldConfigureForMediaApplication:(NSString *)bundleID {
+    if ([self shouldActivateForApplicationID:bundleID] && !_trialEnded) {
         [self setMediaApplication:bundleID];
 
         // If we should not hide on empty, we show NextUp from the beginning.
@@ -79,20 +77,24 @@ SBDashBoardViewController *getDashBoardViewController() {
     }
 }
 
-- (void)handleIncomingMessage:(NSString *)name withUserInfo:(NSDictionary *)dict {
-    [_enabledApps addObject:dict[kApp]];
+- (void)handleIncomingNextTrackMessage:(NSDictionary *)dict {
+    [self handleIncomingRegisterMessage:dict];
+    NSString *bundleID = dict[kApp];
 
-    if ([name isEqualToString:kNextTrackMessage]) {
-        // For example if Spotify is running in background and changed track on a
-        // Connect device, but Deezer is playing music at the device: do nothing
-        if (!self.mediaApplication ||
-            ![dict[kApp] isEqualToString:self.mediaApplication])
-            return;
+    // For example if Spotify is running in background and changed track on a
+    // Connect device, but Deezer is playing music at the device: do nothing
+    if (!self.mediaApplication ||
+        ![bundleID isEqualToString:self.mediaApplication])
+        return;
 
-        _metadata = dict[kMetadata];
-        [[NSNotificationCenter defaultCenter] postNotificationName:kUpdateLabels
-                                                            object:_metadata];
-    }
+    _metadata = dict[kMetadata];
+    [[NSNotificationCenter defaultCenter] postNotificationName:kUpdateLabels
+                                                        object:_metadata];
+}
+
+- (void)handleIncomingRegisterMessage:(NSDictionary *)dict {
+    NSString *bundleID = dict[kApp];
+    [_enabledApps addObject:bundleID];
 }
 
 - (void)setMediaApplication:(NSString *)app {
