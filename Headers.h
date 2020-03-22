@@ -140,6 +140,7 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @interface SBLockScreenManager : NSObject
 + (id)sharedInstance;
 @property (nonatomic, readonly) SBDashBoardViewController *dashBoardViewController;
+@property (readonly) BOOL isLockScreenVisible;
 @end
 
 @interface SBDashBoardQuickActionsView : UIView

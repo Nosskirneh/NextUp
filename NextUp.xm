@@ -41,7 +41,7 @@ NextUpManager *manager;
 
 %new
 - (void)initNextUpInControlCenter:(BOOL)controlCenter {
-    UIViewController<PanelViewController> *controller = self;
+    MediaControlsPanelViewController *controller = self;
     if (!controller.nextUpViewController) {
         controller.nextUpViewController = [[%c(NextUpViewController) alloc] initWithControlCenter:controlCenter
                                                                                      defaultStyle:controller.style];
@@ -744,7 +744,9 @@ static inline void initTrial() {
 static inline void initLockscreen() {
     %init(Lockscreen);
 
-    if ([%c(SBDashBoardMediaControlsViewController) instancesRespondToSelector:@selector(cfw_colorize:)])
+    Class c = %c(SBDashBoardMediaControlsViewController);
+
+    if ([c instancesRespondToSelector:@selector(cfw_colorize:)])
         %init(ColorFlow);
 
     if ([c instancesRespondToSelector:@selector(nrdUpdate)])
@@ -789,7 +791,7 @@ static inline void initLockscreen() {
         %init(ControlCenter);
 
     if (manager.lockscreenEnabled)
-        initLockscreen(platterClass);
+        initLockscreen();
 
     if (manager.hapticFeedbackOther)
         %init(HapticFeedback);
