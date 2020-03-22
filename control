@@ -1,6 +1,6 @@
 Package: se.nosskirneh.nextup
 Name: NextUp
-Depends: mobilesubstrate, com.rpetrich.rocketbootstrap (>= 1.0.2), preferenceloader
+Depends: mobilesubstrate, firmware (>= 11.0), preferenceloader
 Version: 1.0.3
 Architecture: iphoneos-arm
 Description: View and skip the next track
