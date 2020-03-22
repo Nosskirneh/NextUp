@@ -2,7 +2,7 @@
 #import "../CommonClients.h"
 
 
-static NSDictionary *serializeTrack(NUMediaItem *item, UIImage *image) {
+static NSDictionary *serializeMediaItem(MPMediaItem<NUMediaItem> *item, UIImage *image) {
     NSMutableDictionary *metadata = [NSMutableDictionary new];
     UIImage *artwork = image;
 
@@ -20,13 +20,11 @@ static NSDictionary *serializeTrack(NUMediaItem *item, UIImage *image) {
     return metadata;
 }
 
-static void fetchNextUpItem(NUMediaItem *item, block artworkBlock) {
-    MPArtworkCatalog *catalog = artworkBlock();
-
+static void fetchNextUpMediaItem(MPMediaItem<NUMediaItem> *item, MPArtworkCatalog *catalog) {
     // Local track with no artwork?
     if (!catalog) {
         UIImage *image = [%c(MPPlaceholderArtwork) noArtPlaceholderImageForMediaType:1];
-        NSDictionary *metadata = serializeTrack(item, image);
+        NSDictionary *metadata = serializeMediaItem(item, image);
         sendNextTrackMetadata(metadata);
         return;
     }
@@ -35,7 +33,7 @@ static void fetchNextUpItem(NUMediaItem *item, block artworkBlock) {
     catalog.destinationScale = [UIScreen mainScreen].scale;
 
     [catalog requestImageWithCompletionHandler:^(UIImage *image) {
-        NSDictionary *metadata = serializeTrack(item, image);
+        NSDictionary *metadata = serializeMediaItem(item, image);
         sendNextTrackMetadata(metadata);
     }];
 }
@@ -59,7 +57,7 @@ static void fetchNextUpItem(NUMediaItem *item, block artworkBlock) {
         if (!next)
             return sendNextTrackMetadata(nil);
 
-        fetchNextUpItem(next, [next artworkCatalogBlock]);
+        fetchNextUpItem(next, [next artworkCatalogBlock]());
     }
 
     /* 7 is the magic number.
@@ -177,7 +175,7 @@ static void fetchNextUpItem(NUMediaItem *item, block artworkBlock) {
         if (!next)
             return sendNextTrackMetadata(nil);
 
-        fetchNextUpItem(next, [next artworkCatalogBlock]);
+        fetchNextUpItem(next, [next artworkCatalogBlock]());
     }
 
     %new
@@ -194,7 +192,7 @@ static void fetchNextUpItem(NUMediaItem *item, block artworkBlock) {
 
         NUMediaItem *next = [self metadataItemForPlaylistIndex:nextIndex];
         if (next) 
-            fetchNextUpItem(next, [next artworkCatalogBlock]);
+            fetchNextUpMediaItem(next, [next artworkCatalogBlock]());
     }
 
     %end

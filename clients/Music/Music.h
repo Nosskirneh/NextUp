@@ -4,23 +4,25 @@
 + (UIImage *)noArtPlaceholderImageForMediaType:(unsigned int)type;
 @end
 
-
-@interface NUMediaItem : MPMediaItem
-@property (nonatomic, copy) NSString *contentItemID;
-- (NSString *)mainTitle;
-- (id)artworkCatalogBlock;
-@end
-
-
 @interface MPArtworkCatalog : NSObject
 @property (nonatomic, readonly) BOOL hasImageOnDisk;
 @property (assign, nonatomic) double destinationScale;
-- (id)bestImageFromDisk;
-- (void)requestImageWithCompletionHandler:(id)arg1;
-- (void)setFittingSize:(CGSize)arg1;
+- (UIImage *)bestImageFromDisk;
+- (void)requestImageWithCompletionHandler:(id)completion;
+- (void)setFittingSize:(CGSize)size;
 @end
 
-typedef MPArtworkCatalog *(^block)(void);
+typedef MPArtworkCatalog *(^catalogBlock)(void);
+
+@protocol NUMediaItem
+@optional
+@property (nonatomic, copy) NSString *contentItemID;
+- (NSString *)mainTitle;
+- (catalogBlock)artworkCatalogBlock;
+@end
+
+@interface MPMediaItem (Extra) <NUMediaItem>
+@end
 
 
 // iOS 13
@@ -41,8 +43,8 @@ typedef MPArtworkCatalog *(^block)(void);
 // iOS 12
 @interface MPCMediaPlayerLegacyPlaylistManager
 @property (assign, nonatomic) long long nextCurrentIndex;
-- (void)removeItemAtPlaybackIndex:(long long)arg;
-- (id)metadataItemForPlaylistIndex:(long long)arg;
+- (void)removeItemAtPlaybackIndex:(long long)index;
+- (id)metadataItemForPlaylistIndex:(long long)index;
 - (long long)currentIndex;
 
 - (void)fetchNextUp;

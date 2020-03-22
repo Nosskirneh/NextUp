@@ -13,13 +13,17 @@ void sendNextTrackMetadata(NSDictionary *metadata) {
 
     if (metadata)
         dict[kMetadata] = metadata;
-    [getCenter() callExternalMethod:NEXT_TRACK_SELECTOR withArguments:dict];
+    [getCenter() callExternalMethod:NEXT_TRACK_SELECTOR
+                      withArguments:dict
+                         completion:nil];
 }
 
 static void _registerApp(NSString *bundleID) {
-    [getCenter() callExternalMethod:REGISTER_SELECTOR withArguments:@{
-        kApp: bundleID
-    }];
+    [getCenter() callExternalMethod:REGISTER_SELECTOR
+                      withArguments:@{
+                                kApp: bundleID
+                            }
+                         completion:nil];
 }
 
 static BOOL _shouldInitClient(NSString *desiredBundleID,

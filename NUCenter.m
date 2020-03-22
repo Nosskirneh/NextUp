@@ -88,7 +88,7 @@
         returnValue = ret;
         dispatch_semaphore_signal(sema);
     }];
-    dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+    dispatch_semaphore_wait(sema, (int64_t)(4.0 * NSEC_PER_SEC));
     return returnValue;
 }
 
@@ -97,18 +97,22 @@
                 completion:(void(^)(id))completionHandler {
     NSString *replyUUID = [NSUUID UUID].UUIDString;
     NSString *messageName = [self _messageNameForSelector:method];
-    NSString *replyMessageName = [self _messageReplyNameForSelector:method
-                                                               uuid:replyUUID];
-    __weak NSDistributedNotificationCenter *weakNotificationCenter = _notificationCenter;
-    NSOperationQueue *operationQueue = [NSOperationQueue new];
-    __block id observer = [_notificationCenter addObserverForName:replyMessageName
-                                                           object:nil
-                                                            queue:operationQueue
-                                                       usingBlock:^(NSNotification *notification) {
-        completionHandler(notification.userInfo[@"returnValue"]);
-        [weakNotificationCenter removeObserver:observer];
-        observer = nil;
-    }];
+
+    if (completionHandler) {
+        NSString *replyMessageName = [self _messageReplyNameForSelector:method
+                                                                   uuid:replyUUID];
+        __weak NSDistributedNotificationCenter *weakNotificationCenter = _notificationCenter;
+        NSOperationQueue *operationQueue = [NSOperationQueue new];
+        __block id observer = [_notificationCenter addObserverForName:replyMessageName
+                                                               object:nil
+                                                                queue:operationQueue
+                                                           usingBlock:^(NSNotification *notification) {
+            completionHandler(notification.userInfo[@"returnValue"]);
+            [weakNotificationCenter removeObserver:observer];
+            observer = nil;
+        }];
+    }
+
     NSMutableDictionary *userInfo = [NSMutableDictionary new];
     userInfo[@"replyUUID"] = replyUUID;
     if (args)
