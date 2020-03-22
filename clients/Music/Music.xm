@@ -2,6 +2,42 @@
 #import "../CommonClients.h"
 
 
+static NSDictionary *serializeMediaItem(MPMediaItem<NUMediaItem> *item, UIImage *image) {
+    NSMutableDictionary *metadata = [NSMutableDictionary new];
+    UIImage *artwork = image;
+
+    if ([item isKindOfClass:%c(MPCModelGenericAVItem)])
+        metadata[kTitle] = [item mainTitle];
+    else if ([item isKindOfClass:%c(MPMediaItem)]) {
+        metadata[kTitle] = item.title;
+
+        if (!image)
+            artwork = [item.artwork imageWithSize:ARTWORK_SIZE];
+    }
+
+    metadata[kSubtitle] = item.artist;
+    metadata[kArtwork] = UIImagePNGRepresentation(artwork);
+    return metadata;
+}
+
+static void fetchNextUpMediaItem(MPMediaItem<NUMediaItem> *item, MPArtworkCatalog *catalog) {
+    // Local track with no artwork?
+    if (!catalog) {
+        UIImage *image = [%c(MPPlaceholderArtwork) noArtPlaceholderImageForMediaType:1];
+        NSDictionary *metadata = serializeMediaItem(item, image);
+        sendNextTrackMetadata(metadata);
+        return;
+    }
+
+    [catalog setFittingSize:ARTWORK_SIZE];
+    catalog.destinationScale = [UIScreen mainScreen].scale;
+
+    [catalog requestImageWithCompletionHandler:^(UIImage *image) {
+        NSDictionary *metadata = serializeMediaItem(item, image);
+        sendNextTrackMetadata(metadata);
+    }];
+}
+
 %hook MPCMediaPlayerLegacyPlaylistManager
 
 - (id)init {
@@ -55,12 +91,12 @@
 
 %new
 - (void)fetchNextUp {
-    NUMediaItem *next = [self metadataItemForPlaylistIndex:[self currentIndex] + 1];
+    MPMediaItem<NUMediaItem> *next = [self metadataItemForPlaylistIndex:[self currentIndex] + 1];
 
     if (!next)
         return sendNextTrackMetadata(nil);
 
-    [self fetchNextUpItem:next withArtworkCatalog:[next artworkCatalogBlock]];
+    fetchNextUpMediaItem(next, [next artworkCatalogBlock]());
 }
 
 %new
@@ -75,50 +111,9 @@
 
     [self removeItemAtPlaybackIndex:nextIndex];
 
-    NUMediaItem *next = [self metadataItemForPlaylistIndex:nextIndex];
-    if (next) 
-        [self fetchNextUpItem:next withArtworkCatalog:[next artworkCatalogBlock]];
-}
-
-%new
-- (NSDictionary *)serializeTrack:(NUMediaItem *)item image:(UIImage *)image {
-    NSMutableDictionary *metadata = [NSMutableDictionary new];
-
-    UIImage *artwork = image;
-
-    if ([item isKindOfClass:%c(MPCModelGenericAVItem)])
-        metadata[kTitle] = [item mainTitle];
-    else if ([item isKindOfClass:%c(MPMediaItem)]) {
-        metadata[kTitle] = item.title;
-
-        if (!image)
-            artwork = [item.artwork imageWithSize:ARTWORK_SIZE];
-    }
-
-    metadata[kSubtitle] = item.artist;
-    metadata[kArtwork] = UIImagePNGRepresentation(artwork);
-    return metadata;
-}
-
-%new
-- (void)fetchNextUpItem:(MPMediaItem *)item withArtworkCatalog:(block)artworkBlock {
-    MPArtworkCatalog *catalog = artworkBlock();
-
-    // Local track with no artwork?
-    if (!catalog) {
-        UIImage *image = [%c(MPPlaceholderArtwork) noArtPlaceholderImageForMediaType:1];
-        NSDictionary *metadata = [self serializeTrack:item image:image];
-        sendNextTrackMetadata(metadata);
-        return;
-    }
-
-    [catalog setFittingSize:ARTWORK_SIZE];
-    catalog.destinationScale = [UIScreen mainScreen].scale;
-
-    [catalog requestImageWithCompletionHandler:^(UIImage *image) {
-        NSDictionary *metadata = [self serializeTrack:item image:image];
-        sendNextTrackMetadata(metadata);
-    }];
+    MPMediaItem<NUMediaItem> *next = [self metadataItemForPlaylistIndex:nextIndex];
+    if (next)
+        fetchNextUpMediaItem(next, [next artworkCatalogBlock]());
 }
 
 %end
@@ -133,4 +128,5 @@
             [[NSNotificationCenter defaultCenter] postNotificationName:kManualUpdate object:nil];
         });
         %init;
+    }
 }
