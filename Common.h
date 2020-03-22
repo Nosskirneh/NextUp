@@ -1,3 +1,6 @@
+#define NEXTUP_IDENTIFIER @"se.nosskirneh.nextup"
+#define kPrefPath [NSString stringWithFormat:@"/var/mobile/Library/Preferences/%@.plist", NEXTUP_IDENTIFIER]
+
 extern NSString *const kShowNextUp;
 extern NSString *const kHideNextUp;
 extern NSString *const kUpdateLabels;
