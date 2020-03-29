@@ -43,7 +43,7 @@ static void fetchNextUpMediaItem(MPMediaItem<NUMediaItem> *item, MPArtworkCatalo
     %hook MPAVQueueCoordinator
 
     %new
-    - (NUMediaItem *)nextItem {
+    - (MPMediaItem<NUMediaItem> *)nextItem {
         NSArray *items = self.items;
         if (!items || items.count < 2)
             return nil;
@@ -53,11 +53,11 @@ static void fetchNextUpMediaItem(MPMediaItem<NUMediaItem> *item, MPArtworkCatalo
 
     %new
     - (void)fetchNextUp {
-        NUMediaItem *next = [self nextItem];
+        MPMediaItem<NUMediaItem> *next = [self nextItem];
         if (!next)
             return sendNextTrackMetadata(nil);
 
-        fetchNextUpItem(next, [next artworkCatalogBlock]());
+        fetchNextUpMediaItem(next, [next artworkCatalogBlock]());
     }
 
     /* 7 is the magic number.
@@ -94,7 +94,7 @@ static void fetchNextUpMediaItem(MPMediaItem<NUMediaItem> *item, MPArtworkCatalo
 
     %new
     - (void)skipNext {
-        NUMediaItem *next = [self.queueCoordinator nextItem];
+        MPMediaItem<NUMediaItem> *next = [self.queueCoordinator nextItem];
         if (!next)
             return;
 
@@ -170,12 +170,12 @@ static void fetchNextUpMediaItem(MPMediaItem<NUMediaItem> *item, MPArtworkCatalo
 
     %new
     - (void)fetchNextUp {
-        NUMediaItem *next = [self metadataItemForPlaylistIndex:[self currentIndex] + 1];
+        MPMediaItem<NUMediaItem> *next = [self metadataItemForPlaylistIndex:[self currentIndex] + 1];
 
         if (!next)
             return sendNextTrackMetadata(nil);
 
-        fetchNextUpItem(next, [next artworkCatalogBlock]());
+        fetchNextUpMediaItem(next, [next artworkCatalogBlock]());
     }
 
     %new
@@ -190,7 +190,7 @@ static void fetchNextUpMediaItem(MPMediaItem<NUMediaItem> *item, MPArtworkCatalo
 
         [self removeItemAtPlaybackIndex:nextIndex];
 
-        NUMediaItem *next = [self metadataItemForPlaylistIndex:nextIndex];
+        MPMediaItem<NUMediaItem> *next = [self metadataItemForPlaylistIndex:nextIndex];
         if (next) 
             fetchNextUpMediaItem(next, [next artworkCatalogBlock]());
     }

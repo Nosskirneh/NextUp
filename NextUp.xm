@@ -835,7 +835,7 @@ static inline void initLockscreen(Class platterClass) {
         %init(ControlCenter);
 
     if (manager.lockscreenEnabled)
-        initLockscreen();
+        initLockscreen(platterClass);
 
     if (manager.hapticFeedbackOther)
         %init(HapticFeedback);
