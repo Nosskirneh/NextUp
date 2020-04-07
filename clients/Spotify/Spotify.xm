@@ -28,7 +28,7 @@ static SPTQueueViewModelImplementation *getQueueImplementation() {
     // Load image loader
     SPTQueueViewModelImplementation *queueViewModel = getQueueImplementation();
     queueViewModel.imageLoader = [getQueueService().glueImageLoaderFactory
-                                     createImageLoaderForSourceIdentifier:@"se.nosskirneh.nextup"];
+                                     createImageLoaderForSourceIdentifier:NEXTUP_IDENTIFIER];
 
     // Add observer (otherwise this is only done as late as when opening the now playing view)
     SPTPlayerImpl *player = MSHookIvar<SPTPlayerImpl *>(queueViewModel, "_player");
