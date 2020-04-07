@@ -28,7 +28,7 @@ typedef MPArtworkCatalog *(^catalogBlock)(void);
 // iOS 13
 @interface MPAVQueueCoordinator : NSObject
 @property (nonatomic, readonly) NSArray *items;
-- (NUMediaItem *)nextItem;
+- (MPMediaItem<NUMediaItem> *)nextItem;
 - (void)fetchNextUp;
 @end
 
