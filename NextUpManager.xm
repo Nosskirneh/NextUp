@@ -18,6 +18,7 @@ SBDashBoardViewController *getDashBoardViewController() {
 @implementation NextUpManager {
     NUCenter *_center;
     NSDictionary *_preferences;
+    NSString *_pendingMediaApplication;
 }
 
 + (BOOL)isShowingMediaControls {
@@ -52,44 +53,60 @@ SBDashBoardViewController *getDashBoardViewController() {
     [self reloadPreferences];
 }
 
-- (BOOL)shouldActivateForApplicationID:(NSString *)bundleID {
-    return [_enabledApps containsObject:bundleID] &&
-           (!_preferences[bundleID] || [_preferences[bundleID] boolValue]);
-}
-
 - (void)nowPlayingAppChanged:(NSNotification *)notification {
     SBMediaController *mediaController = notification.object;
     NSString *bundleID = mediaController.nowPlayingApplication.bundleIdentifier;
-    [self shouldConfigureForMediaApplication:bundleID];
+    [self tryConfigureForMediaApplication:bundleID];
 }
 
-- (void)shouldConfigureForMediaApplication:(NSString *)bundleID {
-    if ([self shouldActivateForApplicationID:bundleID] && !_trialEnded) {
-        [self setMediaApplication:bundleID];
+- (BOOL)tryConfigureForMediaApplication:(NSString *)bundleID {
+    if (!bundleID || (_preferences[bundleID] && [_preferences[bundleID] boolValue]) || _trialEnded)
+        goto hide;
 
-        // If we should not hide on empty, we show NextUp from the beginning.
-        // In the other case, this is done from the NextUpViewController
-        if (![self hideOnEmpty])
-            [[NSNotificationCenter defaultCenter] postNotificationName:kShowNextUp object:nil];
+    if ([_enabledApps containsObject:bundleID]) {
+        [self configureForMediaApplication:bundleID skipUpdateLabels:NO];
+        return YES;
     } else {
-        [self setMediaApplication:nil];
-        [[NSNotificationCenter defaultCenter] postNotificationName:kHideNextUp object:nil];
+        _pendingMediaApplication = bundleID;
+        [self sendManualUpdate:bundleID];
     }
+
+    hide:
+    [self setMediaApplication:nil];
+    [[NSNotificationCenter defaultCenter] postNotificationName:kHideNextUp object:nil];
+    return NO;
+}
+
+- (void)configureForMediaApplication:(NSString *)bundleID
+                    skipUpdateLabels:(BOOL)skipUpdateLabels {
+    [self setMediaApplication:bundleID skipUpdateLabels:skipUpdateLabels];
+    // If we should not hide on empty, we show NextUp from the beginning.
+    // In the other case, this is done from the NextUpViewController
+    if (![self hideOnEmpty])
+        [[NSNotificationCenter defaultCenter] postNotificationName:kShowNextUp object:nil];
+}
+
+- (void)updateLabels {
+    [[NSNotificationCenter defaultCenter] postNotificationName:kUpdateLabels
+                                                        object:_metadata];
 }
 
 - (void)handleIncomingNextTrackMessage:(NSDictionary *)dict {
     [self handleIncomingRegisterMessage:dict];
     NSString *bundleID = dict[kApp];
 
+    if ([bundleID isEqualToString:_pendingMediaApplication]) {
+        _pendingMediaApplication = nil;
+        [self configureForMediaApplication:bundleID skipUpdateLabels:YES];
+    }
+
     // For example if Spotify is running in background and changed track on a
     // Connect device, but Deezer is playing music at the device: do nothing
-    if (!self.mediaApplication ||
-        ![bundleID isEqualToString:self.mediaApplication])
+    if (!self.mediaApplication || ![bundleID isEqualToString:self.mediaApplication])
         return;
 
     _metadata = dict[kMetadata];
-    [[NSNotificationCenter defaultCenter] postNotificationName:kUpdateLabels
-                                                        object:_metadata];
+    [self updateLabels];
 }
 
 - (void)handleIncomingRegisterMessage:(NSDictionary *)dict {
@@ -97,19 +114,30 @@ SBDashBoardViewController *getDashBoardViewController() {
     [_enabledApps addObject:bundleID];
 }
 
-- (void)setMediaApplication:(NSString *)bundleID {
+- (void)setMediaApplication:(NSString *)bundleID
+           skipUpdateLabels:(BOOL)skipUpdateLabels {
     _mediaApplication = bundleID;
-
     _metadata = nil;
-    [[NSNotificationCenter defaultCenter] postNotificationName:kUpdateLabels
-                                                        object:nil];
-    [self sendManualUpdate:bundleID];
+
+    if (!skipUpdateLabels)
+        [self updateLabels];
+
+    if (bundleID)
+        [self sendManualUpdate:bundleID];
+}
+
+- (void)setMediaApplication:(NSString *)bundleID {
+    [self setMediaApplication:bundleID skipUpdateLabels:NO];
 }
 
 - (void)sendManualUpdate:(NSString *)bundleID {
     NSString *manualUpdate = [NSString stringWithFormat:@"%@/%@/%@",
                               NEXTUP_IDENTIFIER, kManualUpdate, bundleID];
     notify_post([manualUpdate UTF8String]);
+}
+
+- (BOOL)hasContent {
+    return _metadata != nil;
 }
 
 - (void)reloadPreferences {
