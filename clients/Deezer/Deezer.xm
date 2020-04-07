@@ -8,7 +8,6 @@ static DZRPlaybackQueuer *getQueuer() {
 
 // Changing from a playlist to Flow doesn't automatically call setCurrentTrackIndex.
 // This will make it fetch tracks when starting Flow.
-
 %hook DZRMyMusicShuffleQueuer
 
 - (void)setTracks:(NSArray *)tracks {
@@ -91,9 +90,15 @@ static DZRPlaybackQueuer *getQueuer() {
 
 %new
 - (void)skipNext {
-    NSMutableArray *newTracks = [self.tracks mutableCopy];
-    [newTracks removeObjectAtIndex:self.currentTrackIndex + 1];
-    MSHookIvar<NSArray *>(self, "_tracks") = newTracks;
+    int nextIndex = self.currentTrackIndex + 1;
+    if ([self respondsToSelector:@selector(shuffledTracks)]) {
+        // DZRBasicQueuer
+        [self removePlayableAtIndex:nextIndex];
+    } else {
+        NSMutableArray *newTracks = [self.tracks mutableCopy];
+        [newTracks removeObjectAtIndex:nextIndex];
+        MSHookIvar<NSArray *>(self, "_tracks") = newTracks;
+    }
 
     if ([self respondsToSelector:@selector(fetchMoreTracksIfNeededAfterSelectTrackAtIndex:)])
         [((DZRMixQueuer *)self) fetchMoreTracksIfNeededAfterSelectTrackAtIndex:self.currentTrackIndex];

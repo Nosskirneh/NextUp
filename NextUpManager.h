@@ -27,4 +27,5 @@
 + (BOOL)isShowingMediaControls;
 - (void)setup;
 - (void)setTrialEnded;
+- (BOOL)hasContent;
 @end

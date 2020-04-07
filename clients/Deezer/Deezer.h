@@ -21,6 +21,7 @@
 @interface DZRPlaybackQueuer : NSObject
 @property(nonatomic) unsigned long long currentTrackIndex;
 @property(readonly, nonatomic) NSArray<DeezerTrack *> *tracks;
+- (void)removePlayableAtIndex:(unsigned long long)index;
 
 - (void)fetchNextUp;
 - (NSDictionary *)serializeTrack:(DeezerTrack *)track image:(UIImage *)image;

@@ -133,13 +133,13 @@
             _centerName, NSStringFromSelector(selector), uuid];
 }
 
-- (void)_messageReceived:(NSNotification*)notification {
+- (void)_messageReceived:(NSNotification *)notification {
     NSString *messageName = notification.name;
     NUIPCMethod *method = _methods[messageName];
     if (!method)
         THROW(@"unrecognised message: %@", messageName);
 
-    //call method:
+    // Call method
     NSMethodSignature *signature = [method.target methodSignatureForSelector:method.selector];
     NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
     invocation.target = method.target;
