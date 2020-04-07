@@ -1,7 +1,11 @@
 include $(THEOS)/makefiles/common.mk
 
 TARGET = iphone:clang:11.2
-ARCHS = arm64 arm64e
+ifdef DEBUG
+	ARCHS = arm64
+else
+	ARCHS = arm64 arm64e
+endif
 
 BUNDLE_NAME = NextUpPrefs
 $(BUNDLE_NAME)_FILES = NextUpRootListController.m NUSettingsListController.xm ../../DRM/PFStatusBarAlert/PFStatusBarAlert.mm ../../TwitterStuff/Prompt.m ../SettingsKeys.m
