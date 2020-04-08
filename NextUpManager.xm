@@ -62,7 +62,7 @@ UIViewController<CoverSheetViewController> *getCoverSheetViewController() {
 }
 
 - (BOOL)tryConfigureForMediaApplication:(NSString *)bundleID {
-    if (!bundleID || (_preferences[bundleID] && [_preferences[bundleID] boolValue]) || _trialEnded)
+    if (!bundleID || (_preferences[bundleID] && ![_preferences[bundleID] boolValue]) || _trialEnded)
         goto hide;
 
     if ([_enabledApps containsObject:bundleID]) {
