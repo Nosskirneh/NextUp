@@ -9,8 +9,13 @@ $(TWEAK_NAME)_CFLAGS = -fobjc-arc
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 
+ifdef SB_ONLY
 after-install::
 	install.exec "killall -9 SpringBoard"
+else ifdef CLIENTS_ONLY
+after-install::
+	install.exec "killall -9 Spotify TIDAL"
+endif
 
 SUBPROJECTS += clients
 SUBPROJECTS += preferences

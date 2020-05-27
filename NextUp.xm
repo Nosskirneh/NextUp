@@ -107,7 +107,7 @@ NextUpManager *manager;
             [self prepareFramesForNextUp];
 
             if (!self.showingNextUp)
-                [self addNextUpView];
+                [self showNextUp];
         }
     }
 
@@ -133,13 +133,13 @@ NextUpManager *manager;
     %new
     - (void)addNextUpView {
         [self.superview addSubview:self.nextUpView];
-        self.showingNextUp = YES;
     }
 
     %new
     - (void)showNextUp {
         self.shouldShowNextUp = YES;
         if (!self.showingNextUp) {
+            self.showingNextUp = YES;
             [self addNextUpView];
             self.nextUpView.alpha = 0.0f;
 
@@ -280,8 +280,8 @@ NextUpManager *manager;
 
         MediaControlsPanelViewController *panelViewController = [self panelViewController];
         [self.view addSubview:panelViewController.nextUpViewController.view];
-
         UIView *nextUpView = panelViewController.nextUpViewController.view;
+
         nextUpView.frame = CGRectMake(panelViewController.view.frame.origin.x,
                                       size.height - self.nextUpHeight,
                                       size.width,

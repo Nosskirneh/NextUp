@@ -112,6 +112,7 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 - (void)prepareFramesForNextUp;
 - (CGRect)revertFrameForNextUp;
 - (void)addNextUpView;
+- (void)showNextUp;
 @end
 
 

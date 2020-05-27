@@ -74,10 +74,10 @@ extern NextUpManager *manager;
     self.contentView = [[UIView alloc] initWithFrame:CGRectZero];
 
     self.mediaView = [[%c(NextUpMediaHeaderView) alloc] initWithFrame:CGRectZero];
-    self.mediaView.style = self.style;
-    self.mediaView.textAlpha = _textAlpha;
-    [self.mediaView setNewTextColor:_textColor];
-    [self.mediaView updateSkipBackgroundColor:_skipBackgroundColor];
+    _mediaView.style = self.style;
+    _mediaView.textAlpha = _textAlpha;
+    [_mediaView setNewTextColor:_textColor];
+    [_mediaView updateSkipBackgroundColor:_skipBackgroundColor];
 
     if ([_mediaView respondsToSelector:@selector(setShouldEnableMarquee:)])
         [_mediaView setShouldEnableMarquee:YES];
@@ -85,39 +85,39 @@ extern NextUpManager *manager;
         [_mediaView setMarqueeEnabled:YES];
 
     _mediaView.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.contentView addSubview:_mediaView];
+    [_contentView addSubview:_mediaView];
 
     [_mediaView.routingButton addTarget:self
                                  action:@selector(skipTrack:)
                        forControlEvents:UIControlEventTouchUpInside];
 
     int horizontalPadding = -8;
-    NSLayoutYAxisAnchor *lowestTopAnchor = self.contentView.topAnchor;
+    NSLayoutYAxisAnchor *lowestTopAnchor = _contentView.topAnchor;
     int verticalConstant = 0;
 
     if (!self.controlCenter && ![_manager slimmedLSMode]) {
         self.headerLabel = [[UILabel alloc] init];
-        self.headerLabel.backgroundColor = UIColor.clearColor;
-        self.headerLabel.textAlignment = NSTextAlignmentLeft;
-        self.headerLabel.textColor = _textColor;
-        self.headerLabel.numberOfLines = 0;
-        self.headerLabel.alpha = 0.64;
-        self.headerLabel.text = [self.bundle localizedStringForKey:@"NEXT_UP" value:nil table:nil];
-        [self.contentView addSubview:self.headerLabel];
+        _headerLabel.backgroundColor = UIColor.clearColor;
+        _headerLabel.textAlignment = NSTextAlignmentLeft;
+        _headerLabel.textColor = _textColor;
+        _headerLabel.numberOfLines = 0;
+        _headerLabel.alpha = 0.64;
+        _headerLabel.text = [self.bundle localizedStringForKey:@"NEXT_UP" value:nil table:nil];
+        [_contentView addSubview:_headerLabel];
 
-        self.headerLabel.translatesAutoresizingMaskIntoConstraints = NO;
-        [self.headerLabel.topAnchor constraintEqualToAnchor:self.contentView.topAnchor].active = YES;
-        [self.headerLabel.bottomAnchor constraintEqualToAnchor:self.contentView.topAnchor
-                                                      constant:20].active = YES;
+        _headerLabel.translatesAutoresizingMaskIntoConstraints = NO;
+        [_headerLabel.topAnchor constraintEqualToAnchor:_contentView.topAnchor].active = YES;
+        [_headerLabel.bottomAnchor constraintEqualToAnchor:_contentView.topAnchor
+                                                constant:20].active = YES;
         // Right to left language (RTL), such as Arabic
         if ([UIApplication sharedApplication].userInterfaceLayoutDirection == UIUserInterfaceLayoutDirectionRightToLeft)
-            [self.headerLabel.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor
-                                                         constant:-15].active = YES;
+            [_headerLabel.rightAnchor constraintEqualToAnchor:_contentView.rightAnchor
+                                                     constant:-15].active = YES;
         else
-            [self.headerLabel.leftAnchor constraintEqualToAnchor:self.contentView.leftAnchor
-                                                         constant:15].active = YES;
+            [_headerLabel.leftAnchor constraintEqualToAnchor:_contentView.leftAnchor
+                                                    constant:15].active = YES;
 
-        lowestTopAnchor = self.headerLabel.bottomAnchor;
+        lowestTopAnchor = _headerLabel.bottomAnchor;
     } else if (self.controlCenter) {
         horizontalPadding = 0;
     } else {
@@ -127,19 +127,19 @@ extern NextUpManager *manager;
     // Media view constraints
     [_mediaView.topAnchor constraintEqualToAnchor:lowestTopAnchor
                                          constant:verticalConstant].active = YES;
-    [_mediaView.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor].active = YES;
-    [_mediaView.leftAnchor constraintEqualToAnchor:self.contentView.leftAnchor
+    [_mediaView.bottomAnchor constraintEqualToAnchor:_contentView.bottomAnchor].active = YES;
+    [_mediaView.leftAnchor constraintEqualToAnchor:_contentView.leftAnchor
                                           constant:horizontalPadding].active = YES;
-    [_mediaView.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor
+    [_mediaView.rightAnchor constraintEqualToAnchor:_contentView.rightAnchor
                                            constant:-horizontalPadding].active = YES;
 
-    [self.view addArrangedSubview:self.contentView];
+    [self.view addArrangedSubview:_contentView];
 
-    self.contentView.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.contentView.topAnchor constraintEqualToAnchor:self.view.topAnchor].active = YES;
-    [self.contentView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor].active = YES;
-    [self.contentView.leftAnchor constraintEqualToAnchor:self.view.leftAnchor].active = YES;
-    [self.contentView.rightAnchor constraintEqualToAnchor:self.view.rightAnchor].active = YES;
+    _contentView.translatesAutoresizingMaskIntoConstraints = NO;
+    [_contentView.topAnchor constraintEqualToAnchor:self.view.topAnchor].active = YES;
+    [_contentView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor].active = YES;
+    [_contentView.leftAnchor constraintEqualToAnchor:self.view.leftAnchor].active = YES;
+    [_contentView.rightAnchor constraintEqualToAnchor:self.view.rightAnchor].active = YES;
 
     [self updateLabels:_manager.metadata];
 }
