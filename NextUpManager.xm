@@ -1,10 +1,11 @@
 #import "NextUpManager.h"
+#import <AppSupport/CPDistributedMessagingCenter.h>
+#import <rocketbootstrap/rocketbootstrap.h>
 #import <notify.h>
 #import <SpringBoard/SBMediaController.h>
 #import "SettingsKeys.h"
 #import "Common.h"
 #import "Headers.h"
-#import "NUCenter.h"
 
 #define kSBMediaNowPlayingAppChangedNotification @"SBMediaNowPlayingAppChangedNotification"
 
@@ -17,7 +18,6 @@ UIViewController<CoverSheetViewController> *getCoverSheetViewController() {
 }
 
 @implementation NextUpManager {
-    NUCenter *_center;
     NSDictionary *_preferences;
     NSString *_pendingMediaApplication;
 }
@@ -28,9 +28,15 @@ UIViewController<CoverSheetViewController> *getCoverSheetViewController() {
 }
 
 - (void)setup {
-    _center = [NUCenter centerNamed:NEXTUP_IDENTIFIER];
-    [_center addTarget:self action:REGISTER_SELECTOR];
-    [_center addTarget:self action:NEXT_TRACK_SELECTOR];
+    CPDistributedMessagingCenter *c = [CPDistributedMessagingCenter centerNamed:NEXTUP_IDENTIFIER];
+    rocketbootstrap_distributedmessagingcenter_apply(c);
+    [c runServerOnCurrentThread];
+    [c registerForMessageName:kRegisterApp
+                       target:self
+                     selector:@selector(handleIncomingMessage:withUserInfo:)];
+    [c registerForMessageName:kNextTrackMessage
+                       target:self
+                     selector:@selector(handleIncomingMessage:withUserInfo:)];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(nowPlayingAppChanged:)
@@ -91,6 +97,14 @@ UIViewController<CoverSheetViewController> *getCoverSheetViewController() {
 - (void)updateLabels {
     [[NSNotificationCenter defaultCenter] postNotificationName:kUpdateLabels
                                                         object:_metadata];
+}
+
+- (void)handleIncomingMessage:(NSString *)name withUserInfo:(NSDictionary *)dict {
+    if ([name isEqualToString:kNextTrackMessage]) {
+        [self handleIncomingNextTrackMessage:dict];
+    } else {
+        [self handleIncomingRegisterMessage:dict];
+    }
 }
 
 - (void)handleIncomingNextTrackMessage:(NSDictionary *)dict {

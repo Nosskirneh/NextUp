@@ -10,15 +10,14 @@
     self = %orig;
     self.imageService = [[%c(WMPImageService) alloc] init];
 
+    [[NSNotificationCenter defaultCenter] addObserverForName:@"kPlayQueueDidChange"
+                                                      object:nil
+                                                       queue:nil
+                                                  usingBlock:^(NSNotification *notification) {
+        [self fetchNextUp];
+    }];
+
     return self;
-}
-
-/* This is called on next track, toggling shuffle,
-   reordering, adding or removing to/from the queue. */
-- (void)playQueueDidChange {
-    %orig;
-
-    [self fetchNextUp];
 }
 
 %new

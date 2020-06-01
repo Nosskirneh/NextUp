@@ -110,7 +110,7 @@ NextUpManager *manager;
             [self prepareFramesForNextUp];
 
             if (!self.showingNextUp)
-                [self addNextUpView];
+                [self showNextUp];
         }
     }
 
@@ -136,13 +136,13 @@ NextUpManager *manager;
     %new
     - (void)addNextUpView {
         [self.superview addSubview:self.nextUpView];
-        self.showingNextUp = YES;
     }
 
     %new
     - (void)showNextUp {
         self.shouldShowNextUp = YES;
         if (!self.showingNextUp) {
+            self.showingNextUp = YES;
             [self addNextUpView];
             self.nextUpView.alpha = 0.0f;
 
@@ -242,7 +242,6 @@ NextUpManager *manager;
     %property (nonatomic, assign) BOOL shouldShowNextUp;
     %property (nonatomic, assign) BOOL nu_skipWidgetHeightIncrease;
     %property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
-    %property (nonatomic, assign) float nextUpHeight;
 
     - (id)init {
         UIViewController<MediaControlsViewController> *_self = (UIViewController<MediaControlsViewController> *)%orig;
@@ -251,19 +250,28 @@ NextUpManager *manager;
            it becomes some value that are undefined and changes */
         _self.nu_skipWidgetHeightIncrease = NO;
 
-        float nextUpHeight = 105.0;
-        if ([manager slimmedLSMode])
-            nextUpHeight -= 40;
-        _self.nextUpHeight = nextUpHeight;
+        return self;
+    }
 
-        return _self;
+    %new
+    - (float)nextUpHeight {
+        UIViewController<MediaControlsViewController> *_self = (UIViewController<MediaControlsViewController> *)self;
+        if (!_self.shouldShowNextUp)
+            return 0.f;
+
+        float height = 105.f;
+        if ([manager slimmedLSMode])
+            height -= 40.f;
+        return height;
     }
 
     - (CGSize)preferredContentSize {
         CGSize orig = %orig;
         UIViewController<MediaControlsViewController> *_self = (UIViewController<MediaControlsViewController> *)self;
-        if (_self.shouldShowNextUp && !_self.nu_skipWidgetHeightIncrease)
+        if (!_self.nu_skipWidgetHeightIncrease)
             orig.height += _self.nextUpHeight;
+        if (!self.nu_skipWidgetHeightIncrease)
+            orig.height += self.nextUpHeight;
         return orig;
     }
 
@@ -290,13 +298,14 @@ NextUpManager *manager;
 
         UIViewController<PanelViewController> *panelViewController = [self panelViewController];
         UIViewController<MediaControlsViewController> *_self = (UIViewController<MediaControlsViewController> *)self;
-        [_self.view addSubview:panelViewController.nextUpViewController.view];
-
         UIView *nextUpView = panelViewController.nextUpViewController.view;
+        [_self.view addSubview:nextUpView];
+
+        float height = [_self nextUpHeight];
         nextUpView.frame = CGRectMake(panelViewController.view.frame.origin.x,
-                                      size.height - _self.nextUpHeight,
+                                      size.height - height,
                                       size.width,
-                                      _self.nextUpHeight);
+                                      height);
         [_self.view addSubview:nextUpView];
         _self.showingNextUp = YES;
     }
