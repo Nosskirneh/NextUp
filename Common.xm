@@ -4,6 +4,8 @@ NSString *const kShowNextUp = @"se.nosskirneh.nextup/showNextUp";
 NSString *const kHideNextUp = @"se.nosskirneh.nextup/hideNextUp";
 NSString *const kUpdateLabels = @"se.nosskirneh.nextup/updateLabels";
 
+NSString *const kRegisterApp = @"se.nosskirneh.nextup/registerApp";
+NSString *const kNextTrackMessage = @"se.nosskirneh.nextup/nextTrack";
 NSString *const kApp = @"app";
 NSString *const kMetadata = @"metadata";
 

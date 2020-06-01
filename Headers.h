@@ -159,10 +159,10 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @property (nonatomic, assign) BOOL shouldShowNextUp;
 @property (nonatomic, assign) BOOL nu_skipWidgetHeightIncrease;
 @property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
-@property (nonatomic, assign) float nextUpHeight;
 - (void)addNextUpView;
 - (void)removeNextUpView;
 - (MediaControlsPanelViewController *)panelViewController;
+- (float)nextUpHeight;
 @end
 
 

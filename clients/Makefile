@@ -4,8 +4,10 @@ ARCHS = arm64 arm64e
 include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = NextUpClients
-$(TWEAK_NAME)_FILES = $(wildcard */*.xm) CommonClients.xm ../Common.xm ../NUCenter.m
+$(TWEAK_NAME)_FILES = $(wildcard */*.xm) CommonClients.xm ../Common.xm
 $(TWEAK_NAME)_CFLAGS = -fobjc-arc
+$(TWEAK_NAME)_LIBRARIES = rocketbootstrap
+$(TWEAK_NAME)_PRIVATE_FRAMEWORKS = AppSupport
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 
