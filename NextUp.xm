@@ -236,7 +236,6 @@ NextUpManager *manager;
     %property (nonatomic, assign) BOOL shouldShowNextUp;
     %property (nonatomic, assign) BOOL nu_skipWidgetHeightIncrease;
     %property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
-    %property (nonatomic, assign) float nextUpHeight;
 
     - (id)init {
         self = %orig;
@@ -245,17 +244,23 @@ NextUpManager *manager;
            it becomes some value that are undefined and changes */
         self.nu_skipWidgetHeightIncrease = NO;
 
-        float nextUpHeight = 105.0;
-        if ([manager slimmedLSMode])
-            nextUpHeight -= 40;
-        self.nextUpHeight = nextUpHeight;
-
         return self;
+    }
+
+    %new
+    - (float)nextUpHeight {
+        if (!self.shouldShowNextUp)
+            return 0.f;
+
+        float height = 105.f;
+        if ([manager slimmedLSMode])
+            height -= 40.f;
+        return height;
     }
 
     - (CGSize)preferredContentSize {
         CGSize orig = %orig;
-        if (self.shouldShowNextUp && !self.nu_skipWidgetHeightIncrease)
+        if (!self.nu_skipWidgetHeightIncrease)
             orig.height += self.nextUpHeight;
         return orig;
     }
@@ -281,11 +286,11 @@ NextUpManager *manager;
         MediaControlsPanelViewController *panelViewController = [self panelViewController];
         [self.view addSubview:panelViewController.nextUpViewController.view];
         UIView *nextUpView = panelViewController.nextUpViewController.view;
-
+        float height = [_self nextUpHeight];
         nextUpView.frame = CGRectMake(panelViewController.view.frame.origin.x,
-                                      size.height - self.nextUpHeight,
+                                      size.height - height,
                                       size.width,
-                                      self.nextUpHeight);
+                                      height);
         [self.view addSubview:nextUpView];
         self.showingNextUp = YES;
     }
