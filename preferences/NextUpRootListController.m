@@ -202,10 +202,10 @@
         [_label setAttributedText:attributedString];
         [_label setTextAlignment:NSTextAlignmentCenter];
         [_label setBackgroundColor:[UIColor clearColor]];
-        
+
         [self addSubview:_label];
         [self setBackgroundColor:[UIColor clearColor]];
-        
+
         // Setup constraints
         NSLayoutConstraint *leftConstraint = [NSLayoutConstraint constraintWithItem:_label
                                                                           attribute:NSLayoutAttributeLeft
