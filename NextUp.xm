@@ -270,8 +270,6 @@ NextUpManager *manager;
         UIViewController<MediaControlsViewController> *_self = (UIViewController<MediaControlsViewController> *)self;
         if (!_self.nu_skipWidgetHeightIncrease)
             orig.height += _self.nextUpHeight;
-        if (!self.nu_skipWidgetHeightIncrease)
-            orig.height += self.nextUpHeight;
         return orig;
     }
 
