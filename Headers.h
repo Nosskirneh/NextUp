@@ -46,6 +46,7 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 
 @interface MediaControlsHeaderView : UIView
 @property (nonatomic, retain) UIButton *routingButton;
+@property (nonatomic, retain) UIImageView *artworkContentView; // iOS 13.5
 @property (nonatomic, retain) UIImageView *artworkView;
 @property (nonatomic, retain) UIImageView *placeholderArtworkView;
 @property (nonatomic, retain) UIView *buttonBackground; // iOS 11

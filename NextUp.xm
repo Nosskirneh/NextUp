@@ -595,7 +595,12 @@ NextUpManager *manager;
         // Artwork view
         if ([manager hideArtwork] &&
             [UIApplication sharedApplication].userInterfaceLayoutDirection != UIUserInterfaceLayoutDirectionRightToLeft) {
-            self.artworkView.hidden = YES;
+
+            if ([self respondsToSelector:@selector(artworkContentView)]) {
+                self.artworkContentView.hidden = YES;
+            } else {
+                self.artworkView.hidden = YES;
+            }
             self.artworkBackground.hidden = YES;
             self.placeholderArtworkView.hidden = YES;
             self.shadow.hidden = YES;
@@ -652,6 +657,11 @@ NextUpManager *manager;
 
         NUSkipButton *routingButton = self.routingButton;
         UIView *artworkView = self.artworkView;
+
+        // `artworkContentView` exists on iOS 13.5 and has the origin displacement
+        if ([self respondsToSelector:@selector(artworkContentView)]) {
+            artworkView = self.artworkContentView;
+        }
 
         if (routingButton.center.x == 0 && routingButton.center.y == 0) { // Coordinates will not be set properly on iOS 11.2.x
             float buttonSize = routingButton.size;
