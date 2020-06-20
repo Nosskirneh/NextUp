@@ -40,37 +40,6 @@ static void fetchNextUpMediaItem(MPMediaItem<NUMediaItem> *item, MPArtworkCatalo
 
 
 %group iOS13
-    %hook MPAVQueueCoordinator
-
-    %new
-    - (MPMediaItem<NUMediaItem> *)nextItem {
-        NSArray *items = self.items;
-        if (!items || items.count < 2)
-            return nil;
-
-        return items[1];
-    }
-
-    %new
-    - (void)fetchNextUp {
-        MPMediaItem<NUMediaItem> *next = [self nextItem];
-        if (!next)
-            return sendNextTrackMetadata(nil);
-
-        fetchNextUpMediaItem(next, [next artworkCatalogBlock]());
-    }
-
-    /* 7 is the magic number.
-       This is done as it otherwise just has the next track in the queue.
-       If users switch quickly, NextUp will send an empty queue message
-       which will cause the media widget to hide and show very often. */
-    - (unsigned long long)_preferredQueueDepthWithFirstItem:(id)firstItem {
-        return 7;
-    }
-
-    %end
-
-
     %hook MPCQueueController
 
     - (id)init {
@@ -80,34 +49,72 @@ static void fetchNextUpMediaItem(MPMediaItem<NUMediaItem> *item, MPArtworkCatalo
                                                  selector:@selector(skipNext)
                                                      name:kSkipNext
                                                    object:nil];
-        return self;
-    }
 
-    - (void)setQueueCoordinator:(MPAVQueueCoordinator *)coordinator {
-        %orig;
-
-        [[NSNotificationCenter defaultCenter] addObserver:coordinator
+        [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(fetchNextUp)
                                                      name:kManualUpdate
                                                    object:nil];
+        return self;
+    }
+
+    %new
+    - (MPMediaItem<NUMediaItem> *)nu_nextItem {
+        NSArray *items = [self nu_getQueue];
+        if (!items || items.count < 1)
+            return nil;
+
+        return items[0];
+    }
+
+    %new
+    - (void)fetchNextUp {
+        MPMediaItem<NUMediaItem> *next = [self nu_nextItem];
+        if (!next)
+            return sendNextTrackMetadata(nil);
+
+        fetchNextUpMediaItem(next, [next artworkCatalogBlock]());
     }
 
     %new
     - (void)skipNext {
-        MPMediaItem<NUMediaItem> *next = [self.queueCoordinator nextItem];
+        MPMediaItem<NUMediaItem> *next = [self nu_nextItem];
         if (!next)
             return;
 
         NSString *nextContentItemID = next.contentItemID;
         [self removeContentItemID:nextContentItemID completion:^{
-            [self.queueCoordinator fetchNextUp];
+            [self fetchNextUp];
         }];
     }
 
     - (void)queueCoordinatorDidChangeItems:(MPAVQueueCoordinator *)coordinator {
         %orig;
 
-        [coordinator fetchNextUp];
+        [self fetchNextUp];
+    }
+
+    %new
+    - (NSArray *)nu_getQueue {
+        NSUInteger currentIndex = 0;
+        NSEnumerator *enumerator = [self.identifierList enumeratorWithOptions:0];
+        NSMutableArray *items = [NSMutableArray new];
+        MPSectionedIdentifierListItemEntry *entry;
+        while ((entry = enumerator.nextObject)) {
+            NSArray *pair = @[entry.sectionIdentifier, entry.itemIdentifier];
+            MPMediaItem<NUMediaItem> *item = [self _itemForPair:pair];
+
+            if ([item.contentItemID isEqualToString:self.currentItem.contentItemID]) {
+                currentIndex = (items.count - 1);
+                continue;
+            } else if (currentIndex == 0) {
+                continue;
+            }
+
+            if (item)
+                [items addObject:item];
+        }
+
+        return items;
     }
 
     %end
@@ -191,7 +198,7 @@ static void fetchNextUpMediaItem(MPMediaItem<NUMediaItem> *item, MPArtworkCatalo
         [self removeItemAtPlaybackIndex:nextIndex];
 
         MPMediaItem<NUMediaItem> *next = [self metadataItemForPlaylistIndex:nextIndex];
-        if (next) 
+        if (next)
             fetchNextUpMediaItem(next, [next artworkCatalogBlock]());
     }
 

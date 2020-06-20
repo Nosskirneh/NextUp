@@ -26,16 +26,27 @@ typedef MPArtworkCatalog *(^catalogBlock)(void);
 
 
 // iOS 13
+@interface MPSectionedIdentifierList : NSObject
+- (NSEnumerator *)enumeratorWithOptions:(NSEnumerationOptions)options;
+@end
+
+@interface MPSectionedIdentifierListItemEntry : NSObject
+@property (nonatomic, readonly) NSString *itemIdentifier;
+@property (nonatomic, readonly) NSString *sectionIdentifier;
+@end
+
 @interface MPAVQueueCoordinator : NSObject
-@property (nonatomic, readonly) NSArray *items;
-- (MPMediaItem<NUMediaItem> *)nextItem;
-- (void)fetchNextUp;
 @end
 
 @interface MPCQueueController : NSObject
-@property (nonatomic, retain) MPAVQueueCoordinator *queueCoordinator;
+@property (nonatomic, retain) MPSectionedIdentifierList *identifierList;
+@property (nonatomic, readonly) MPMediaItem<NUMediaItem> *currentItem;
 - (void)removeContentItemID:(NSString *)contentItemID
                  completion:(void(^)())completion;
+- (id)_itemForPair:(NSArray *)pair;
+- (NSArray *)nu_getQueue;
+- (MPMediaItem<NUMediaItem> *)nu_nextItem;
+- (void)fetchNextUp;
 @end
 // ---
 
