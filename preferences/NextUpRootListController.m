@@ -35,7 +35,6 @@
     if (!_specifiers)
         _specifiers = [self loadSpecifiersFromPlistName:@"NextUp" target:self];
 
-
     if ([UIApplication sharedApplication].userInterfaceLayoutDirection == UIUserInterfaceLayoutDirectionRightToLeft) {
         for (PSSpecifier *specifier in _specifiers) {
             if ([[specifier propertyForKey:kKey] isEqualToString:kHideArtwork])
@@ -200,9 +199,9 @@
         [_label setTranslatesAutoresizingMaskIntoConstraints:NO];
         [_label setAdjustsFontSizeToFitWidth:YES];
         [_label setFont:[UIFont fontWithName:@"HelveticaNeue-UltraLight" size:48]];
-        
+
         NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc] initWithString:@"NextUp 2"];
-        
+
         [_label setAttributedText:attributedString];
         [_label setTextAlignment:NSTextAlignmentCenter];
         [_label setBackgroundColor:[UIColor clearColor]];
