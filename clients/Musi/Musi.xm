@@ -99,7 +99,7 @@ static MMusicSession *getMusicSession() {
 
 
 %ctor {
-    if (shouldInitClient(kMusiBundleID)) {
+    if (shouldInitClient(Musi)) {
         registerNotify(^(int _) {
             [getMusicSession() skipNext];
         },

@@ -115,7 +115,7 @@
 
 
 %ctor {
-    if (shouldInitClient(kPodcastsBundleID)) {
+    if (shouldInitClient(Podcasts)) {
         registerNotify(^(int _) {
             [[%c(MTPlaybackQueueController) sharedInstance] skipNext];
         },

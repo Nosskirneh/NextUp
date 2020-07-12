@@ -81,7 +81,7 @@ static MusicQueueManager *getQueueManager() {
 
 
 %ctor {
-    if (shouldInitClient(kGoogleMusicBundleID)) {
+    if (shouldInitClient(GoogleMusic)) {
         registerNotify(^(int _) {
             [getQueueManager() skipNext];
         },

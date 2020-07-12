@@ -134,7 +134,7 @@ stateDidChange:(SPTPlayerState *)newState
 
 
 %ctor {
-    if (shouldInitClient(kSpotifyBundleID)) {
+    if (shouldInitClient(Spotify)) {
         registerNotify(^(int _) {
             [getQueueImplementation() skipNext];
         },

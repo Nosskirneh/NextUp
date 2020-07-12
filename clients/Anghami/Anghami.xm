@@ -78,7 +78,7 @@ static ANGPlayQueue *getQueue() {
 
 
 %ctor {
-    if (shouldInitClient(kAnghamiBundleID)) {
+    if (shouldInitClient(Anghami)) {
         registerNotify(^(int _) {
             [getQueue() skipNext];
         },

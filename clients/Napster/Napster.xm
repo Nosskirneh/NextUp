@@ -44,7 +44,7 @@ static RHPlayerController *getPlayerController() {
 %end
 
 %ctor {
-    if (shouldInitClient(kNapsterBundleID)) {
+    if (shouldInitClient(Napster)) {
         registerNotify(NULL, ^(int _) {
             [getPlayerController() fetchNextUp];
         });

@@ -69,7 +69,7 @@
 
 
 %ctor {
-    if (shouldInitClient(kTIDALBundleID)) {
+    if (shouldInitClient(TIDAL)) {
         registerNotify(^(int _) {
             [[%c(_TtC4WiMP16PlayQueueManager) sharedInstance] skipNext];
         },

@@ -66,6 +66,6 @@
 
 
 %ctor {
-    if (shouldInitClient(kVOXBundleID))
+    if (shouldInitClient(VOX))
         %init;
 }

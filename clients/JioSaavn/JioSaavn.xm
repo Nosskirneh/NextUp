@@ -106,7 +106,7 @@ static PlayerVC *getPlayerVC() {
 
 
 %ctor {
-    if (shouldInitClient(kJioSaavnBundleID)) {
+    if (shouldInitClient(JioSaavn)) {
         registerNotify(^(int _) {
             [getPlayerVC() skipNext];
         },
