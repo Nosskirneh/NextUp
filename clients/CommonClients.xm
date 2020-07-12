@@ -25,21 +25,66 @@ static void _registerApp(NSString *bundleID) {
     }];
 }
 
-static BOOL _shouldInitClient(NSString *desiredBundleID,
-                              NSString *bundleID) {
-    if (![desiredBundleID isEqualToString:bundleID])
-        return NO;
 
+#define kAnghamiBundleID @"com.anghami.anghami"
+#define kAudioMackBundleID @"com.audiomack.iphone"
+#define kDeezerBundleID @"com.deezer.Deezer"
+#define kGoogleMusicBundleID @"com.google.PlayMusic"
+#define kJetAudioBundleID @"com.jetappfactory.jetaudio"
+#define kJioSaavnBundleID @"com.Saavn.Saavn"
+#define kMusiBundleID @"com.feelthemusi.musi"
+#define kMusicBundleID @"com.apple.Music"
+#define kNapsterBundleID @"com.rhapsody.iphone.Napster3"
+#define kPodcastsBundleID @"com.apple.podcasts"
+#define kSoundCloudBundleID @"com.soundcloud.TouchApp"
+#define kSpotifyBundleID @"com.spotify.client"
+#define kSpotifyInternalBundleID @"com.spotify.client.internal"
+#define kTIDALBundleID @"com.aspiro.TIDAL"
+#define kVOXBundleID @"com.coppertino.VoxMobile"
+#define kYouTubeMusicBundleID @"com.google.ios.youtubemusic"
+
+static inline NSSet *supportedBundleIDsForApp(SupportedApplication app) {
+    switch (app) {
+        case Anghami:
+            return [NSSet setWithArray:@[kAnghamiBundleID]];
+        case AudioMack:
+            return [NSSet setWithArray:@[kAudioMackBundleID]];
+        case Deezer:
+            return [NSSet setWithArray:@[kDeezerBundleID]];
+        case GoogleMusic:
+            return [NSSet setWithArray:@[kGoogleMusicBundleID]];
+        case JetAudio:
+            return [NSSet setWithArray:@[kJetAudioBundleID]];
+        case JioSaavn:
+            return [NSSet setWithArray:@[kJioSaavnBundleID]];
+        case Musi:
+            return [NSSet setWithArray:@[kMusiBundleID]];
+        case Music:
+            return [NSSet setWithArray:@[kMusicBundleID]];
+        case Napster:
+            return [NSSet setWithArray:@[kNapsterBundleID]];
+        case Podcasts:
+            return [NSSet setWithArray:@[kPodcastsBundleID]];
+        case SoundCloud:
+            return [NSSet setWithArray:@[kSoundCloudBundleID]];
+        case Spotify:
+            return [NSSet setWithArray:@[kSpotifyBundleID, kSpotifyInternalBundleID]];
+        case TIDAL:
+            return [NSSet setWithArray:@[kTIDALBundleID]];
+        case VOX:
+            return [NSSet setWithArray:@[kVOXBundleID]];
+        case YouTubeMusic:
+            return [NSSet setWithArray:@[kYouTubeMusicBundleID]];
+    }
+}
+
+BOOL shouldInitClient(SupportedApplication app) {
+    NSString *bundleID = [NSBundle mainBundle].bundleIdentifier;
     NSDictionary *preferences = [NSDictionary dictionaryWithContentsOfFile:kPrefPath];
     if (preferences[bundleID] && ![preferences[bundleID] boolValue])
         return NO;
 
-    return YES;
-}
-
-BOOL shouldInitClient(NSString *desiredBundleID) {
-    return _shouldInitClient(desiredBundleID,
-                             [NSBundle mainBundle].bundleIdentifier);
+    return [supportedBundleIDsForApp(app) containsObject:bundleID];
 }
 
 static void _registerCallbacks(NSString *bundleID,
@@ -104,25 +149,25 @@ void registerNotifyTokens(notify_handler_t skipNextHandler,
 }
 
 
-BOOL initClient(NSString *desiredBundleID,
+BOOL initClient(SupportedApplication app,
                 CFNotificationCallback skipNextCallback,
                 CFNotificationCallback manualUpdateCallback) {
-    NSString *bundleID = [NSBundle mainBundle].bundleIdentifier;
-    if (!_shouldInitClient(desiredBundleID, bundleID))
+    if (!shouldInitClient(app))
         return NO;
 
+    NSString *bundleID = [NSBundle mainBundle].bundleIdentifier;
     _registerApp(bundleID);
     _registerCallbacks(bundleID, skipNextCallback, manualUpdateCallback);
     return YES;
 }
 
-BOOL initClientNotify(NSString *desiredBundleID,
+BOOL initClientNotify(SupportedApplication app,
                       notify_handler_t skipNextHandler,
                       notify_handler_t manualUpdateHandler) {
-    NSString *bundleID = [NSBundle mainBundle].bundleIdentifier;
-    if (!_shouldInitClient(desiredBundleID, bundleID))
+    if (!shouldInitClient(app))
         return NO;
 
+    NSString *bundleID = [NSBundle mainBundle].bundleIdentifier;
     _registerApp(bundleID);
     _registerNotify(bundleID, skipNextHandler, manualUpdateHandler);
     return YES;

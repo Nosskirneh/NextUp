@@ -207,7 +207,7 @@ static void fetchNextUpMediaItem(MPMediaItem<NUMediaItem> *item, MPArtworkCatalo
 
 
 %ctor {
-    if (shouldInitClient(kMusicBundleID)) {
+    if (shouldInitClient(Music)) {
         registerNotify(^(int _) {
             [[NSNotificationCenter defaultCenter] postNotificationName:kSkipNext object:nil];
         },

@@ -81,6 +81,6 @@
 %end
 
 %ctor {
-    if (shouldInitClient(kJetAudioBundleID))
+    if (shouldInitClient(JetAudio))
         %init;
 }

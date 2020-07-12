@@ -143,7 +143,7 @@ static DZRPlaybackQueuer *getQueuer() {
 
 
 %ctor {
-    if (shouldInitClient(kDeezerBundleID)) {
+    if (shouldInitClient(Deezer)) {
         registerNotify(^(int _) {
             [getQueuer() skipNext];
         },

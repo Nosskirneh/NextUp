@@ -192,7 +192,7 @@ static GIMMe *gimme() {
 
 
 %ctor {
-    if (shouldInitClient(kYouTubeMusicBundleID)) {
+    if (shouldInitClient(YouTubeMusic)) {
         %init;
 
         if ([%c(YTMQueueController) instancesRespondToSelector:@selector(playItemAtIndex:

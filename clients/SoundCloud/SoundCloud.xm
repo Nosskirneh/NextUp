@@ -56,7 +56,7 @@
 
 
 %ctor {
-    if (shouldInitClient(kSoundCloudBundleID)) {
+    if (shouldInitClient(SoundCloud)) {
         registerNotify(NULL, ^(int _) {
             [[%c(PlaybackService) sharedInstance] fetchNextUp];
         });

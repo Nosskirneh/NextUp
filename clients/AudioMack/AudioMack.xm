@@ -138,7 +138,7 @@
 
 
 %ctor {
-    if (shouldInitClient(kAudioMackBundleID)) {
+    if (shouldInitClient(AudioMack)) {
         registerNotify(^(int _) {
             [[%c(AMNowPlayingViewController) sharedInstance] skipNext];
         },
