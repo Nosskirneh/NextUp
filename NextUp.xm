@@ -9,6 +9,7 @@ NextUpManager *manager;
 
 /* Adding the widget */
 %hook PanelViewController
+#define _self ((UIViewController<PanelViewController> *)self)
 
 %property (nonatomic, retain) NextUpViewController *nextUpViewController;
 
@@ -30,12 +31,12 @@ NextUpManager *manager;
 
 %new
 - (BOOL)NU_isControlCenter {
-    return ([((UIViewController<PanelViewController> *)self).delegate class] == %c(MediaControlsEndpointsViewController));
+    return ([_self.delegate class] == %c(MediaControlsEndpointsViewController));
 }
 
 - (void)setStyle:(int)style {
     %orig;
-    ((UIViewController<PanelViewController> *)self).nextUpViewController.style = style;
+    _self.nextUpViewController.style = style;
 }
 
 %new
@@ -76,6 +77,7 @@ NextUpManager *manager;
     }
 }
 
+#undef _self
 %end
 // ---
 
@@ -179,6 +181,7 @@ NextUpManager *manager;
 
 %group Lockscreen
     %hook NotificationAdjunctListViewController
+    #define _self ((UIViewController<NotificationAdjunctListViewController> *)self)
 
     - (id)init {
         self = %orig;
@@ -225,7 +228,6 @@ NextUpManager *manager;
 
     %new
     - (void)reloadMediaWidget {
-        UIViewController<NotificationAdjunctListViewController> *_self = (UIViewController<NotificationAdjunctListViewController> *)self;
         NSMutableDictionary *items = _self.identifiersToItems;
         id<AdjunctListItem> item = items[@"SBDashBoardNowPlayingAssertionIdentifier"];
         if (!item)
@@ -235,16 +237,18 @@ NextUpManager *manager;
         [self _insertItem:item animated:YES];
     }
 
+    #undef _self
     %end
 
 
     %hook MediaControlsViewController
+    #define _self ((UIViewController<MediaControlsViewController> *)self)
     %property (nonatomic, assign) BOOL shouldShowNextUp;
     %property (nonatomic, assign) BOOL nu_skipWidgetHeightIncrease;
     %property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
 
     - (id)init {
-        UIViewController<MediaControlsViewController> *_self = (UIViewController<MediaControlsViewController> *)%orig;
+        self = %orig;
 
         /* This is apparently needed for some reason. It doesn't set NO as default,
            it becomes some value that are undefined and changes */
@@ -255,7 +259,6 @@ NextUpManager *manager;
 
     %new
     - (float)nextUpHeight {
-        UIViewController<MediaControlsViewController> *_self = (UIViewController<MediaControlsViewController> *)self;
         if (!_self.shouldShowNextUp)
             return 0.f;
 
@@ -267,7 +270,6 @@ NextUpManager *manager;
 
     - (CGSize)preferredContentSize {
         CGSize orig = %orig;
-        UIViewController<MediaControlsViewController> *_self = (UIViewController<MediaControlsViewController> *)self;
         if (!_self.nu_skipWidgetHeightIncrease)
             orig.height += _self.nextUpHeight;
         return orig;
@@ -276,7 +278,6 @@ NextUpManager *manager;
     - (void)_layoutMediaControls {
         %orig;
 
-        UIViewController<MediaControlsViewController> *_self = (UIViewController<MediaControlsViewController> *)self;
         if (_self.shouldShowNextUp)
             [_self addNextUpView];
     }
@@ -295,9 +296,7 @@ NextUpManager *manager;
             return;
 
         UIViewController<PanelViewController> *panelViewController = [self panelViewController];
-        UIViewController<MediaControlsViewController> *_self = (UIViewController<MediaControlsViewController> *)self;
         UIView *nextUpView = panelViewController.nextUpViewController.view;
-        [_self.view addSubview:nextUpView];
 
         float height = [_self nextUpHeight];
         nextUpView.frame = CGRectMake(panelViewController.view.frame.origin.x,
@@ -313,6 +312,7 @@ NextUpManager *manager;
         [[self panelViewController].nextUpViewController.view removeFromSuperview];
     }
 
+    #undef _self
     %end
 
     /* Hide iPhone X buttons */
@@ -383,6 +383,7 @@ NextUpManager *manager;
 
     /* Hide home bar */
     %hook HomeAffordanceView
+    #define _self ((UIView<HomeAffordanceView> *)self)
 
     %property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
 
@@ -405,13 +406,13 @@ NextUpManager *manager;
 
     %new
     - (void)showNextUp {
-        ((UIView<HomeAffordanceView> *)self).showingNextUp = YES;
+        _self.showingNextUp = YES;
         [self setAlpha:0];
     }
 
     %new
     - (void)hideNextUp {
-        ((UIView<HomeAffordanceView> *)self).showingNextUp = NO;
+        _self.showingNextUp = NO;
     }
 
     - (void)setAlpha:(CGFloat)alpha {
@@ -424,6 +425,7 @@ NextUpManager *manager;
         %orig;
     }
 
+    #undef _self
     %end
     // ---
 %end
@@ -776,10 +778,12 @@ NextUpManager *manager;
 %end
 %end
 
+__attribute__((always_inline, visibility("hidden")))
 static inline void initTrial() {
     %init(CheckTrialEnded);
 }
 
+__attribute__((always_inline, visibility("hidden")))
 static inline void initLockscreen(Class platterClass) {
     Class mediaControlsViewControllerClass = %c(CSMediaControlsViewController);
     if (!mediaControlsViewControllerClass)
