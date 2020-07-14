@@ -288,7 +288,6 @@ NextUpManager *manager;
             return;
 
         UIViewController<PanelViewController> *panelViewController = [self panelViewController];
-        [self.view addSubview:panelViewController.nextUpViewController.view];
         UIView *nextUpView = panelViewController.nextUpViewController.view;
         float height = [_self nextUpHeight];
         nextUpView.frame = CGRectMake(panelViewController.view.frame.origin.x,
