@@ -549,31 +549,11 @@ NextUpManager *manager;
     // This property is needed in iOS 12 as the default routing button has it
     %property (nonatomic, assign) NSInteger currentMode;
 
-    - (void)setFrame:(CGRect)frame {
-        frame.origin.x += (frame.size.width - self.size) / 2;
-        frame.origin.y += (frame.size.height - self.size) / 2;
-        frame.size.width = self.size;
-        frame.size.height = self.size;
-        %orig;
-    }
-    %end
-
-    %subclass NextUpMediaHeaderView : MediaControlsHeaderView
-
-    // Override routing button
-    %property (nonatomic, retain) NUSkipButton *routingButton;
-    %property (nonatomic, retain) UIColor *textColor;
-    %property (nonatomic, assign) CGFloat textAlpha;
-    %property (nonatomic, retain) UIColor *skipBackgroundColor;
-
-    - (id)initWithFrame:(CGRect)arg1 {
-        self = %orig;
-
-        float size = 26.0;
-
-        self.routingButton = [%c(NUSkipButton) buttonWithType:UIButtonTypeCustom];
-        self.routingButton.size = size;
-        self.routingButton.layer.cornerRadius = size / 2;
+    %new
+    + (id)buttonWithSize:(CGFloat)size {
+        NUSkipButton *button = [self buttonWithType:UIButtonTypeCustom];
+        button.size = size;
+        button.layer.cornerRadius = size / 2;
 
         float ratio = 1/3.;
         float crossSize = size * ratio;
@@ -604,9 +584,71 @@ NextUpManager *manager;
         clear.opacity = 1.0;
         [clear setMasksToBounds:YES];
 
-        [self.routingButton.layer addSublayer:clear];
-        self.routingButton.clear = clear;
+        [button.layer addSublayer:clear];
+        button.clear = clear;
 
+        [button addTarget:button action:@selector(shrink) forControlEvents:UIControlEventTouchDown];
+        [button addTarget:button
+                   action:@selector(grow)
+         forControlEvents:UIControlEventTouchUpInside | UIControlEventTouchUpOutside | UIControlEventTouchCancel];
+
+        return button;
+    }
+
+    %new
+    - (CABasicAnimation *)sizeAnimationForGrowing:(BOOL)grow {
+        NSNumber *from;
+        NSNumber *to;
+        if (grow) {
+            from = [NSNumber numberWithFloat:0.9f];
+            to = [NSNumber numberWithFloat:1.0f];
+        } else {
+            from = [NSNumber numberWithFloat:1.0f];
+            to = [NSNumber numberWithFloat:0.9f];
+        }
+
+        CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
+        animation.duration = 0.35f;
+        animation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+        animation.fromValue = from;
+        animation.toValue = to;
+        animation.removedOnCompletion = NO;
+        animation.fillMode = kCAFillModeForwards;
+        return animation;
+    }
+
+    %new
+    - (void)shrink {
+        [self.layer addAnimation:[self sizeAnimationForGrowing:NO] forKey:@"shrink-grow"];
+    }
+
+    %new
+    - (void)grow {
+        [self.layer addAnimation:[self sizeAnimationForGrowing:YES] forKey:@"shrink-grow"];
+    }
+
+    - (void)setFrame:(CGRect)frame {
+        frame.origin.x += (frame.size.width - self.size) / 2;
+        frame.origin.y += (frame.size.height - self.size) / 2;
+        frame.size.width = self.size;
+        frame.size.height = self.size;
+        %orig;
+    }
+
+    %end
+
+    %subclass NextUpMediaHeaderView : MediaControlsHeaderView
+
+    // Override routing button
+    %property (nonatomic, retain) NUSkipButton *routingButton;
+    %property (nonatomic, retain) UIColor *textColor;
+    %property (nonatomic, assign) CGFloat textAlpha;
+    %property (nonatomic, retain) UIColor *skipBackgroundColor;
+
+    - (id)initWithFrame:(CGRect)frame {
+        self = %orig;
+
+        self.routingButton = [%c(NUSkipButton) buttonWithSize:26.0f];
         [self addSubview:self.routingButton];
 
         // Artwork view
