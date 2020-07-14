@@ -117,6 +117,12 @@ static void fetchNextUpMediaItem(MPMediaItem<NUMediaItem> *item, MPArtworkCatalo
         return items;
     }
 
+    - (void)player:(id)player currentItemDidChangeFromItem:(id)fromItem toItem:(id)toItem {
+        %orig;
+
+        [self fetchNextUp];
+    }
+
     %end
 %end
 
