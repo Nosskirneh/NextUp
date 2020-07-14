@@ -13,6 +13,10 @@ typedef enum UIUserInterfaceStyle : NSInteger {
 @property (nonatomic, readonly) UIUserInterfaceStyle userInterfaceStyle;
 @end
 
+@interface UIViewController (iOS13)
+@property (nonatomic) UIUserInterfaceStyle overrideUserInterfaceStyle;
+@end
+
 @interface SBIdleTimerGlobalCoordinator
 + (id)sharedInstance;
 - (void)resetIdleTimer;

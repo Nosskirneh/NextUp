@@ -525,6 +525,21 @@ NextUpManager *manager;
 %end
 
 
+/* Dawn support */
+%group Dawn
+    %hook CSNotificationAdjunctListViewController
+
+    - (void)setOverrideUserInterfaceStyle:(UIUserInterfaceStyle)style {
+        %orig;
+
+        NextUpViewController *nextUpViewController = [[self mediaControlsViewController] panelViewController].nextUpViewController;
+        [nextUpViewController setOverrideUserInterfaceStyle:style];
+    }
+
+    %end
+%end
+
+
 /* Custom views */
 %group CustomViews
     %subclass NUSkipButton : UIButton
@@ -810,6 +825,9 @@ static inline void initLockscreen(Class platterClass) {
 
     if ([platterClass instancesRespondToSelector:@selector(nrdUpdate)])
         %init(Nereid, PanelViewController = platterClass);
+
+    if ([adjunctListViewControllerClass instancesRespondToSelector:@selector(setOverrideUserInterfaceStyle:)])
+        %init(Dawn);
 }
 
 %ctor {

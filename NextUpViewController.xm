@@ -58,7 +58,7 @@ extern NextUpManager *manager;
             }
         }
 
-        [self _initSkipBackgroundColor];
+        [self _updateSkipBackgroundColor];
 
         if (manager.hapticFeedbackSkip)
             self.hapticGenerator = [[%c(UIImpactFeedbackGenerator) alloc] initWithStyle:UIImpactFeedbackStyleMedium];
@@ -69,16 +69,29 @@ extern NextUpManager *manager;
     return self;
 }
 
-- (void)_initSkipBackgroundColor {
-    _skipBackgroundColor = [_textColor colorWithAlphaComponent:0.16];
+- (void)_traitCollectionDidChange {
+    if (self.overrideUserInterfaceStyle == UIUserInterfaceStyleUnspecified)
+        [self _updateTextColorWithUserInterfaceStyle:[UIScreen mainScreen].traitCollection.userInterfaceStyle];
 }
 
-- (void)_traitCollectionDidChange {
-    _textColor = [UIScreen mainScreen].traitCollection.userInterfaceStyle == UIUserInterfaceStyleLight ?
-                 UIColor.blackColor : UIColor.whiteColor;
-    [self _initSkipBackgroundColor];
-    [self.mediaView setNewTextColor:_textColor];
+- (void)setOverrideUserInterfaceStyle:(UIUserInterfaceStyle)style {
+    [super setOverrideUserInterfaceStyle:style];
+    [self _updateTextColorWithUserInterfaceStyle:style];
+}
+
+- (void)_updateTextColorWithUserInterfaceStyle:(UIUserInterfaceStyle)style {
+    _textColor = (style == UIUserInterfaceStyleLight) ? UIColor.blackColor : UIColor.whiteColor;
+    [self _updateTextColor];
+    [self _updateSkipBackgroundColor];
+}
+
+- (void)_updateSkipBackgroundColor {
+    _skipBackgroundColor = [_textColor colorWithAlphaComponent:0.16];
     [self.mediaView updateSkipBackgroundColor:_skipBackgroundColor];
+}
+
+- (void)_updateTextColor {
+    [self.mediaView setNewTextColor:_textColor];
     self.headerLabel.textColor = _textColor;
 }
 
