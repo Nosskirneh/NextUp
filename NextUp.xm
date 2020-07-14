@@ -512,31 +512,11 @@ NextUpManager *manager;
     %property (nonatomic, retain) CAShapeLayer *clear;
     %property (nonatomic, assign) CGFloat size;
 
-    - (void)setFrame:(CGRect)frame {
-        frame.origin.x += (frame.size.width - self.size) / 2;
-        frame.origin.y += (frame.size.height - self.size) / 2;
-        frame.size.width = self.size;
-        frame.size.height = self.size;
-        %orig;
-    }
-    %end
-
-    %subclass NextUpMediaHeaderView : MediaControlsHeaderView
-
-    // Override routing button
-    %property (nonatomic, retain) NUSkipButton *routingButton;
-    %property (nonatomic, retain) UIColor *textColor;
-    %property (nonatomic, assign) CGFloat textAlpha;
-    %property (nonatomic, retain) UIColor *skipBackgroundColor;
-
-    - (id)initWithFrame:(CGRect)arg1 {
-        self = %orig;
-
-        float size = 26.0;
-
-        self.routingButton = [%c(NUSkipButton) buttonWithType:UIButtonTypeCustom];
-        self.routingButton.size = size;
-        self.routingButton.layer.cornerRadius = size / 2;
+    %new
+    + (id)buttonWithSize:(CGFloat)size {
+        NUSkipButton *button = [self buttonWithType:UIButtonTypeCustom];
+        button.size = size;
+        button.layer.cornerRadius = size / 2;
 
         float ratio = 1/3.;
         float crossSize = size * ratio;
@@ -567,9 +547,34 @@ NextUpManager *manager;
         clear.opacity = 1.0;
         [clear setMasksToBounds:YES];
 
-        [self.routingButton.layer addSublayer:clear];
-        self.routingButton.clear = clear;
+        [button.layer addSublayer:clear];
+        button.clear = clear;
 
+        return button;
+    }
+
+    - (void)setFrame:(CGRect)frame {
+        frame.origin.x += (frame.size.width - self.size) / 2;
+        frame.origin.y += (frame.size.height - self.size) / 2;
+        frame.size.width = self.size;
+        frame.size.height = self.size;
+        %orig;
+    }
+
+    %end
+
+    %subclass NextUpMediaHeaderView : MediaControlsHeaderView
+
+    // Override routing button
+    %property (nonatomic, retain) NUSkipButton *routingButton;
+    %property (nonatomic, retain) UIColor *textColor;
+    %property (nonatomic, assign) CGFloat textAlpha;
+    %property (nonatomic, retain) UIColor *skipBackgroundColor;
+
+    - (id)initWithFrame:(CGRect)frame {
+        self = %orig;
+
+        self.routingButton = [%c(NUSkipButton) buttonWithSize:26.0f];
         [self addSubview:self.routingButton];
 
         // Artwork view

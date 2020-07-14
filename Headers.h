@@ -59,6 +59,7 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @interface NUSkipButton : UIButton
 @property (nonatomic, retain) CAShapeLayer *clear;
 @property (nonatomic, assign) CGFloat size;
++ (id)buttonWithSize:(CGFloat)size;
 @end
 
 @interface NextUpMediaHeaderView : MediaControlsHeaderView
