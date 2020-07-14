@@ -9,6 +9,7 @@ NextUpManager *manager;
 
 /* Adding the widget */
 %hook MediaControlsPanelViewController
+#define _self (self)
 
 %property (nonatomic, retain) NextUpViewController *nextUpViewController;
 
@@ -30,13 +31,12 @@ NextUpManager *manager;
 
 %new
 - (BOOL)NU_isControlCenter {
-    return ([self.delegate class] == %c(MediaControlsEndpointsViewController));
+    return ([_self.delegate class] == %c(MediaControlsEndpointsViewController));
 }
 
 - (void)setStyle:(int)style {
     %orig;
-
-    self.nextUpViewController.style = style;
+    _self.nextUpViewController.style = style;
 }
 
 %new
@@ -73,6 +73,7 @@ NextUpManager *manager;
     }
 }
 
+#undef _self
 %end
 // ---
 
@@ -176,6 +177,7 @@ NextUpManager *manager;
 
 %group Lockscreen
     %hook SBDashBoardNotificationAdjunctListViewController
+    #define _self (self)
 
     - (id)init {
         self = %orig;
@@ -229,10 +231,12 @@ NextUpManager *manager;
         [self _updateMediaControlsVisibilityAnimated:YES];
     }
 
+    #undef _self
     %end
 
 
     %hook SBDashBoardMediaControlsViewController
+    #define _self (self)
     %property (nonatomic, assign) BOOL shouldShowNextUp;
     %property (nonatomic, assign) BOOL nu_skipWidgetHeightIncrease;
     %property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
@@ -249,7 +253,7 @@ NextUpManager *manager;
 
     %new
     - (float)nextUpHeight {
-        if (!self.shouldShowNextUp)
+        if (!_self.shouldShowNextUp)
             return 0.f;
 
         float height = 105.f;
@@ -260,16 +264,16 @@ NextUpManager *manager;
 
     - (CGSize)preferredContentSize {
         CGSize orig = %orig;
-        if (!self.nu_skipWidgetHeightIncrease)
-            orig.height += self.nextUpHeight;
+        if (!_self.nu_skipWidgetHeightIncrease)
+            orig.height += _self.nextUpHeight;
         return orig;
     }
 
     - (void)_layoutMediaControls {
         %orig;
 
-        if (self.shouldShowNextUp)
-            [self addNextUpView];
+        if (_self.shouldShowNextUp)
+            [_self addNextUpView];
     }
 
     %new
@@ -283,7 +287,7 @@ NextUpManager *manager;
         if (size.width < 0)
             return;
 
-        MediaControlsPanelViewController *panelViewController = [self panelViewController];
+        UIViewController<PanelViewController> *panelViewController = [self panelViewController];
         [self.view addSubview:panelViewController.nextUpViewController.view];
         UIView *nextUpView = panelViewController.nextUpViewController.view;
         float height = [_self nextUpHeight];
@@ -301,6 +305,7 @@ NextUpManager *manager;
         self.showingNextUp = NO;
     }
 
+    #undef _self
     %end
 
     /* Hide iPhone X buttons */
@@ -371,6 +376,7 @@ NextUpManager *manager;
 
     /* Hide home bar */
     %hook SBDashBoardHomeAffordanceView
+    #define _self (self)
 
     %property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
 
@@ -393,13 +399,13 @@ NextUpManager *manager;
 
     %new
     - (void)showNextUp {
-        self.showingNextUp = YES;
+        _self.showingNextUp = YES;
         [self setAlpha:0];
     }
 
     %new
     - (void)hideNextUp {
-        self.showingNextUp = NO;
+        _self.showingNextUp = NO;
     }
 
     - (void)setAlpha:(CGFloat)alpha {
@@ -412,6 +418,7 @@ NextUpManager *manager;
         %orig;
     }
 
+    #undef _self
     %end
     // ---
 %end
@@ -742,10 +749,12 @@ NextUpManager *manager;
 %end
 %end
 
+__attribute__((always_inline, visibility("hidden")))
 static inline void initTrial() {
     %init(CheckTrialEnded);
 }
 
+__attribute__((always_inline, visibility("hidden")))
 static inline void initLockscreen() {
     %init(Lockscreen);
 
