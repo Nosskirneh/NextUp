@@ -93,16 +93,11 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 #define kNextUpDidInitialize @"nextUpDidInitialize"
 
 @interface NextUpViewController : UIViewController
-@property (nonatomic, retain) NSBundle *bundle;
-@property (nonatomic, retain) UIImpactFeedbackGenerator *hapticGenerator;
-@property (nonatomic, retain) UIStackView *view;
-@property (nonatomic, retain) UIView *contentView;
-@property (nonatomic, retain) NextUpManager *manager;
 @property (nonatomic, retain) UILabel *headerLabel;
-@property (nonatomic, retain) NextUpMediaHeaderView *mediaView;
+@property (assign, nonatomic) long long style;
 @property (nonatomic, assign) BOOL showsHeader;
 @property (nonatomic, assign) BOOL controlCenter;
-@property (assign, nonatomic) long long style;
+@property (nonatomic, retain) NextUpMediaHeaderView *mediaView;
 - (id)initWithControlCenter:(BOOL)controlCenter
                defaultStyle:(long long)style;
 @end

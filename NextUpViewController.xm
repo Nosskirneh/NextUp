@@ -5,6 +5,14 @@
 
 extern NextUpManager *manager;
 
+@interface NextUpViewController ()
+@property (nonatomic, retain) NSBundle *bundle;
+@property (nonatomic, retain) UIImpactFeedbackGenerator *hapticGenerator;
+@property (nonatomic, retain) UIStackView *view;
+@property (nonatomic, retain) UIView *contentView;
+@property (nonatomic, weak) NextUpManager *manager;
+@end
+
 @implementation NextUpViewController {
     UIColor *_textColor;
     CGFloat _textAlpha;
