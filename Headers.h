@@ -60,6 +60,7 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @property (nonatomic, retain) CAShapeLayer *clear;
 @property (nonatomic, assign) CGFloat size;
 + (id)buttonWithSize:(CGFloat)size;
+- (CABasicAnimation *)sizeAnimationForGrowing:(BOOL)grow;
 @end
 
 @interface NextUpMediaHeaderView : MediaControlsHeaderView

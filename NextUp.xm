@@ -550,7 +550,44 @@ NextUpManager *manager;
         [button.layer addSublayer:clear];
         button.clear = clear;
 
+        [button addTarget:button action:@selector(shrink) forControlEvents:UIControlEventTouchDown];
+        [button addTarget:button
+                   action:@selector(grow)
+         forControlEvents:UIControlEventTouchUpInside | UIControlEventTouchUpOutside | UIControlEventTouchCancel];
+
         return button;
+    }
+
+    %new
+    - (CABasicAnimation *)sizeAnimationForGrowing:(BOOL)grow {
+        NSNumber *from;
+        NSNumber *to;
+        if (grow) {
+            from = [NSNumber numberWithFloat:0.9f];
+            to = [NSNumber numberWithFloat:1.0f];
+        } else {
+            from = [NSNumber numberWithFloat:1.0f];
+            to = [NSNumber numberWithFloat:0.9f];
+        }
+
+        CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
+        animation.duration = 0.35f;
+        animation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+        animation.fromValue = from;
+        animation.toValue = to;
+        animation.removedOnCompletion = NO;
+        animation.fillMode = kCAFillModeForwards;
+        return animation;
+    }
+
+    %new
+    - (void)shrink {
+        [self.layer addAnimation:[self sizeAnimationForGrowing:NO] forKey:@"shrink-grow"];
+    }
+
+    %new
+    - (void)grow {
+        [self.layer addAnimation:[self sizeAnimationForGrowing:YES] forKey:@"shrink-grow"];
     }
 
     - (void)setFrame:(CGRect)frame {
