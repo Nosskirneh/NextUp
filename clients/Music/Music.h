@@ -44,7 +44,6 @@ typedef MPArtworkCatalog *(^catalogBlock)(void);
 - (void)removeContentItemID:(NSString *)contentItemID
                  completion:(void(^)())completion;
 - (id)_itemForPair:(NSArray *)pair;
-- (NSArray *)nu_getQueue;
 - (MPMediaItem<NUMediaItem> *)nu_nextItem;
 - (void)fetchNextUp;
 @end

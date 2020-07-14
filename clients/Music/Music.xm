@@ -59,11 +59,24 @@ static void fetchNextUpMediaItem(MPMediaItem<NUMediaItem> *item, MPArtworkCatalo
 
     %new
     - (MPMediaItem<NUMediaItem> *)nu_nextItem {
-        NSArray *items = [self nu_getQueue];
-        if (!items || items.count < 1)
-            return nil;
+        NSUInteger currentIndex = 0;
+        NSEnumerator *enumerator = [self.identifierList enumeratorWithOptions:0];
+        NSMutableArray *items = [NSMutableArray new];
+        MPSectionedIdentifierListItemEntry *entry;
+        while ((entry = enumerator.nextObject)) {
+            NSArray *pair = @[entry.sectionIdentifier, entry.itemIdentifier];
+            MPMediaItem<NUMediaItem> *item = [self _itemForPair:pair];
 
-        return items[0];
+            if ([item.contentItemID isEqualToString:self.currentItem.contentItemID]) {
+                currentIndex = (items.count - 1);
+                continue;
+            } else if (!item || currentIndex == 0) {
+                continue;
+            }
+
+            return item;
+        }
+        return nil;
     }
 
     %new
@@ -91,30 +104,6 @@ static void fetchNextUpMediaItem(MPMediaItem<NUMediaItem> *item, MPArtworkCatalo
         %orig;
 
         [self fetchNextUp];
-    }
-
-    %new
-    - (NSArray *)nu_getQueue {
-        NSUInteger currentIndex = 0;
-        NSEnumerator *enumerator = [self.identifierList enumeratorWithOptions:0];
-        NSMutableArray *items = [NSMutableArray new];
-        MPSectionedIdentifierListItemEntry *entry;
-        while ((entry = enumerator.nextObject)) {
-            NSArray *pair = @[entry.sectionIdentifier, entry.itemIdentifier];
-            MPMediaItem<NUMediaItem> *item = [self _itemForPair:pair];
-
-            if ([item.contentItemID isEqualToString:self.currentItem.contentItemID]) {
-                currentIndex = (items.count - 1);
-                continue;
-            } else if (currentIndex == 0) {
-                continue;
-            }
-
-            if (item)
-                [items addObject:item];
-        }
-
-        return items;
     }
 
     - (void)player:(id)player currentItemDidChangeFromItem:(id)fromItem toItem:(id)toItem {
