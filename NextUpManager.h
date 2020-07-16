@@ -4,6 +4,8 @@
     NSMutableSet *_enabledApps;
     BOOL _cfLockscreen;
 }
+@property (nonatomic, assign, readonly) float lockscreenHeight;
+
 @property (nonatomic, readonly) NSSet *enabledApps;
 @property (nonatomic, assign, readwrite) NSString *mediaApplication;
 @property (nonatomic, readonly) NSDictionary *metadata;
@@ -25,6 +27,7 @@
 @property (nonatomic, assign, readonly) BOOL colorFlowEnabled;
 @property (nonatomic, assign, readonly) BOOL flowEnabled;
 + (BOOL)isShowingMediaControls;
++ (instancetype)sharedInstance;
 - (void)setup;
 - (void)setTrialEnded;
 - (BOOL)hasContent;

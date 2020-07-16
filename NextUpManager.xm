@@ -20,11 +20,21 @@ UIViewController<CoverSheetViewController> *getCoverSheetViewController() {
 @implementation NextUpManager {
     NSDictionary *_preferences;
     NSString *_pendingMediaApplication;
+    BOOL _showingNextUp;
 }
 
 + (BOOL)isShowingMediaControls {
     UIViewController<CoverSheetViewController> *coverSheetViewController = getCoverSheetViewController();
     return [coverSheetViewController isShowingMediaControls];
+}
+
++ (instancetype)sharedInstance {
+    static NextUpManager *sharedInstance = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        sharedInstance = [[self alloc] init];
+    });
+    return sharedInstance;
 }
 
 - (void)setup {
@@ -61,6 +71,16 @@ UIViewController<CoverSheetViewController> *getCoverSheetViewController() {
     [self reloadPreferences];
 }
 
+- (float)lockscreenHeight {
+    if (!_showingNextUp)
+        return 0.f;
+
+    float height = 105.f;
+    if (self.slimmedLSMode)
+        height -= 40.f;
+    return height;
+}
+
 - (void)nowPlayingAppChanged:(NSNotification *)notification {
     SBMediaController *mediaController = notification.object;
     NSString *bundleID = mediaController.nowPlayingApplication.bundleIdentifier;
@@ -81,8 +101,18 @@ UIViewController<CoverSheetViewController> *getCoverSheetViewController() {
 
     hide:
     [self setMediaApplication:nil];
-    [[NSNotificationCenter defaultCenter] postNotificationName:kHideNextUp object:nil];
+    [self hide];
     return NO;
+}
+
+- (void)show {
+    _showingNextUp = YES;
+    [[NSNotificationCenter defaultCenter] postNotificationName:kShowNextUp object:nil];
+}
+
+- (void)hide {
+    _showingNextUp = NO;
+    [[NSNotificationCenter defaultCenter] postNotificationName:kHideNextUp object:nil];
 }
 
 - (void)configureForMediaApplication:(NSString *)bundleID
@@ -90,8 +120,9 @@ UIViewController<CoverSheetViewController> *getCoverSheetViewController() {
     [self setMediaApplication:bundleID skipUpdateLabels:skipUpdateLabels];
     // If we should not hide on empty, we show NextUp from the beginning.
     // In the other case, this is done from the NextUpViewController
-    if (![self hideOnEmpty])
-        [[NSNotificationCenter defaultCenter] postNotificationName:kShowNextUp object:nil];
+    if (![self hideOnEmpty]) {
+        [self show];
+    }
 }
 
 - (void)updateLabels {
@@ -123,6 +154,12 @@ UIViewController<CoverSheetViewController> *getCoverSheetViewController() {
 
     _metadata = dict[kMetadata];
     [self updateLabels];
+
+    if (!_metadata && self.hideOnEmpty && _showingNextUp) {
+        [self hide];
+    } else if (_metadata && !_showingNextUp) {
+        [self show];
+    }
 }
 
 - (void)handleIncomingRegisterMessage:(NSDictionary *)dict {
