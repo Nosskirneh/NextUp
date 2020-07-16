@@ -253,13 +253,7 @@ NextUpManager *manager;
 
     %new
     - (float)nextUpHeight {
-        if (!_self.shouldShowNextUp)
-            return 0.f;
-
-        float height = 105.f;
-        if ([manager slimmedLSMode])
-            height -= 40.f;
-        return height;
+        return manager.lockscreenHeight;
     }
 
     - (CGSize)preferredContentSize {

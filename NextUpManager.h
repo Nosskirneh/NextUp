@@ -4,6 +4,8 @@
     NSMutableSet *_enabledApps;
     BOOL _cfLockscreen;
 }
+@property (nonatomic, assign, readonly) float lockscreenHeight;
+
 @property (nonatomic, readonly) NSSet *enabledApps;
 @property (nonatomic, assign, readwrite) NSString *mediaApplication;
 @property (nonatomic, readonly) NSDictionary *metadata;
