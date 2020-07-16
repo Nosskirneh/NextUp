@@ -812,7 +812,7 @@ static inline void initLockscreen() {
     if (fromUntrustedSource(package$bs()))
         %init(PackagePirated);
 
-    manager = [[NextUpManager alloc] init];
+    manager = [NextUpManager sharedInstance];
 
     /* License check – if no license found, present message.
        If no valid license was found, do not init. */

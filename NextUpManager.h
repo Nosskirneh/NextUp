@@ -24,6 +24,7 @@
 @property (nonatomic, assign, readonly) BOOL trialEnded;
 @property (nonatomic, assign, readonly) BOOL colorFlowEnabled;
 + (BOOL)isShowingMediaControls;
++ (instancetype)sharedInstance;
 - (void)setup;
 - (void)setTrialEnded;
 - (BOOL)hasContent;

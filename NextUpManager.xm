@@ -19,11 +19,21 @@ SBDashBoardViewController *getDashBoardViewController() {
 @implementation NextUpManager {
     NSDictionary *_preferences;
     NSString *_pendingMediaApplication;
+    BOOL _showingNextUp;
 }
 
 + (BOOL)isShowingMediaControls {
     SBDashBoardViewController *dashBoardViewController = getDashBoardViewController();
     return [dashBoardViewController isShowingMediaControls];
+}
+
++ (instancetype)sharedInstance {
+    static NextUpManager *sharedInstance = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        sharedInstance = [[self alloc] init];
+    });
+    return sharedInstance;
 }
 
 - (void)setup {
@@ -59,6 +69,16 @@ SBDashBoardViewController *getDashBoardViewController() {
     [self reloadPreferences];
 }
 
+- (float)lockscreenHeight {
+    if (!_showingNextUp)
+        return 0.f;
+
+    float height = 105.f;
+    if (self.slimmedLSMode)
+        height -= 40.f;
+    return height;
+}
+
 - (void)nowPlayingAppChanged:(NSNotification *)notification {
     SBMediaController *mediaController = notification.object;
     NSString *bundleID = mediaController.nowPlayingApplication.bundleIdentifier;
@@ -79,8 +99,18 @@ SBDashBoardViewController *getDashBoardViewController() {
 
     hide:
     [self setMediaApplication:nil];
-    [[NSNotificationCenter defaultCenter] postNotificationName:kHideNextUp object:nil];
+    [self hide];
     return NO;
+}
+
+- (void)show {
+    _showingNextUp = YES;
+    [[NSNotificationCenter defaultCenter] postNotificationName:kShowNextUp object:nil];
+}
+
+- (void)hide {
+    _showingNextUp = NO;
+    [[NSNotificationCenter defaultCenter] postNotificationName:kHideNextUp object:nil];
 }
 
 - (void)configureForMediaApplication:(NSString *)bundleID
@@ -88,8 +118,9 @@ SBDashBoardViewController *getDashBoardViewController() {
     [self setMediaApplication:bundleID skipUpdateLabels:skipUpdateLabels];
     // If we should not hide on empty, we show NextUp from the beginning.
     // In the other case, this is done from the NextUpViewController
-    if (![self hideOnEmpty])
-        [[NSNotificationCenter defaultCenter] postNotificationName:kShowNextUp object:nil];
+    if (![self hideOnEmpty]) {
+        [self show];
+    }
 }
 
 - (void)updateLabels {
@@ -121,6 +152,12 @@ SBDashBoardViewController *getDashBoardViewController() {
 
     _metadata = dict[kMetadata];
     [self updateLabels];
+
+    if (!_metadata && self.hideOnEmpty && _showingNextUp) {
+        [self hide];
+    } else if (_metadata && !_showingNextUp) {
+        [self show];
+    }
 }
 
 - (void)handleIncomingRegisterMessage:(NSDictionary *)dict {

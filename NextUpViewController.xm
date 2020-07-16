@@ -3,8 +3,6 @@
 #import "Common.h"
 #import <notify.h>
 
-extern NextUpManager *manager;
-
 @interface NextUpViewController ()
 @property (nonatomic, retain) NSBundle *bundle;
 @property (nonatomic, retain) UIImpactFeedbackGenerator *hapticGenerator;
@@ -26,7 +24,7 @@ extern NextUpManager *manager;
     if (self == [super init]) {
         _controlCenter = controlCenter;
         _style = style;
-        _manager = manager;
+        _manager = [NextUpManager sharedInstance];
 
         NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
         [center addObserver:self
@@ -103,7 +101,7 @@ extern NextUpManager *manager;
     NSLayoutYAxisAnchor *lowestTopAnchor = _contentView.topAnchor;
     int verticalConstant = 0;
 
-    if (!self.controlCenter && ![_manager slimmedLSMode]) {
+    if (!_controlCenter && !_manager.slimmedLSMode) {
         self.headerLabel = [[UILabel alloc] init];
         _headerLabel.backgroundColor = UIColor.clearColor;
         _headerLabel.textAlignment = NSTextAlignmentLeft;
@@ -126,7 +124,7 @@ extern NextUpManager *manager;
                                                     constant:15].active = YES;
 
         lowestTopAnchor = _headerLabel.bottomAnchor;
-    } else if (self.controlCenter) {
+    } else if (_controlCenter) {
         horizontalPadding = 0;
     } else {
         verticalConstant = -20;
@@ -160,7 +158,9 @@ extern NextUpManager *manager;
                           NEXTUP_IDENTIFIER, kSkipNext, _manager.mediaApplication];
     notify_post([skipNext UTF8String]);
 
-    [[%c(SBIdleTimerGlobalCoordinator) sharedInstance] resetIdleTimer];
+    if (!_controlCenter) {
+        [[%c(SBIdleTimerGlobalCoordinator) sharedInstance] resetIdleTimer];
+    }
 }
 
 - (void)metadataChanged:(NSNotification *)notification {
@@ -173,17 +173,11 @@ extern NextUpManager *manager;
         _mediaView.secondaryString = metadata[kSubtitle];
         _mediaView.artworkView.image = [UIImage imageWithData:metadata[kArtwork]];
         _mediaView.routingButton.hidden = metadata[kSkipable] && ![metadata[kSkipable] boolValue];
-
-        if ([_manager hideOnEmpty])
-            [[NSNotificationCenter defaultCenter] postNotificationName:kShowNextUp object:nil];
     } else {
         _mediaView.primaryString = @"No next track available";
         _mediaView.secondaryString = nil;
         _mediaView.artworkView.image = nil;
         _mediaView.routingButton.hidden = YES;
-
-        if ([_manager hideOnEmpty])
-            [[NSNotificationCenter defaultCenter] postNotificationName:kHideNextUp object:nil];
     }
 }
 
