@@ -65,6 +65,10 @@ static void fetchNextUpMediaItem(MPMediaItem<NUMediaItem> *item, MPArtworkCatalo
        If users switch quickly, NextUp will send an empty queue message
        which will cause the media widget to hide and show very often. */
     - (unsigned long long)_preferredQueueDepthWithFirstItem:(id)firstItem {
+        // This check is done as it otherwise wouldn't work to select tracks
+        // other than the next song in the queue list.
+        if (firstItem)
+            return %orig;
         return 7;
     }
 
