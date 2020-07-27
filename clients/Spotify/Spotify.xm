@@ -8,7 +8,14 @@ static SpotifyApplication *getSpotifyApplication() {
 }
 
 static NowPlayingFeatureImplementation *getRemoteDelegate() {
-    return getSpotifyApplication().remoteControlDelegate;
+    SpotifyApplication *app = getSpotifyApplication();
+    if ([app respondsToSelector:@selector(remoteControlInstance)]) {
+        return app.remoteControlInstance.delegate;
+    } else if ([app respondsToSelector:@selector(remoteControlDelegate)]) {
+        return app.remoteControlDelegate;
+    }
+
+    return nil;
 }
 
 static SPTQueueServiceImplementation *getQueueService() {
