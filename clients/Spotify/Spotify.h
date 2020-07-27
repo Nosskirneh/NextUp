@@ -79,8 +79,13 @@
 @property (nonatomic) __weak SPTQueueInteractorImplementation *queueInteractor;
 @end
 
+@interface SPTRemoteControlImplementation : NSObject
+@property (nonatomic) __weak NowPlayingFeatureImplementation *delegate;
+@end
+
 @interface SpotifyApplication : UIApplication
-@property (nonatomic) __weak NowPlayingFeatureImplementation *remoteControlDelegate;
+@property (nonatomic) __weak NowPlayingFeatureImplementation *remoteControlDelegate; // Pre 8.5.70
+@property (nonatomic) __weak SPTRemoteControlImplementation *remoteControlInstance; // 8.5.70+
 @end
 
 
