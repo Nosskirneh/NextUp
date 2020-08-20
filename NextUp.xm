@@ -672,7 +672,7 @@ NextUpManager *manager;
 
     %new
     - (void)updateTextColor {
-    	UIColor *color = self.textColor;
+        UIColor *color = self.textColor;
         self.primaryLabel.textColor = color;
         self.secondaryLabel.textColor = color;
         self.routingButton.clear.strokeColor = color.CGColor;
@@ -775,7 +775,7 @@ NextUpManager *manager;
 
         // Do not color the labels if ColorFlow is active
         if (!manager.colorFlowEnabled)
-        	[self updateTextColor];
+            [self updateTextColor];
 
         self.routingButton.alpha = 0.95;
         self.routingButton.userInteractionEnabled = YES;
