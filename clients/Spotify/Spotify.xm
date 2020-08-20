@@ -2,28 +2,28 @@
 #import "../CommonClients.h"
 #import <substrate.h>
 
+static SPTNowPlayingServiceImplementation *nowPlayingService;
 
-static SpotifyApplication *getSpotifyApplication() {
-    return (SpotifyApplication *)[UIApplication sharedApplication];
+%hook SPTNowPlayingServiceImplementation
+
+- (void)load {
+    %orig;
+    nowPlayingService = self;
 }
 
-static NowPlayingFeatureImplementation *getRemoteDelegate() {
-    SpotifyApplication *app = getSpotifyApplication();
-    if ([app respondsToSelector:@selector(remoteControlInstance)]) {
-        return app.remoteControlInstance.delegate;
-    } else if ([app respondsToSelector:@selector(remoteControlDelegate)]) {
-        return app.remoteControlDelegate;
-    }
-
-    return nil;
+- (void)unload {
+    %orig;
+    nowPlayingService = nil;
 }
+
+%end
 
 static SPTQueueServiceImplementation *getQueueService() {
-    return getRemoteDelegate().queueService;
+    return nowPlayingService.queueService;
 }
 
 static SPTQueueViewModelImplementation *getQueueImplementation() {
-    return getRemoteDelegate().queueInteractor.target;
+    return nowPlayingService.queueInteractor.target;
 }
 
 // Fetch next track on app launch
