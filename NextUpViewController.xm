@@ -79,7 +79,7 @@
 
     self.contentView = [[UIView alloc] initWithFrame:CGRectZero];
 
-    self.mediaView = [[%c(NextUpMediaHeaderView) alloc] initWithFrame:CGRectZero];
+    self.mediaView = [[%c(NextUpMediaHeaderView) alloc] initWithFrame:CGRectZero controlCenter:_controlCenter];
     _mediaView.style = self.style;
     _mediaView.textAlpha = _textAlpha;
     [_mediaView setNewTextColor:_textColor];

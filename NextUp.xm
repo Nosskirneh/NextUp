@@ -286,6 +286,16 @@ NextUpManager *manager;
     }
 
     %new
+    - (float)nextUpXPosition {
+        return [self panelViewController].view.frame.origin.x;
+    }
+
+    %new
+    - (float)nextUpExtraWidth {
+        return 0.f;
+    }
+
+    %new
     - (void)addNextUpView {
         CGSize size = [self preferredContentSize];
         if (size.width < 0)
@@ -515,6 +525,7 @@ NextUpManager *manager;
 
     %property (nonatomic, retain) CAShapeLayer *clear;
     %property (nonatomic, assign) CGFloat size;
+    %property (nonatomic, assign) BOOL controlCenter;
 
     %new
     + (id)buttonWithSize:(CGFloat)size {
@@ -559,6 +570,13 @@ NextUpManager *manager;
                    action:@selector(grow)
          forControlEvents:UIControlEventTouchUpInside | UIControlEventTouchUpOutside | UIControlEventTouchCancel];
 
+        return button;
+    }
+
+    %new
+    + (id)buttonWithSize:(CGFloat)size controlCenter:(BOOL)controlCenter {
+        NUSkipButton *button = [self buttonWithSize:size];
+        button.controlCenter = controlCenter;
         return button;
     }
 
@@ -611,11 +629,20 @@ NextUpManager *manager;
     %property (nonatomic, retain) UIColor *textColor;
     %property (nonatomic, assign) CGFloat textAlpha;
     %property (nonatomic, retain) UIColor *skipBackgroundColor;
+    %property (nonatomic, assign) BOOL controlCenter;
+
+    %new
+    - (id)initWithFrame:(CGRect)frame controlCenter:(BOOL)controlCenter {
+        self = [self initWithFrame:frame];
+        self.controlCenter = controlCenter;
+
+        return self;
+    }
 
     - (id)initWithFrame:(CGRect)frame {
         self = %orig;
 
-        self.routingButton = [%c(NUSkipButton) buttonWithSize:26.0f];
+        self.routingButton = [%c(NUSkipButton) buttonWithSize:26.0f controlCenter:self.controlCenter];
         [self addSubview:self.routingButton];
 
         // Artwork view
@@ -671,13 +698,22 @@ NextUpManager *manager;
         return frame;
     }
 
+    %new
+    - (UIView *)getArtworkContainerView {
+        // `artworkContentView` exists on iOS 13.5 and has the origin displacement
+        if ([self respondsToSelector:@selector(artworkContentView)]) {
+            return self.artworkContentView;
+        }
+        return self.artworkView;
+    }
+
     // This is a bit messy, but it's because MPUMarqueeView is weird.
     // Changing its frame doesn't work very well with RTL either...
     - (void)layoutSubviews {
         %orig;
 
         NUSkipButton *routingButton = self.routingButton;
-        UIView *artworkView = self.artworkView;
+        UIView *artworkView = [self getArtworkContainerView];
 
         if (routingButton.center.x == 0 && routingButton.center.y == 0) { // Coordinates will not be set properly on iOS 11.2.x
             float buttonSize = routingButton.size;

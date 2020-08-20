@@ -59,6 +59,8 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @interface NUSkipButton : UIButton
 @property (nonatomic, retain) CAShapeLayer *clear;
 @property (nonatomic, assign) CGFloat size;
+@property (nonatomic, assign) BOOL controlCenter;
++ (id)buttonWithSize:(CGFloat)size controlCenter:(BOOL)controlCenter;
 + (id)buttonWithSize:(CGFloat)size;
 - (CABasicAnimation *)sizeAnimationForGrowing:(BOOL)grow;
 @end
@@ -68,6 +70,8 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @property (nonatomic, retain) UIColor *textColor;
 @property (nonatomic, assign) CGFloat textAlpha;
 @property (nonatomic, retain) UIColor *skipBackgroundColor;
+@property (nonatomic, assign) BOOL controlCenter;
+- (id)initWithFrame:(CGRect)frame controlCenter:(BOOL)controlCenter;
 - (CGRect)rectForMaxWidth:(CGRect)frame
                  maxWidth:(CGFloat)maxWidth
           fallbackOriginX:(CGFloat)fallbackOriginX
@@ -76,6 +80,7 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 - (void)updateSkipBackgroundColor:(UIColor *)color;
 - (void)setNewTextColor:(UIColor *)color;
 - (void)updateTextColor;
+- (UIView *)getArtworkContainerView;
 @end
 
 
@@ -159,6 +164,8 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 - (void)addNextUpView;
 - (void)removeNextUpView;
 - (MediaControlsPanelViewController *)panelViewController;
+- (float)nextUpXPosition;
+- (float)nextUpExtraWidth;
 - (float)nextUpHeight;
 - (float)extraBottomPaddingForNextUpHeight:(float)nextUpHeight;
 @end
