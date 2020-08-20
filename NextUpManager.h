@@ -4,7 +4,7 @@
     NSMutableSet *_enabledApps;
     BOOL _cfLockscreen;
 }
-@property (nonatomic, assign, readonly) float lockscreenHeight;
+@property (nonatomic, readonly) float lockscreenHeight;
 
 @property (nonatomic, readonly) NSSet *enabledApps;
 @property (nonatomic, assign, readwrite) NSString *mediaApplication;
@@ -15,6 +15,7 @@
 @property (nonatomic, readonly) BOOL hideArtwork;
 @property (nonatomic, readonly) BOOL hideXButtons;
 @property (nonatomic, readonly) BOOL hideHomeBar;
+@property (nonatomic, readonly) float extraBottomPadding;
 
 @property (nonatomic, readonly) BOOL hapticFeedbackSkip;
 @property (nonatomic, readonly) BOOL hapticFeedbackOther;

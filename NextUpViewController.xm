@@ -117,7 +117,7 @@
 
     self.contentView = [[UIView alloc] initWithFrame:CGRectZero];
 
-    self.mediaView = [[%c(NextUpMediaHeaderView) alloc] initWithFrame:CGRectZero];
+    self.mediaView = [[%c(NextUpMediaHeaderView) alloc] initWithFrame:CGRectZero controlCenter:_controlCenter];
     _mediaView.style = self.style;
     _mediaView.textAlpha = _textAlpha;
     [_mediaView setNewTextColor:_textColor];
@@ -169,21 +169,22 @@
     }
 
     // Media view constraints
-    [_mediaView.topAnchor constraintEqualToAnchor:lowestTopAnchor
-                                         constant:verticalConstant].active = YES;
-    [_mediaView.bottomAnchor constraintEqualToAnchor:_contentView.bottomAnchor].active = YES;
-    [_mediaView.leftAnchor constraintEqualToAnchor:_contentView.leftAnchor
-                                          constant:horizontalPadding].active = YES;
-    [_mediaView.rightAnchor constraintEqualToAnchor:_contentView.rightAnchor
-                                           constant:-horizontalPadding].active = YES;
+    [NSLayoutConstraint activateConstraints:@[
+        [_mediaView.topAnchor constraintEqualToAnchor:lowestTopAnchor constant:verticalConstant],
+        [_mediaView.bottomAnchor constraintEqualToAnchor:_contentView.bottomAnchor],
+        [_mediaView.leftAnchor constraintEqualToAnchor:_contentView.leftAnchor constant:horizontalPadding],
+        [_mediaView.rightAnchor constraintEqualToAnchor:_contentView.rightAnchor constant:-horizontalPadding]
+    ]];
 
     [self.view addArrangedSubview:_contentView];
 
     _contentView.translatesAutoresizingMaskIntoConstraints = NO;
-    [_contentView.topAnchor constraintEqualToAnchor:self.view.topAnchor].active = YES;
-    [_contentView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor].active = YES;
-    [_contentView.leftAnchor constraintEqualToAnchor:self.view.leftAnchor].active = YES;
-    [_contentView.rightAnchor constraintEqualToAnchor:self.view.rightAnchor].active = YES;
+    [NSLayoutConstraint activateConstraints:@[
+        [_contentView.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+        [_contentView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
+        [_contentView.leftAnchor constraintEqualToAnchor:self.view.leftAnchor],
+        [_contentView.rightAnchor constraintEqualToAnchor:self.view.rightAnchor]
+    ]];
 
     [self updateLabels:_manager.metadata];
 }

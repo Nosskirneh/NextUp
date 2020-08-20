@@ -262,10 +262,20 @@ NextUpManager *manager;
         return manager.lockscreenHeight;
     }
 
+    %new
+    - (float)extraBottomPaddingForNextUpHeight:(float)nextUpHeight {
+        if (nextUpHeight == 0.f) {
+            return 0.f;
+        }
+        return manager.extraBottomPadding;
+    }
+
     - (CGSize)preferredContentSize {
         CGSize orig = %orig;
-        if (!_self.nu_skipWidgetHeightIncrease)
-            orig.height += _self.nextUpHeight;
+        if (!_self.nu_skipWidgetHeightIncrease) {
+            float nextUpHeight = _self.nextUpHeight;
+            orig.height += nextUpHeight + [_self extraBottomPaddingForNextUpHeight:nextUpHeight];
+        }
         return orig;
     }
 
@@ -281,6 +291,16 @@ NextUpManager *manager;
         if (%c(MRPlatterViewController))
             return MSHookIvar<MRPlatterViewController *>(self, "_platterViewController");
         return MSHookIvar<MediaControlsPanelViewController *>(self, "_mediaControlsPanelViewController");
+    }
+
+    %new
+    - (float)nextUpXPosition {
+        return [self panelViewController].view.frame.origin.x;
+    }
+
+    %new
+    - (float)nextUpExtraWidth {
+        return 0.f;
     }
 
     %new
@@ -540,6 +560,7 @@ NextUpManager *manager;
 
     %property (nonatomic, retain) CAShapeLayer *clear;
     %property (nonatomic, assign) CGFloat size;
+    %property (nonatomic, assign) BOOL controlCenter;
     // This property is needed in iOS 12 as the default routing button has it
     %property (nonatomic, assign) NSInteger currentMode;
 
@@ -586,6 +607,13 @@ NextUpManager *manager;
                    action:@selector(grow)
          forControlEvents:UIControlEventTouchUpInside | UIControlEventTouchUpOutside | UIControlEventTouchCancel];
 
+        return button;
+    }
+
+    %new
+    + (id)buttonWithSize:(CGFloat)size controlCenter:(BOOL)controlCenter {
+        NUSkipButton *button = [self buttonWithSize:size];
+        button.controlCenter = controlCenter;
         return button;
     }
 
@@ -638,11 +666,20 @@ NextUpManager *manager;
     %property (nonatomic, retain) UIColor *textColor;
     %property (nonatomic, assign) CGFloat textAlpha;
     %property (nonatomic, retain) UIColor *skipBackgroundColor;
+    %property (nonatomic, assign) BOOL controlCenter;
+
+    %new
+    - (id)initWithFrame:(CGRect)frame controlCenter:(BOOL)controlCenter {
+        self = [self initWithFrame:frame];
+        self.controlCenter = controlCenter;
+
+        return self;
+    }
 
     - (id)initWithFrame:(CGRect)frame {
         self = %orig;
 
-        self.routingButton = [%c(NUSkipButton) buttonWithSize:26.0f];
+        self.routingButton = [%c(NUSkipButton) buttonWithSize:26.0f controlCenter:self.controlCenter];
         [self addSubview:self.routingButton];
 
         // Artwork view
@@ -677,7 +714,7 @@ NextUpManager *manager;
 
     %new
     - (void)updateTextColor {
-    	UIColor *color = self.textColor;
+        UIColor *color = self.textColor;
         self.primaryLabel.textColor = color;
         self.secondaryLabel.textColor = color;
         self.routingButton.clear.strokeColor = color.CGColor;
@@ -703,13 +740,22 @@ NextUpManager *manager;
         return frame;
     }
 
+    %new
+    - (UIView *)getArtworkContainerView {
+        // `artworkContentView` exists on iOS 13.5 and has the origin displacement
+        if ([self respondsToSelector:@selector(artworkContentView)]) {
+            return self.artworkContentView;
+        }
+        return self.artworkView;
+    }
+
     // This is a bit messy, but it's because MPUMarqueeView is weird.
     // Changing its frame doesn't work very well with RTL either...
     - (void)layoutSubviews {
         %orig;
 
         NUSkipButton *routingButton = self.routingButton;
-        UIView *artworkView = self.artworkView;
+        UIView *artworkView = [self getArtworkContainerView];
 
         // `artworkContentView` exists on iOS 13.5 and has the origin displacement
         if ([self respondsToSelector:@selector(artworkContentView)]) {
@@ -774,7 +820,7 @@ NextUpManager *manager;
 
         // Do not color the labels if ColorFlow is active
         if (!manager.colorFlowEnabled)
-        	[self updateTextColor];
+            [self updateTextColor];
 
         self.routingButton.alpha = 0.95;
         self.routingButton.userInteractionEnabled = YES;

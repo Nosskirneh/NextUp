@@ -226,6 +226,11 @@ UIViewController<CoverSheetViewController> *getCoverSheetViewController() {
     return value && [value boolValue];
 }
 
+- (float)extraBottomPadding {
+    NSNumber *value = _preferences[kExtraBottomPadding];
+    return value ? [value floatValue] : 0.f;
+}
+
 - (BOOL)hapticFeedbackSkip {
     NSNumber *value = _preferences[kHapticFeedbackSkip];
     return !value || [value boolValue];
