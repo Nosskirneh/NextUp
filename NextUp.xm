@@ -256,10 +256,20 @@ NextUpManager *manager;
         return manager.lockscreenHeight;
     }
 
+    %new
+    - (float)extraBottomPaddingForNextUpHeight:(float)nextUpHeight {
+        if (nextUpHeight == 0.f) {
+            return 0.f;
+        }
+        return manager.extraBottomPadding;
+    }
+
     - (CGSize)preferredContentSize {
         CGSize orig = %orig;
-        if (!_self.nu_skipWidgetHeightIncrease)
-            orig.height += _self.nextUpHeight;
+        if (!_self.nu_skipWidgetHeightIncrease) {
+            float nextUpHeight = _self.nextUpHeight;
+            orig.height += nextUpHeight + [_self extraBottomPaddingForNextUpHeight:nextUpHeight];
+        }
         return orig;
     }
 

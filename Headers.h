@@ -160,6 +160,7 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 - (void)removeNextUpView;
 - (MediaControlsPanelViewController *)panelViewController;
 - (float)nextUpHeight;
+- (float)extraBottomPaddingForNextUpHeight:(float)nextUpHeight;
 @end
 
 

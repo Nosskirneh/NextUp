@@ -321,6 +321,7 @@
             <true/>
         </dict>
 
+        <!-- Lockscreen -->
         <dict>
             <key>cell</key>
             <string>PSGroupCell</string>
@@ -388,6 +389,39 @@ Hiding elements is useful with ColorFlow's extended media artwork view. Elements
             <key>cell</key>
             <string>PSGroupCell</string>
             <key>label</key>
+            <string>Lockscreen extra bottom padding</string>
+            <key>footerText</key>
+            <string>Extra bottom padding requires the media widget to reload to take effect.</string>
+        </dict>
+
+        <dict>
+            <key>id</key>
+            <string>extraBottomPadding</string>
+            <key>cell</key>
+            <string>PSSliderCell</string>
+            <key>key</key>
+            <string>extraBottomPadding</string>
+            <key>isSegmented</key>
+            <true/>
+            <key>segmentCount</key>
+            <integer>25</integer>
+            <key>showValue</key>
+            <true/>
+            <key>min</key>
+            <integer>0</integer>
+            <key>max</key>
+            <integer>25</integer>
+            <key>default</key>
+            <string>0</string>
+            <key>PostNotification</key>
+            <string>se.nosskirneh.nextup/preferencesChanged</string>
+        </dict>
+
+        <!-- Behaviour -->
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>label</key>
             <string>Behaviour</string>
             <key>footerAlignment</key>
             <integer>0</integer>
@@ -427,6 +461,7 @@ Hiding elements is useful with ColorFlow's extended media artwork view. Elements
             <true/>
         </dict>
 
+        <!-- Feedback -->
         <dict>
             <key>cell</key>
             <string>PSGroupCell</string>
