@@ -1,3 +1,26 @@
+@protocol SPTService;
+
+@protocol SPTServiceProvider <NSObject>
+- (id <SPTService>)provideOptionalServiceForIdentifier:(NSString *)identifier;
+- (id <SPTService>)provideServiceForIdentifier:(NSString *)identifier;
+@end
+
+@protocol SPTServiceProvider;
+
+@protocol SPTService <NSObject>
+@property (atomic, class, readonly) NSString *serviceIdentifier;
+- (void)configureWithServices:(id<SPTServiceProvider>)serviceProvider;
+
+@optional
+- (void)idleStateWasReached;
+- (void)initialViewDidAppear;
+- (void)load;
+- (void)unload;
+@end
+
+
+
+
 @interface SPTPlayerTrack : NSObject
 @property (readonly, nonatomic, getter=isAdvertisement) BOOL advertisement;
 @property (readonly, nonatomic) NSString *subtitle;
@@ -33,53 +56,53 @@
 @property (readonly, nonatomic) NSArray<SPTQueueTrackImplementation *> *upNextTracks;
 @end
 
-@interface SPTGLUEImageLoader : NSObject
-- (id)loadImageForURL:(id)arg1 imageSize:(CGSize)arg2 completion:(id)arg3;
-@end
-
 @interface SPTQueueViewModelImplementation : NSObject {
     SPTPlayerImpl *_player;
 }
-@property (nonatomic, retain) SPTPlayerTrack *lastSentTrack;
-@property (nonatomic, retain) SPTGLUEImageLoader *imageLoader;
 @property (nonatomic, strong) SPTQueueViewModelDataSource *dataSource;
 - (void)enableUpdates;
-- (SPTQueueViewModelDataSource *)removeTracks:(NSSet *)arg1;
-- (void)sendNextUpMetadata:(SPTPlayerTrack *)track;
-- (void)fetchNextUp;
-- (void)fetchNextUpForState:(SPTPlayerState *)state;
-- (void)skipNext;
-@end
-
-
-
-@interface SPTStatefulPlayerQueue : NSObject
-@property (retain, nonatomic) SPTPlayerState *playerState;
-@end
-
-@interface SPTStatefulPlayer : NSObject
-@property (retain, nonatomic) SPTStatefulPlayerQueue *queue;
-@end
-
-@interface SPTGLUEImageLoaderFactoryImplementation : NSObject
-- (id)createImageLoaderForSourceIdentifier:(NSString *)sourceIdentifier;
-@end
-
-@interface SPTQueueServiceImplementation : NSObject
-@property (retain, nonatomic) SPTGLUEImageLoaderFactoryImplementation *glueImageLoaderFactory;
-@end
-
-
-@interface SPTQueueInteractorImplementation : NSObject
-@property (nonatomic) __weak SPTQueueViewModelImplementation *target;
-@end
-
-@interface SPTNowPlayingServiceImplementation : NSObject
-@property (nonatomic) __weak SPTQueueServiceImplementation *queueService;
-@property (nonatomic) __weak SPTQueueInteractorImplementation *queueInteractor;
+- (SPTQueueViewModelDataSource *)removeTracks:(NSSet *)trackSet;
 @end
 
 
 @interface UIImage (SPT)
 + (id)trackSPTPlaceholderWithSize:(NSInteger)size;
+@end
+
+
+
+@protocol SPTQueueInteractor <NSObject>
+@property (nonatomic) __weak SPTQueueViewModelImplementation *target;
+@end
+
+@interface SPTNowPlayingServiceImplementation : NSObject<SPTService>
+@property (retain, nonatomic) id <SPTQueueInteractor> queueInteractor;
+@end
+
+@interface SPTGLUEImageLoader : NSObject
+- (id)loadImageForURL:(id)arg1 imageSize:(CGSize)arg2 completion:(id)arg3;
+@end
+
+@protocol SPTGLUEImageLoaderFactory <NSObject>
+- (SPTGLUEImageLoader *)createImageLoaderForSourceIdentifier:(NSString *)sourceIdentifier;
+@end
+
+@protocol SPTGLUEService <SPTService>
+- (id <SPTGLUEImageLoaderFactory>)provideImageLoaderFactory;
+@end
+
+
+@protocol SPTPlayer <NSObject>
+@end
+
+@protocol SPTPlayerObserver <NSObject>
+@optional
+- (void)player:(id <SPTPlayer>)player didEncounterError:(NSError *)error;
+- (void)player:(id <SPTPlayer>)player stateDidChange:(SPTPlayerState *)newState fromState:(SPTPlayerState *)oldState;
+- (void)player:(id <SPTPlayer>)player stateDidChange:(SPTPlayerState *)newState;
+@end
+
+@interface SPTPlayerFeatureImplementation : NSObject<SPTService>
+- (void)removePlayerObserver:(id<SPTPlayerObserver>)observer;
+- (void)addPlayerObserver:(id<SPTPlayerObserver>)observer;
 @end

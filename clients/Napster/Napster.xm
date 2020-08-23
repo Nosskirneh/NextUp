@@ -30,7 +30,7 @@ static RHPlayerController *getPlayerController() {
     NSMutableDictionary *metadata = [NSMutableDictionary new];
     metadata[kTitle] = track.name;
     metadata[kSubtitle] = track.artist.name;
-    metadata[kSkipable] = @NO;
+    metadata[kSkippable] = @NO;
 
     UIImage *image = [self.imageProvider imageForAlbum:track.album
                                                   size:ARTWORK_SIZE

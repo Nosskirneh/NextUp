@@ -11,7 +11,7 @@ NSString *const kMetadata = @"metadata";
 
 NSString *const kTitle = @"title";
 NSString *const kSubtitle = @"subtitle";
-NSString *const kSkipable = @"skipable";
+NSString *const kSkippable = @"skippable";
 NSString *const kArtwork = @"artwork";
 
 NSString *const kSkipNext = @"skipNext";

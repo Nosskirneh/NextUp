@@ -91,7 +91,7 @@ static MMusicSession *getMusicSession() {
     if (image)
         metadata[kArtwork] = UIImagePNGRepresentation(image);
 
-    metadata[kSkipable] = @YES;
+    metadata[kSkippable] = @YES;
     return metadata;
 }
 

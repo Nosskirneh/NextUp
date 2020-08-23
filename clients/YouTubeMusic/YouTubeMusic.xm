@@ -166,7 +166,7 @@ static GIMMe *gimme() {
         metadata[kArtwork] = UIImagePNGRepresentation(image);
 
     if (self.nowPlayingIndex + 1 == self.queueCount)
-        metadata[kSkipable] = @NO;
+        metadata[kSkippable] = @NO;
 
     return metadata;
 }
