@@ -173,7 +173,7 @@
         _mediaView.primaryString = metadata[kTitle];
         _mediaView.secondaryString = metadata[kSubtitle];
         _mediaView.artworkView.image = [UIImage imageWithData:metadata[kArtwork]];
-        _mediaView.routingButton.hidden = metadata[kSkipable] && ![metadata[kSkipable] boolValue];
+        _mediaView.routingButton.hidden = metadata[kSkippable] && ![metadata[kSkippable] boolValue];
     } else {
         _mediaView.primaryString = @"No next track available";
         _mediaView.secondaryString = nil;

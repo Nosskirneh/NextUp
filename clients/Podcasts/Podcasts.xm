@@ -28,12 +28,12 @@
 %new
 - (NSDictionary *)serializeTrack:(MTPlayerItem *)item
                            image:(UIImage *)image
-                        skipable:(BOOL)skipable {
+                        skippable:(BOOL)skippable {
     NSMutableDictionary *metadata = [NSMutableDictionary new];
 
     metadata[kTitle] = item.title;
     metadata[kSubtitle] = item.subtitle;
-    metadata[kSkipable] = @(skipable);
+    metadata[kSkippable] = @(skippable);
 
     if (image)
         metadata[kArtwork] = UIImagePNGRepresentation(image);
@@ -66,10 +66,10 @@
         nextIndex = 1;
 
     if ([manifest count] > nextIndex) {
-        BOOL skipable = manifest.upNextManifest.count > 0 &&
+        BOOL skippable = manifest.upNextManifest.count > 0 &&
                         !(manifest.upNextManifest.count == 1 && manifest.isPlayingFromUpNext);
         item = [manifest objectAtIndex:nextIndex];
-        [self fetchNextUpFromItem:item skipable:skipable];
+        [self fetchNextUpFromItem:item skippable:skippable];
     } else {
         sendNextTrackMetadata(nil);
     }
@@ -77,7 +77,7 @@
 }
 
 %new
-- (void)fetchNextUpFromItem:(MTPlayerItem *)item skipable:(BOOL)skipable {
+- (void)fetchNextUpFromItem:(MTPlayerItem *)item skippable:(BOOL)skippable {
     // Since manual updates are coming from SpringBoard when the
     // current now playing app changed to Podcasts, this would otherwise
     // happen twice (due to the IMPlayerManifestDidChange notification).
@@ -85,7 +85,7 @@
         return;
 
     [item retrieveArtwork:^(UIImage *image) {
-        NSDictionary *metadata = [self serializeTrack:item image:image skipable:skipable];
+        NSDictionary *metadata = [self serializeTrack:item image:image skippable:skippable];
         sendNextTrackMetadata(metadata);
     } withSize:ARTWORK_SIZE];
 }

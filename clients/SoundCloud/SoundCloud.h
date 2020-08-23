@@ -16,5 +16,5 @@
 - (_TtC8Playback10PlayerItem *)nextItemWithInteraction:(unsigned long long)arg1;
 
 - (void)fetchNextUp;
-- (NSDictionary *)serializeTrack:(_TtC8Playback10PlayerItem *)item image:(UIImage *)image skipable:(BOOL)skipable;
+- (NSDictionary *)serializeTrack:(_TtC8Playback10PlayerItem *)item image:(UIImage *)image skippable:(BOOL)skippable;
 @end

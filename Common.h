@@ -12,7 +12,7 @@ extern NSString *const kMetadata;
 
 extern NSString *const kTitle;
 extern NSString *const kSubtitle;
-extern NSString *const kSkipable;
+extern NSString *const kSkippable;
 extern NSString *const kArtwork;
 
 extern NSString *const kSkipNext;

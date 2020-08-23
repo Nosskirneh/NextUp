@@ -31,7 +31,7 @@
                        successCompletion:^(UIImage *image) {
         NSDictionary *metadata = [self serializeTrack:item
                                                 image:image
-                                             skipable:NO];
+                                             skippable:NO];
         sendNextTrackMetadata(metadata);
     } failureCompletion:nil];
 }
@@ -39,12 +39,12 @@
 %new
 - (NSDictionary *)serializeTrack:(_TtC8Playback10PlayerItem *)item
                            image:(UIImage *)image
-                        skipable:(BOOL)skipable {
+                        skippable:(BOOL)skippable {
     NSMutableDictionary *metadata = [NSMutableDictionary new];
 
     metadata[kTitle] = item.title;
     metadata[kSubtitle] = item.artistName;
-    metadata[kSkipable] = @(skipable);
+    metadata[kSkippable] = @(skippable);
 
     if (image)
         metadata[kArtwork] = UIImagePNGRepresentation(image);
