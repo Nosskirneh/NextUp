@@ -1,5 +1,6 @@
 #import "NUSPTService.h"
 #import "Spotify.h"
+#import "../../Common.h"
 #import "NUSPTHandler.h"
 
 @interface NUSPTService ()
@@ -12,7 +13,7 @@
 @implementation NUSPTService
 
 + (NSString *)serviceIdentifier {
-    return @"";
+    return NEXTUP_IDENTIFIER;
 }
 
 - (void)configureWithServices:(id<SPTServiceProvider>)serviceProvider {
@@ -26,13 +27,24 @@
 }
 
 - (void)initialViewDidAppear {
-    SPTQueueViewModelImplementation *queueViewModel = self.nowPlayingService.queueInteractor.target;
+    SPTQueueViewModelImplementation *queueViewModel = [self tryGetQueueViewModel];
     self.handler.queueViewModel = queueViewModel;
 
     // This will fill the dataSource's futureTracks, which makes it possible to skip tracks
     if ([queueViewModel respondsToSelector:@selector(enableUpdates)]) {
         [queueViewModel enableUpdates];
     }
+}
+
+- (SPTQueueViewModelImplementation *)tryGetQueueViewModel {
+    if (![self.nowPlayingService respondsToSelector:@selector(queueInteractor)]) {
+        return nil;
+    }
+    id<SPTQueueInteractor> queueInteractor = self.nowPlayingService.queueInteractor;
+    if (![queueInteractor respondsToSelector:@selector(target)]) {
+        return nil;
+    }
+    return queueInteractor.target;
 }
 
 - (void)load {
@@ -42,10 +54,6 @@
 
 - (void)unload {
     [self.playerFeature removePlayerObserver:self.handler];
-
-    self.nowPlayingService = nil;
-    self.glueService = nil;
-    self.playerFeature = nil;
     self.handler = nil;
 }
 

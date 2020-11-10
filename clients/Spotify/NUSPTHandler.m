@@ -83,7 +83,7 @@
     NSMutableDictionary *metadata = [NSMutableDictionary new];
     metadata[kTitle] = [track trackTitle];
     metadata[kSubtitle] = track.artistTitle;
-    metadata[kSkippable] = self.queueViewModel != nil;
+    metadata[kSkippable] = @(self.queueViewModel != nil);
 
     // Artwork
     __block UIImage *image = [UIImage trackSPTPlaceholderWithSize:0];
