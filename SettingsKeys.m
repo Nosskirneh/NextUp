@@ -1,3 +1,5 @@
+#import <Foundation/Foundation.h>
+
 const char *kSettingsChanged = "se.nosskirneh.nextup/preferencesChanged";
 
 NSString *const kControlCenter = @"controlcenter";

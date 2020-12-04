@@ -1,3 +1,6 @@
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+
 @interface GIMMe : NSObject
 - (id)instanceForType:(id)arg1;
 - (id)instanceForKey:(id)arg1;

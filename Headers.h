@@ -1,4 +1,6 @@
 #import "NextUpManager.h"
+#import <UIKit/UIKit.h>
+#import <CoreGraphics/CoreGraphics.h>
 
 /* Common */
 @interface SBIdleTimerGlobalCoordinator

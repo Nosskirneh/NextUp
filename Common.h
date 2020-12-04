@@ -1,3 +1,5 @@
+#import <Foundation/Foundation.h>
+
 #define NEXTUP_IDENTIFIER @"se.nosskirneh.nextup"
 #define kPrefPath [NSString stringWithFormat:@"/var/mobile/Library/Preferences/%@.plist", NEXTUP_IDENTIFIER]
 

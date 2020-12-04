@@ -1,3 +1,7 @@
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+#import <CoreGraphics/CoreGraphics.h>
+
 @interface JMediaItem : NSObject
 - (UIImage *)getArtworkWithSize:(CGSize)size;
 - (NSString *)getArtist;

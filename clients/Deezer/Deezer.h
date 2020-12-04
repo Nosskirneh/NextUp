@@ -1,3 +1,5 @@
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 #import <MediaPlayer/MPMediaItem.h>
 
 @interface _TtC6Deezer18DeezerIllustration : NSObject
