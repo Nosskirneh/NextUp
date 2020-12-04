@@ -1,4 +1,5 @@
 #import "Common.h"
+#import <UIKit/UIKit.h>
 
 extern const char *kSettingsChanged;
 

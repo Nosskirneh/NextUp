@@ -45,14 +45,21 @@ static NSDictionary *addNextUpServiceToClassNamesScopes(NSDictionary<NSString *,
 %end
 %end
 
+
+static inline BOOL initServiceSystem(Class serviceListClass) {
+    if (serviceListClass) {
+        %init(SPTServiceSystem, SPTServiceList = serviceListClass);
+        return YES;
+    }
+    return NO;
+}
+
 %ctor {
     if (shouldInitClient(Spotify)) {
-        Class serviceListClass = objc_getClass("SPTServiceSystem.SPTServiceList");
-        if (serviceListClass) {
-            %init(SPTServiceSystem, SPTServiceList = serviceListClass);
-        } else {
+        %init;
+        if (!initServiceSystem(%c(SPTServiceList)) &&
+            !initServiceSystem(objc_getClass("SPTServiceSystem.SPTServiceList"))) {
             %init(SPTDictionaryBasedServiceList);
         }
-        %init;
     }
 }

@@ -1,3 +1,6 @@
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+
 @interface RHArtistMO : NSObject
 @property (retain, nonatomic) NSString *name;
 @end
@@ -44,4 +47,3 @@
 @property (retain, nonatomic) RHPlayerController *playerController;
 + (RHAppDelegateRouter *)appDelegate;
 @end
-

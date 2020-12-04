@@ -1,4 +1,6 @@
 #import "NextUpManager.h"
+#import <UIKit/UIKit.h>
+#import <CoreGraphics/CoreGraphics.h>
 
 /* Common */
 #if __IPHONE_OS_VERSION_MAX_ALLOWED < 100000

@@ -1,3 +1,6 @@
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+
 @interface MTrack : NSObject
 @property (nonatomic, assign, readwrite) NSString *name;
 @property (nonatomic, assign, readwrite) NSString *creator;

@@ -1,3 +1,6 @@
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+
 @interface _TtC8Playback10PlayerItem : NSObject
 @property (nonatomic, readonly) NSURL *artworkURL;
 @property (nonatomic, readonly) NSString *artistName;

@@ -1,3 +1,6 @@
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+
 @interface Track : NSObject
 @property (copy, nonatomic) NSString *albumArtURLString;
 @property (copy, nonatomic) NSString *albumArtistString;

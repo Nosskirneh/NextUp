@@ -1,3 +1,6 @@
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+
 @interface HNKCache
 + (id)sharedCache;
 - (BOOL)fetchImageForFetcher:(id)arg1 formatName:(id)arg2 success:(id)arg3 failure:(id)arg4;
