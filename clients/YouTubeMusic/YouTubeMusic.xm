@@ -1,15 +1,19 @@
 #import "YouTubeMusic.h"
 #import "../CommonClients.h"
 #import <MediaPlayer/MPNowPlayingInfoCenter.h>
+#import <HBLog.h>
 
 
-static YTMAppDelegate *getYTMAppDelegate() {
-    return (YTMAppDelegate *)[[UIApplication sharedApplication] delegate];
+// This used to be able to retrieve it from GIMMe, but they changed that...
+YTImageService *imageService = nil;
+
+%hook YTImageService
+
+- (id)init {
+    return imageService = %orig;
 }
 
-static GIMMe *gimme() {
-    return getYTMAppDelegate().gimme;
-}
+%end
 
 %hook YTMQueueController
 
@@ -45,6 +49,21 @@ static GIMMe *gimme() {
     %orig;
 }
 
+%group AddQueueItems_New
+- (unsigned long long)addQueueItems:(NSArray *)items
+                   numItemsToReveal:(long long)reveal
+                            atIndex:(unsigned long long)index
+             ignoreSelectedProperty:(BOOL)ignoreSelectedProperty {
+    unsigned long long orig = %orig;
+
+    if (index == self.nextVideoIndex)
+        [self fetchNextUp];
+
+    return orig;
+}
+%end
+
+%group AddQueueItems_Old
 - (unsigned long long)addQueueItems:(NSArray *)items
                    numItemsToReveal:(long long)reveal
                             atIndex:(unsigned long long)index {
@@ -55,6 +74,7 @@ static GIMMe *gimme() {
 
     return orig;
 }
+%end
 
 - (void)moveItemAtIndexPath:(NSIndexPath *)from toIndexPath:(NSIndexPath *)to {
     %orig;
@@ -63,12 +83,23 @@ static GIMMe *gimme() {
         [self fetchNextUp];
 }
 
+%group RemoveVideoAtIndex
 - (void)removeVideoAtIndex:(unsigned long long)index {
     %orig;
 
     if (index == self.nextVideoIndex)
         [self fetchNextUp];
 }
+%end
+
+%group RemoveQueueItemAtIndex
+- (void)removeQueueItemAtIndex:(unsigned long long)index {
+    %orig;
+
+    if (index == self.nextVideoIndex)
+        [self fetchNextUp];
+}
+%end
 
 - (void)automixController:(id)controller
         didRemoveRenderersAtIndexes:(NSIndexSet *)indexes {
@@ -141,8 +172,6 @@ static GIMMe *gimme() {
         }
 
         NSURL *URL = [NSURL URLWithString:pickedThumbnail.URL];
-
-        YTImageServiceImpl *imageService = [gimme() instanceForType:%c(YTImageService)];
         [imageService makeImageRequestWithURL:URL responseBlock:^(UIImage *image) {
             sendNextTrackMetadata([self serializeTrack:next image:image]);
         } errorBlock:nil];
@@ -173,7 +202,12 @@ static GIMMe *gimme() {
 
 %new
 - (void)skipNext {
-    [self removeVideoAtIndex:self.nextVideoIndex];
+    NSUInteger index = self.nextVideoIndex;
+    if ([self respondsToSelector:@selector(removeQueueItemAtIndex:)]) {
+        [self removeQueueItemAtIndex:index];
+    } else {
+        [self removeVideoAtIndex:index];
+    }
 }
 
 /* Fixes an issue where the timestamp slider would get reverted
@@ -195,12 +229,29 @@ static GIMMe *gimme() {
     if (shouldInitClient(YouTubeMusic)) {
         %init;
 
-        if ([%c(YTMQueueController) instancesRespondToSelector:@selector(playItemAtIndex:
-                                                                         autoPlaySource:
-                                                                         isPlaybackControllerInternalTransition:
-                                                                         atStartTime:)])
+        Class queueController = %c(YTMQueueController);
+        if ([queueController instancesRespondToSelector:@selector(playItemAtIndex:
+                                                                  autoPlaySource:
+                                                                  isPlaybackControllerInternalTransition:
+                                                                  atStartTime:)]) {
             %init(PlayItemAtIndex_New);
-        else
+        } else {
             %init(PlayItemAtIndex_Old);
+        }
+
+        if ([queueController instancesRespondToSelector:@selector(addQueueItems:
+                                                                  numItemsToReveal:
+                                                                  atIndex:
+                                                                  ignoreSelectedProperty:)]) {
+            %init(AddQueueItems_New);
+        } else {
+            %init(AddQueueItems_Old)
+        }
+
+        if ([queueController instancesRespondToSelector:@selector(removeQueueItemAtIndex:)]) {
+            %init(RemoveQueueItemAtIndex);
+        } else {
+            %init(RemoveVideoAtIndex);
+        }
     }
 }
