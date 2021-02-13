@@ -1,6 +1,7 @@
 #import "Spotify.h"
 #import "../CommonClients.h"
 #import <substrate.h>
+#import <HBLog.h>
 
 
 %hook SPTQueueViewModelImplementation
@@ -13,13 +14,21 @@
 
 %end
 
-
-static NSDictionary *addNextUpServiceToClassNamesScopes(NSDictionary<NSString *, NSArray<NSString *> *> *scopes) {
+static NSDictionary *_addNextUpServiceToClassScopes(NSDictionary<NSString *, NSArray<NSString *> *> *scopes,
+                                                    id classObject) {
     NSMutableDictionary *newScopes = [scopes mutableCopy];
     NSMutableArray *newSessionArray = [newScopes[@"session"] mutableCopy];
-    [newSessionArray addObject:NSStringFromClass(%c(NUSPTService))];
+    [newSessionArray addObject:classObject];
     newScopes[@"session"] = newSessionArray;
     return newScopes;
+}
+
+static NSDictionary *addNextUpServiceToClassNamesScopes(NSDictionary<NSString *, NSArray<NSString *> *> *scopes) {
+    return _addNextUpServiceToClassScopes(scopes, NSStringFromClass(%c(NUSPTService)));
+}
+
+static NSDictionary *addNextUpServiceToClassScopes(NSDictionary<NSString *, NSArray<NSString *> *> *scopes) {
+    return _addNextUpServiceToClassScopes(scopes, %c(NUSPTService));
 }
 
 %group SPTDictionaryBasedServiceList
@@ -45,10 +54,25 @@ static NSDictionary *addNextUpServiceToClassNamesScopes(NSDictionary<NSString *,
 %end
 %end
 
+%group SPTServiceSystem_864
+%hook SPTServiceList
+
+- (id)initWithScopeGraph:(id)graph
+   serviceClassesByScope:(NSDictionary<NSString *, NSArray<NSString *> *> *)scopes {
+    return %orig(graph, addNextUpServiceToClassScopes(scopes));
+}
+
+%end
+%end
+
 
 static inline BOOL initServiceSystem(Class serviceListClass) {
     if (serviceListClass) {
-        %init(SPTServiceSystem, SPTServiceList = serviceListClass);
+        if ([serviceListClass instancesRespondToSelector:@selector(initWithScopeGraph:serviceClassesByScope:)]) {
+            %init(SPTServiceSystem_864);
+        } else {
+            %init(SPTServiceSystem, SPTServiceList = serviceListClass);
+        }
         return YES;
     }
     return NO;

@@ -5,12 +5,20 @@
 %hook PlaybackService
 %property (nonatomic, retain) _TtC2UI11ImageLoader *imageLoader;
 
+static inline _TtC2UI11ImageLoader *loadImageLoader() {
+    Class imageLoaderClass = %c(_TtC2UI11ImageLoader);
+    if ([imageLoaderClass respondsToSelector:@selector(makeForObjC)]) {
+        return [imageLoaderClass makeForObjC];
+    }
+    return [objc_getClass("UI.ImageLoaderObjFactory") make];
+}
+
 %new
 - (id)getImageLoader {
     static dispatch_once_t once;
     dispatch_once(&once, ^
     {
-        self.imageLoader = [%c(_TtC2UI11ImageLoader) makeForObjC];
+        self.imageLoader = loadImageLoader();
     });
     return self.imageLoader;
 }

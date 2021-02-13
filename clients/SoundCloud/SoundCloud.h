@@ -7,9 +7,14 @@
 @property (nonatomic, readonly) NSString *title;
 @end
 
+
 @interface _TtC2UI11ImageLoader : NSObject
- + (id)makeForObjC;
 - (void)loadImageFrom:(id)arg1 successCompletion:(id)arg2 failureCompletion:(id)arg3;
+ + (_TtC2UI11ImageLoader *)makeForObjC;
+@end
+
+@interface _TtC2UI11ImageLoaderObjFactory : NSObject
+ + (_TtC2UI11ImageLoader *)make;
 @end
 
 @interface PlaybackService : NSObject
