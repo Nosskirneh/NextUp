@@ -66,6 +66,22 @@ static NSDictionary *addNextUpServiceToClassScopes(NSDictionary<NSString *, NSAr
 %end
 
 
+%hook AppDelegate
+
+- (NSArray *)sessionServices {
+    NSArray *orig = %orig;
+    if (!orig) {
+        return @[%c(NUSPTService)];
+    }
+
+    NSMutableArray *newArray = [orig mutableCopy];
+    [newArray addObject:%c(NUSPTService)];
+    return newArray;
+}
+
+%end
+
+
 static inline BOOL initServiceSystem(Class serviceListClass) {
     if (serviceListClass) {
         if ([serviceListClass instancesRespondToSelector:@selector(initWithScopeGraph:serviceClassesByScope:)]) {
@@ -78,11 +94,14 @@ static inline BOOL initServiceSystem(Class serviceListClass) {
     return NO;
 }
 
+
 %ctor {
     if (shouldInitClient(Spotify)) {
-        %init;
-        if (!initServiceSystem(%c(SPTServiceList)) &&
-            !initServiceSystem(objc_getClass("SPTServiceSystem.SPTServiceList"))) {
+        Class AppDelegateClass = objc_getClass("AppKernelFeature.AppDelegate");
+        if ([AppDelegateClass instancesRespondToSelector:@selector(sessionServices)]) {
+            %init(AppDelegate = AppDelegateClass);
+        } else if (!initServiceSystem(%c(SPTServiceList)) &&
+                   !initServiceSystem(objc_getClass("SPTServiceSystem.SPTServiceList"))) {
             %init(SPTDictionaryBasedServiceList);
         }
     }
