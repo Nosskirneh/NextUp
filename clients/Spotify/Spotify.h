@@ -1,6 +1,13 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+
+@interface SpotifyServiceList
++ (NSArray *(^)(void))sessionServices;
++ (void)setSessionServices:(NSArray *(^)(void))sessionServices;
+@end
+
+
 @protocol SPTService;
 
 @protocol SPTServiceProvider <NSObject>
