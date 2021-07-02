@@ -99,11 +99,7 @@ static inline BOOL initServiceSystem(Class serviceListClass) {
 }
 
 
-void (*orig_UIApplicationMain)(int, char **, NSString *, NSString *);
-void hooked_UIApplicationMain(int argc,
-                              char *_Nullable *argv,
-                              NSString *principalClassName,
-                              NSString *delegateClassName) {
+%hookf(int, UIApplicationMain, int argc, char *_Nullable *argv, NSString *principalClassName, NSString *delegateClassName) {
     Class Delegate = NSClassFromString(delegateClassName);
     if ([Delegate instancesRespondToSelector:@selector(sessionServices)]) {
         %init(AppDelegate, AppDelegate = Delegate);
@@ -119,15 +115,13 @@ void hooked_UIApplicationMain(int argc,
         }
     }
 
-    return orig_UIApplicationMain(argc, argv, principalClassName, delegateClassName);
+    return %orig;
 }
 
 
 %ctor {
     if (shouldInitClient(Spotify)) {
-        %init();
-        MSHookFunction(((void *)MSFindSymbol(NULL, "_UIApplicationMain")),
-                       (void *)hooked_UIApplicationMain, (void **)&orig_UIApplicationMain);
+        %init;
 
         if (!initServiceSystem(%c(SPTServiceList)) &&
             !initServiceSystem(objc_getClass("SPTServiceSystem.SPTServiceList"))) {
