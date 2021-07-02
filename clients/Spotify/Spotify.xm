@@ -3,6 +3,8 @@
 #import <substrate.h>
 #import <HBLog.h>
 
+#define SERVICE_CLASS %c(NUSPTService)
+
 
 %hook SPTQueueViewModelImplementation
 
@@ -24,11 +26,11 @@ static NSDictionary *_addNextUpServiceToClassScopes(NSDictionary<NSString *, NSA
 }
 
 static NSDictionary *addNextUpServiceToClassNamesScopes(NSDictionary<NSString *, NSArray<NSString *> *> *scopes) {
-    return _addNextUpServiceToClassScopes(scopes, NSStringFromClass(%c(NUSPTService)));
+    return _addNextUpServiceToClassScopes(scopes, NSStringFromClass(SERVICE_CLASS));
 }
 
 static NSDictionary *addNextUpServiceToClassScopes(NSDictionary<NSString *, NSArray<NSString *> *> *scopes) {
-    return _addNextUpServiceToClassScopes(scopes, %c(NUSPTService));
+    return _addNextUpServiceToClassScopes(scopes, SERVICE_CLASS);
 }
 
 %group SPTDictionaryBasedServiceList
@@ -66,19 +68,21 @@ static NSDictionary *addNextUpServiceToClassScopes(NSDictionary<NSString *, NSAr
 %end
 
 
+%group AppDelegate
 %hook AppDelegate
 
 - (NSArray *)sessionServices {
     NSArray *orig = %orig;
     if (!orig) {
-        return @[%c(NUSPTService)];
+        return @[SERVICE_CLASS];
     }
 
     NSMutableArray *newArray = [orig mutableCopy];
-    [newArray addObject:%c(NUSPTService)];
+    [newArray addObject:SERVICE_CLASS];
     return newArray;
 }
 
+%end
 %end
 
 
@@ -95,13 +99,32 @@ static inline BOOL initServiceSystem(Class serviceListClass) {
 }
 
 
+%hookf(int, UIApplicationMain, int argc, char *_Nullable *argv, NSString *principalClassName, NSString *delegateClassName) {
+    Class Delegate = NSClassFromString(delegateClassName);
+    if ([Delegate instancesRespondToSelector:@selector(sessionServices)]) {
+        %init(AppDelegate, AppDelegate = Delegate);
+    } else {
+        Class SpotifyServiceList = objc_getClass("SPTClientServices.SpotifyServiceList");
+        if (SpotifyServiceList && [SpotifyServiceList respondsToSelector:@selector(setSessionServices:)]) {
+            NSArray *sessionServices = [SpotifyServiceList sessionServices]();
+            [SpotifyServiceList setSessionServices:^{
+                NSMutableArray *newSessionServicesArray = [sessionServices mutableCopy];
+                [newSessionServicesArray addObject:SERVICE_CLASS];
+                return newSessionServicesArray;
+            }];
+        }
+    }
+
+    return %orig;
+}
+
+
 %ctor {
     if (shouldInitClient(Spotify)) {
-        Class AppDelegateClass = objc_getClass("AppKernelFeature.AppDelegate");
-        if ([AppDelegateClass instancesRespondToSelector:@selector(sessionServices)]) {
-            %init(AppDelegate = AppDelegateClass);
-        } else if (!initServiceSystem(%c(SPTServiceList)) &&
-                   !initServiceSystem(objc_getClass("SPTServiceSystem.SPTServiceList"))) {
+        %init;
+
+        if (!initServiceSystem(%c(SPTServiceList)) &&
+            !initServiceSystem(objc_getClass("SPTServiceSystem.SPTServiceList"))) {
             %init(SPTDictionaryBasedServiceList);
         }
     }
