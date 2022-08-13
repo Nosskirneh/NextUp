@@ -43,7 +43,7 @@
 @property (nonatomic, assign, readwrite) YTIFormattedString *shortBylineText;
 @end
 
-@interface YTMQueueController : NSObject
+@interface QueueController : NSObject
 @property (nonatomic) unsigned long long nowPlayingIndex;
 @property (readonly, nonatomic) YTIPlaylistPanelVideoRenderer *nextVideo; // Earlier version
 @property (nonatomic, getter=isAutoExtendPlaybackQueueEnabled) BOOL autoExtendPlaybackQueueEnabled;
@@ -52,7 +52,8 @@
 - (BOOL)hasAutoplayVideo;
 - (unsigned long long)nextVideoIndex;
 - (void)removeVideoAtIndex:(unsigned long long)index; // old
-- (void)removeQueueItemAtIndex:(unsigned long long)index; // new
+- (void)removeQueueItemAtIndex:(unsigned long long)index; // new-old
+- (void)removeQueueItemAtIndex:(unsigned long long)index userTriggered:(BOOL)userTriggered; // new
 
 
 @property (nonatomic, assign) int skipNextNotifyToken;

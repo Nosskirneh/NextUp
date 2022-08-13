@@ -15,7 +15,8 @@ YTImageService *imageService = nil;
 
 %end
 
-%hook YTMQueueController
+%hook QueueController
+#define _self ((QueueController *)self)
 
 %property (nonatomic, assign) int skipNextNotifyToken;
 %property (nonatomic, assign) int manualUpdateNotifyToken;
@@ -27,24 +28,24 @@ YTImageService *imageService = nil;
     int manualUpdateNotifyToken;
 
     registerNotifyTokens(^(int _) {
-            [self skipNext];
+            [_self skipNext];
         },
         ^(int _) {
-            [self fetchNextUp];
+            [_self fetchNextUp];
         },
         &skipNextNotifyToken,
         &manualUpdateNotifyToken);
 
-    self.skipNextNotifyToken = skipNextNotifyToken;
-    self.manualUpdateNotifyToken = manualUpdateNotifyToken;
+    _self.skipNextNotifyToken = skipNextNotifyToken;
+    _self.manualUpdateNotifyToken = manualUpdateNotifyToken;
 }
 
 /* This is necessary as it spawns two of these classes, one of which is
    deallocated shortly after. When the `manualUpdate` notification call
    comes, `self` is something entirely different which results in a crash. */
 - (void)dealloc {
-    notify_cancel(self.skipNextNotifyToken);
-    notify_cancel(self.manualUpdateNotifyToken);
+    notify_cancel(_self.skipNextNotifyToken);
+    notify_cancel(_self.manualUpdateNotifyToken);
 
     %orig;
 }
@@ -56,8 +57,8 @@ YTImageService *imageService = nil;
              ignoreSelectedProperty:(BOOL)ignoreSelectedProperty {
     unsigned long long orig = %orig;
 
-    if (index == self.nextVideoIndex)
-        [self fetchNextUp];
+    if (index == _self.nextVideoIndex)
+        [_self fetchNextUp];
 
     return orig;
 }
@@ -69,44 +70,68 @@ YTImageService *imageService = nil;
                             atIndex:(unsigned long long)index {
     unsigned long long orig = %orig;
 
-    if (index == self.nextVideoIndex)
-        [self fetchNextUp];
+    if (index == _self.nextVideoIndex)
+        [_self fetchNextUp];
 
     return orig;
 }
 %end
 
+%group MoveItemAtIndexPath_Old
 - (void)moveItemAtIndexPath:(NSIndexPath *)from toIndexPath:(NSIndexPath *)to {
     %orig;
 
-    if (from.row == self.nextVideoIndex || to.row == self.nextVideoIndex)
-        [self fetchNextUp];
+    if (from.row == _self.nextVideoIndex || to.row == _self.nextVideoIndex)
+        [_self fetchNextUp];
 }
+%end
+
+%group MoveItemAtIndexPath_New
+- (void)moveItemAtIndexPath:(NSIndexPath *)from
+                toIndexPath:(NSIndexPath *)to
+              userTriggered:(BOOL)userTriggered {
+    %orig;
+
+    if (from.row == _self.nextVideoIndex || to.row == _self.nextVideoIndex)
+        [_self fetchNextUp];
+}
+%end
 
 %group RemoveVideoAtIndex
 - (void)removeVideoAtIndex:(unsigned long long)index {
     %orig;
 
-    if (index == self.nextVideoIndex)
-        [self fetchNextUp];
+    if (index == _self.nextVideoIndex)
+        [_self fetchNextUp];
 }
 %end
 
-%group RemoveQueueItemAtIndex
+%group RemoveQueueItemAtIndex_Old
 - (void)removeQueueItemAtIndex:(unsigned long long)index {
     %orig;
 
-    if (index == self.nextVideoIndex)
-        [self fetchNextUp];
+    if (index == _self.nextVideoIndex)
+        [_self fetchNextUp];
 }
 %end
 
+%group RemoveQueueItemAtIndex_New
+- (void)removeQueueItemAtIndex:(unsigned long long)index
+                 userTriggered:(BOOL)userTriggered {
+    %orig;
+
+    if (index == _self.nextVideoIndex)
+        [_self fetchNextUp];
+}
+%end
+
+%group AutoMix
 - (void)automixController:(id)controller
         didRemoveRenderersAtIndexes:(NSIndexSet *)indexes {
     %orig;
 
-    if ([indexes containsIndex:self.nextVideoIndex])
-        [self fetchNextUp];
+    if ([indexes containsIndex:_self.nextVideoIndex])
+        [_self fetchNextUp];
 }
 
 - (void)automixController:(id)controller
@@ -114,20 +139,21 @@ YTImageService *imageService = nil;
         response:(id)arg3 {
     %orig;
 
-    if ([indexes containsIndex:self.nextVideoIndex])
-        [self fetchNextUp];
+    if ([indexes containsIndex:_self.nextVideoIndex])
+        [_self fetchNextUp];
 }
+%end
 
 - (void)setAutoExtendPlaybackQueueEnabled:(BOOL)enable {
     %orig;
 
-    [self fetchNextUp];
+    [_self fetchNextUp];
 }
 
 - (void)updateMDXPlaybackOrder {
     %orig;
 
-    [self fetchNextUp];
+    [_self fetchNextUp];
 }
 
 %group PlayItemAtIndex_Old
@@ -136,7 +162,7 @@ YTImageService *imageService = nil;
             atStartTime:(double)starttime {
     %orig;
 
-    [self fetchNextUp];
+    [_self fetchNextUp];
 }
 %end
 
@@ -147,7 +173,7 @@ YTImageService *imageService = nil;
         atStartTime:(double)starttime {
     %orig;
 
-    [self fetchNextUp];
+    [_self fetchNextUp];
 }
 %end
 
@@ -156,10 +182,10 @@ YTImageService *imageService = nil;
     YTIPlaylistPanelVideoRenderer *next;
 
     // Using an earlier YouTube Music version?
-    if ([self respondsToSelector:@selector(nextVideo)])
-        next = self.nextVideo;
+    if ([_self respondsToSelector:@selector(nextVideo)])
+        next = _self.nextVideo;
     else
-        next = [self nextVideoWithAutoplay:[self hasAutoplayVideo]];
+        next = [_self nextVideoWithAutoplay:[_self hasAutoplayVideo]];
 
     if (next && next.hasThumbnail && next.thumbnail.thumbnailsArray.count > 0) {
         NSArray *thumbnails = next.thumbnail.thumbnailsArray;
@@ -173,7 +199,7 @@ YTImageService *imageService = nil;
 
         NSURL *URL = [NSURL URLWithString:pickedThumbnail.URL];
         [imageService makeImageRequestWithURL:URL responseBlock:^(UIImage *image) {
-            sendNextTrackMetadata([self serializeTrack:next image:image]);
+            sendNextTrackMetadata([_self serializeTrack:next image:image]);
         } errorBlock:nil];
     } else {
         sendNextTrackMetadata(nil);
@@ -194,7 +220,7 @@ YTImageService *imageService = nil;
     if (image)
         metadata[kArtwork] = UIImagePNGRepresentation(image);
 
-    if (self.nowPlayingIndex + 1 == self.queueCount)
+    if (_self.nowPlayingIndex + 1 == _self.queueCount)
         metadata[kSkippable] = @NO;
 
     return metadata;
@@ -202,11 +228,13 @@ YTImageService *imageService = nil;
 
 %new
 - (void)skipNext {
-    NSUInteger index = self.nextVideoIndex;
-    if ([self respondsToSelector:@selector(removeQueueItemAtIndex:)]) {
-        [self removeQueueItemAtIndex:index];
-    } else {
-        [self removeVideoAtIndex:index];
+    NSUInteger index = _self.nextVideoIndex;
+    if ([_self respondsToSelector:@selector(removeQueueItemAtIndex:)]) {
+        [_self removeQueueItemAtIndex:index];
+    } else if ([_self respondsToSelector:@selector(removeQueueItemAtIndex:userTriggered:)]) {
+        [_self removeQueueItemAtIndex:index userTriggered:YES];
+    } else if ([_self respondsToSelector:@selector(removeVideoAtIndex:)]) {
+        [_self removeVideoAtIndex:index];
     }
 }
 
@@ -227,9 +255,13 @@ YTImageService *imageService = nil;
 
 %ctor {
     if (shouldInitClient(YouTubeMusic)) {
-        %init;
 
-        Class queueController = %c(YTMQueueController);
+        Class queueController = %c(YTQueueController);
+        if (!queueController) {
+            queueController = %c(YTMQueueController);
+        }
+        %init(QueueController = queueController);
+
         if ([queueController instancesRespondToSelector:@selector(playItemAtIndex:
                                                                   autoPlaySource:
                                                                   isPlaybackControllerInternalTransition:
@@ -245,13 +277,25 @@ YTImageService *imageService = nil;
                                                                   ignoreSelectedProperty:)]) {
             %init(AddQueueItems_New);
         } else {
-            %init(AddQueueItems_Old)
+            %init(AddQueueItems_Old);
         }
 
         if ([queueController instancesRespondToSelector:@selector(removeQueueItemAtIndex:)]) {
-            %init(RemoveQueueItemAtIndex);
-        } else {
+            %init(RemoveQueueItemAtIndex_Old);
+        } else if ([queueController instancesRespondToSelector:@selector(removeQueueItemAtIndex:userTriggered:)]) {
+            %init(RemoveQueueItemAtIndex_New);
+        } else if ([queueController instancesRespondToSelector:@selector(removeVideoAtIndex:)]) {
             %init(RemoveVideoAtIndex);
+        }
+
+        if ([queueController instancesRespondToSelector:@selector(moveItemAtIndexPath:toIndexPath:userTriggered:)]) {
+            %init(MoveItemAtIndexPath_New);
+        } else {
+            %init(MoveItemAtIndexPath_Old);
+        }
+
+        if ([queueController instancesRespondToSelector:@selector(automixController:didRemoveRenderersAtIndexes:)]) {
+            %init(AutoMix);
         }
     }
 }
