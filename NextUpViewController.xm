@@ -46,7 +46,7 @@
         _textColor = UIColor.blackColor;
         _skipBackgroundColor = [UIColor.grayColor colorWithAlphaComponent:0.5];
 
-        if (manager.hapticFeedbackSkip)
+        if (_manager.hapticFeedbackSkip)
             self.hapticGenerator = [[%c(UIImpactFeedbackGenerator) alloc] initWithStyle:UIImpactFeedbackStyleMedium];
 
         self.bundle = [NSBundle bundleWithPath:@"/Library/Application Support/NextUp.bundle"];

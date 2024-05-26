@@ -10,7 +10,7 @@
 #define kSBMediaNowPlayingAppChangedNotification @"SBMediaNowPlayingAppChangedNotification"
 
 
-SBDashBoardViewController *getDashBoardViewController() {
+static SBDashBoardViewController *getDashBoardViewController() {
     SBLockScreenManager *lockscreenManager = (SBLockScreenManager *)[%c(SBLockScreenManager) sharedInstance];
     return lockscreenManager.dashBoardViewController;
 }
@@ -86,7 +86,7 @@ SBDashBoardViewController *getDashBoardViewController() {
 }
 
 - (BOOL)tryConfigureForMediaApplication:(NSString *)bundleID {
-    if (!bundleID || (_preferences[bundleID] && [_preferences[bundleID] boolValue]) || _trialEnded)
+    if (!bundleID || (_preferences[bundleID] && [_preferences[bundleID] boolValue]))
         goto hide;
 
     if ([_enabledApps containsObject:bundleID]) {
@@ -193,10 +193,6 @@ SBDashBoardViewController *getDashBoardViewController() {
 
 - (void)reloadPreferences {
     _preferences = [NSDictionary dictionaryWithContentsOfFile:kPrefPath];
-}
-
-- (void)setTrialEnded {
-    _trialEnded = YES;
 }
 
 - (BOOL)slimmedLSMode {

@@ -2,7 +2,6 @@
 #import "SettingsKeys.h"
 #import "Common.h"
 #import "Headers.h"
-#import "DRMValidateOptions.mm"
 
 
 NextUpManager *manager;
@@ -786,55 +785,6 @@ NextUpManager *manager;
 // ---
 
 
-%group PackagePirated
-%hook SBCoverSheetPresentationManager
-
-- (void)_cleanupDismissalTransition {
-    %orig;
-
-    static dispatch_once_t once;
-    dispatch_once(&once, ^{
-        showPiracyAlert(packageShown$bs());
-    });
-}
-
-%end
-%end
-
-
-%group Welcome
-%hook SBCoverSheetPresentationManager
-
-- (void)_cleanupDismissalTransition {
-    %orig;
-    showSpringBoardDismissAlert(packageShown$bs(), WelcomeMsg$bs());
-}
-
-%end
-%end
-
-
-%group CheckTrialEnded
-%hook SBCoverSheetPresentationManager
-
-- (void)_cleanupDismissalTransition {
-    %orig;
-
-    if (!manager.trialEnded && check_lic(licensePath$bs(), package$bs()) == CheckInvalidTrialLicense) {
-        [manager setTrialEnded];
-        [[NSNotificationCenter defaultCenter] postNotificationName:kHideNextUp object:nil];
-        showSpringBoardDismissAlert(packageShown$bs(), TrialEndedMsg$bs());
-    }
-}
-
-%end
-%end
-
-__attribute__((always_inline, visibility("hidden")))
-static inline void initTrial() {
-    %init(CheckTrialEnded);
-}
-
 __attribute__((always_inline, visibility("hidden")))
 static inline void initLockscreen() {
     %init(Lockscreen);
@@ -849,31 +799,7 @@ static inline void initLockscreen() {
 }
 
 %ctor {
-    if (fromUntrustedSource(package$bs()))
-        %init(PackagePirated);
-
     manager = [NextUpManager sharedInstance];
-
-    /* License check – if no license found, present message.
-       If no valid license was found, do not init. */
-    switch (check_lic(licensePath$bs(), package$bs())) {
-        case CheckNoLicense:
-            %init(Welcome);
-            return;
-        case CheckInvalidTrialLicense:
-            initTrial();
-            return;
-        case CheckValidTrialLicense:
-            initTrial();
-            break;
-        case CheckValidLicense:
-            break;
-        case CheckInvalidLicense:
-        case CheckUDIDsDoNotMatch:
-        default:
-            return;
-    }
-    // ---
 
     /* Load other tweaks if any. */
     dlopen("/Library/MobileSubstrate/DynamicLibraries/ColorFlow4.dylib", RTLD_NOW);
