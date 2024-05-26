@@ -10,7 +10,7 @@
 #define kSBMediaNowPlayingAppChangedNotification @"SBMediaNowPlayingAppChangedNotification"
 
 
-UIViewController<CoverSheetViewController> *getCoverSheetViewController() {
+static UIViewController<CoverSheetViewController> *getCoverSheetViewController() {
     SBLockScreenManager *lockscreenManager = (SBLockScreenManager *)[%c(SBLockScreenManager) sharedInstance];
     if ([lockscreenManager respondsToSelector:@selector(coverSheetViewController)])
         return lockscreenManager.coverSheetViewController;
@@ -88,7 +88,7 @@ UIViewController<CoverSheetViewController> *getCoverSheetViewController() {
 }
 
 - (BOOL)tryConfigureForMediaApplication:(NSString *)bundleID {
-    if (!bundleID || (_preferences[bundleID] && ![_preferences[bundleID] boolValue]) || _trialEnded)
+    if (!bundleID || (_preferences[bundleID] && [_preferences[bundleID] boolValue]))
         goto hide;
 
     if ([_enabledApps containsObject:bundleID]) {
@@ -195,10 +195,6 @@ UIViewController<CoverSheetViewController> *getCoverSheetViewController() {
 
 - (void)reloadPreferences {
     _preferences = [NSDictionary dictionaryWithContentsOfFile:kPrefPath];
-}
-
-- (void)setTrialEnded {
-    _trialEnded = YES;
 }
 
 - (BOOL)slimmedLSMode {

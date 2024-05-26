@@ -24,12 +24,10 @@
 @property (nonatomic, readonly) BOOL lockscreenEnabled;
 
 @property (nonatomic, assign, readwrite) BOOL controlCenterExpanded;
-@property (nonatomic, assign, readonly) BOOL trialEnded;
 @property (nonatomic, assign, readonly) BOOL colorFlowEnabled;
 @property (nonatomic, assign, readonly) BOOL flowEnabled;
 + (BOOL)isShowingMediaControls;
 + (instancetype)sharedInstance;
 - (void)setup;
-- (void)setTrialEnded;
 - (BOOL)hasContent;
 @end

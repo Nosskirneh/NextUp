@@ -1,8 +1,6 @@
 #import "NUSettingsListController.h"
 #import <Preferences/Preferences.h>
 #import <UIKit/UITableViewLabel.h>
-#import "../DRMOptions.mm"
-#import "../../DRM/PFStatusBarAlert/PFStatusBarAlert.h"
 #import <spawn.h>
 #import <notify.h>
 #import "../../TwitterStuff/Prompt.h"
@@ -10,11 +8,7 @@
 
 #define kPostNotification @"PostNotification"
 
-@interface NextUpRootListController : NUSettingsListController <PFStatusBarAlertDelegate, DRMDelegate>
-@property (nonatomic, strong) PFStatusBarAlert *statusAlert;
-@property (nonatomic, weak) UIAlertAction *okAction;
-@property (nonatomic, weak) NSString *okRegex;
-@property (nonatomic, strong) UIAlertController *giveawayAlertController;
+@interface NextUpRootListController : NUSettingsListController
 @end
 
 @implementation NextUpRootListController
@@ -41,10 +35,6 @@
                 [specifier setProperty:@(NO) forKey:@"enabled"];
         }
     }
-    // Add license specifier
-    NSMutableArray *mspecs = (NSMutableArray *)[_specifiers mutableCopy];
-    _specifiers = addDRMSpecifiers(mspecs, self, licensePath$bs(), kPrefPath,
-                                   package$bs(), licenseFooterText$bs(), trialFooterText$bs());
 
     return _specifiers;
 }
@@ -76,63 +66,6 @@
     presentFollowAlert(kPrefPath, self);
 }
 
-- (void)activate {
-    presentMultiTweakQuestionWithInfo(self, @[[UIAlertAction actionWithTitle:OBFS_NSSTR(nextUpDisplayName$bs())
-                                                                       style:UIAlertActionStyleDefault
-                                                                     handler:^(UIAlertAction *action) {
-        activateWithUpgradePackagePromptEmail(licensePath$bs(), package$bs(), nextup$bs(), self);
-    }],
-    [UIAlertAction actionWithTitle:OBFS_NSSTR(nextUp2DisplayName$bs())
-                             style:UIAlertActionStyleDefault
-                           handler:^(UIAlertAction *action) {
-        activate(licensePath$bs(), package$bs(), self);
-    }]], choosingTheWrongProductWillNOTWork$bs());
-}
-
-- (BOOL)textField:(UITextField *)textField
-        shouldChangeCharactersInRange:(NSRange)range
-        replacementString:(NSString *)string {
-    [self textFieldChanged:textField];
-    return YES;
-}
-
-- (void)textFieldChanged:(UITextField *)textField {
-    determineUnlockOKButton(textField, self);
-}
-
-- (void)trial {
-    trial(licensePath$bs(), package$bs(), self);
-}
-
-- (void)viewDidLoad {
-    [super viewDidLoad];
-
-    if (!self.statusAlert) {
-        self.statusAlert = [[PFStatusBarAlert alloc] initWithMessage:nil
-                                                        notification:nil
-                                                              action:@selector(respring)
-                                                              target:self];
-        self.statusAlert.backgroundColor = [UIColor colorWithHue:0.590
-                                                      saturation:1
-                                                      brightness:1
-                                                           alpha:0.9];
-        self.statusAlert.textColor = [UIColor whiteColor];
-    }
-}
-
-- (void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-
-    [self reloadSpecifiers];
-}
-
-- (void)viewWillDisappear:(BOOL)animated {
-    [super viewWillDisappear:animated];
-
-    if (self.statusAlert)
-        [self.statusAlert hideOverlay];
-}
-
 - (void)sendEmail {
     openURL([NSURL URLWithString:@"mailto:andreaskhenriksson@gmail.com?subject=NextUp%202"]);
 }
@@ -141,24 +74,12 @@
     openTwitter();
 }
 
-- (void)purchase {
-    fetchPrice(package$bs(), self, ^(const NSString *respondingServer,
-                                     const NSString *price,
-                                     const NSString *URL) {
-        redirectToCheckout(respondingServer, URL, self);
-    });
-}
-
 - (void)myTweaks {
     openURL([NSURL URLWithString:@"https://henrikssonbrothers.com/cydia/repo/packages.html"]);
 }
 
 - (void)troubleshoot {
     openURL([NSURL URLWithString:@"https://github.com/Nosskirneh/NextUp-Public/blob/master/README.md#troubleshooting--faq"]);
-}
-
-- (void)safariViewControllerDidFinish:(id)arg1 {
-    safariViewControllerDidFinish(self);
 }
 
 @end
