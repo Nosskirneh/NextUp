@@ -1,12 +1,9 @@
 #import "Napster.h"
 #import "../CommonClients.h"
 
-RHPlayerController *getPlayerController() {
-    return [%c(RHAppDelegateRouter) appDelegate].playerController;
-}
 
-void manualUpdate(notificationArguments) {
-    [getPlayerController() fetchNextUp];
+static RHPlayerController *getPlayerController() {
+    return [%c(RHAppDelegateRouter) appDelegate].playerController;
 }
 
 %hook RHPlayerController
@@ -25,7 +22,6 @@ void manualUpdate(notificationArguments) {
 
 %new
 - (void)fetchNextUp {
-    %log;
     [self sendNextUpMetadata:self.nextItem.playableEntity.playableTrack];
 }
 
@@ -34,9 +30,12 @@ void manualUpdate(notificationArguments) {
     NSMutableDictionary *metadata = [NSMutableDictionary new];
     metadata[kTitle] = track.name;
     metadata[kSubtitle] = track.artist.name;
-    metadata[kSkipable] = @NO;
+    metadata[kSkippable] = @NO;
 
-    UIImage *image = [self.imageProvider imageForAlbum:track.album size:ARTWORK_SIZE usePlaceholder:NO promise:nil];
+    UIImage *image = [self.imageProvider imageForAlbum:track.album
+                                                  size:ARTWORK_SIZE
+                                        usePlaceholder:NO
+                                               promise:nil];
     if (image)
         metadata[kArtwork] = UIImagePNGRepresentation(image);
     sendNextTrackMetadata(metadata);
@@ -45,7 +44,10 @@ void manualUpdate(notificationArguments) {
 %end
 
 %ctor {
-    NSString *bundleID = [NSBundle mainBundle].bundleIdentifier;
-    if (!initClient(bundleID, NULL, &manualUpdate))
-        return;
+    if (shouldInitClient(Napster)) {
+        registerNotify(NULL, ^(int _) {
+            [getPlayerController() fetchNextUp];
+        });
+        %init;
+    }
 }

@@ -1,3 +1,6 @@
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+
 @interface SDImageCache : NSObject
 + (id)sharedImageCache;
 - (id)imageFromDiskCacheForKey:(NSString *)key;
@@ -5,7 +8,16 @@
 
 @interface SDWebImageManager : NSObject
 + (id)sharedManager;
-- (id)downloadImageWithURL:(NSURL *)URL options:(NSUInteger)options progress:(id)progress completed:(id)completion;
+// Old version
+- (id)downloadImageWithURL:(NSURL *)URL
+                   options:(NSUInteger)options
+                  progress:(id)progress
+                 completed:(id)completion;
+// New version
+- (id)loadImageWithURL:(NSURL *)URL
+               options:(NSUInteger)options
+              progress:(id)progress
+             completed:(id)completion;
 @end
 
 

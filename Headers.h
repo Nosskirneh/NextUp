@@ -1,18 +1,15 @@
 #import "NextUpManager.h"
+#import <UIKit/UIKit.h>
+#import <CoreGraphics/CoreGraphics.h>
 
 /* Common */
-@interface SBMediaController (Addition)
-@property (nonatomic, retain) NSDictionary *nextUpPrefs;
-- (BOOL)shouldActivateForApplicationID:(NSString *)bundleID;
-@end
-
-
 @interface SBIdleTimerGlobalCoordinator
 + (id)sharedInstance;
 - (void)resetIdleTimer;
 @end
 
 
+#if __IPHONE_OS_VERSION_MAX_ALLOWED < 100000
 typedef enum UIImpactFeedbackStyle : NSInteger {
     UIImpactFeedbackStyleHeavy,
     UIImpactFeedbackStyleLight,
@@ -23,6 +20,7 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 - (id)initWithStyle:(UIImpactFeedbackStyle)style;
 - (void)impactOccurred;
 @end
+#endif
 
 
 @interface MediaControlsTransportButton : UIButton
@@ -63,6 +61,10 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @interface NUSkipButton : UIButton
 @property (nonatomic, retain) CAShapeLayer *clear;
 @property (nonatomic, assign) CGFloat size;
+@property (nonatomic, assign) BOOL controlCenter;
++ (id)buttonWithSize:(CGFloat)size controlCenter:(BOOL)controlCenter;
++ (id)buttonWithSize:(CGFloat)size;
+- (CABasicAnimation *)sizeAnimationForGrowing:(BOOL)grow;
 @end
 
 @interface NextUpMediaHeaderView : MediaControlsHeaderView
@@ -70,26 +72,30 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @property (nonatomic, retain) UIColor *textColor;
 @property (nonatomic, assign) CGFloat textAlpha;
 @property (nonatomic, retain) UIColor *skipBackgroundColor;
-- (CGRect)rectForMaxWidth:(CGRect)frame maxWidth:(CGFloat)maxWidth fallbackOriginX:(CGFloat)fallbackOriginX bonusWidth:(CGFloat)bonusWidth bonusOriginX:(CGFloat)bonusOriginX;
-- (void)updateTextColor:(UIColor *)color;
+@property (nonatomic, assign) BOOL controlCenter;
+- (id)initWithFrame:(CGRect)frame controlCenter:(BOOL)controlCenter;
+- (CGRect)rectForMaxWidth:(CGRect)frame
+                 maxWidth:(CGFloat)maxWidth
+          fallbackOriginX:(CGFloat)fallbackOriginX
+               bonusWidth:(CGFloat)bonusWidth
+             bonusOriginX:(CGFloat)bonusOriginX;
 - (void)updateSkipBackgroundColor:(UIColor *)color;
+- (void)setNewTextColor:(UIColor *)color;
+- (void)updateTextColor;
+- (UIView *)getArtworkContainerView;
 @end
 
 
 #define kNextUpDidInitialize @"nextUpDidInitialize"
 
 @interface NextUpViewController : UIViewController
-@property (nonatomic, retain) NSBundle *bundle;
-@property (nonatomic, retain) UIImpactFeedbackGenerator *hapticGenerator;
-@property (nonatomic, retain) UIStackView *view;
-@property (nonatomic, retain) UIView *contentView;
-@property (nonatomic, retain) NextUpManager *manager;
 @property (nonatomic, retain) UILabel *headerLabel;
-@property (nonatomic, retain) NextUpMediaHeaderView *mediaView;
+@property (assign, nonatomic) long long style;
 @property (nonatomic, assign) BOOL showsHeader;
 @property (nonatomic, assign) BOOL controlCenter;
-@property (assign, nonatomic) long long style;
-- (id)initWithControlCenter:(BOOL)controlCenter defaultStyle:(long long)style manager:(NextUpManager *)manager;
+@property (nonatomic, retain) NextUpMediaHeaderView *mediaView;
+- (id)initWithControlCenter:(BOOL)controlCenter
+               defaultStyle:(long long)style;
 @end
 // ---
 
@@ -105,7 +111,12 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @property (nonatomic, retain) UIView *nextUpView;
 @property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
 @property (nonatomic, assign) BOOL shouldShowNextUp;
+@property (nonatomic, assign) float nextUpHeight;
+@property (nonatomic, assign) float heightWithNextUpActive;
+- (void)prepareFramesForNextUp;
+- (CGRect)revertFrameForNextUp;
 - (void)addNextUpView;
+- (void)showNextUp;
 @end
 
 
@@ -120,8 +131,7 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @property (nonatomic, retain) MediaControlsParentContainerView *parentContainerView;
 @property (assign, nonatomic) long long style;
 
-@property (nonatomic, assign, getter=isNextUpInitialized) BOOL nextUpInitialized;
-- (void)initNextUp;
+- (void)initNextUpInControlCenter:(BOOL)controlCenter;
 - (BOOL)NU_isControlCenter;
 @end
 // ---
@@ -132,25 +142,34 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @property (nonatomic, assign, getter=isShowingMediaControls) BOOL showingMediaControls;
 @end
 
-@interface SBDashBoardQuickActionsViewController : UIViewController
-@property (assign, nonatomic) SBDashBoardViewController *dashBoardViewController;
+@interface SBLockScreenManager : NSObject
++ (id)sharedInstance;
+@property (nonatomic, readonly) SBDashBoardViewController *dashBoardViewController;
+@property (readonly) BOOL isLockScreenVisible;
 @end
 
 @interface SBDashBoardQuickActionsView : UIView
-@property (nonatomic, retain) SBDashBoardQuickActionsViewController *delegate;
 @property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
+- (void)animateHide:(BOOL)hide;
+- (BOOL)shouldHideWithNextUp;
+- (BOOL)shouldOverrideAlpha;
 @end
 
+@interface SBDashBoardHomeAffordanceView : UIView
+@property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
+@end
 
 @interface SBDashBoardMediaControlsViewController : UIViewController
 @property (nonatomic, assign) BOOL shouldShowNextUp;
 @property (nonatomic, assign) BOOL nu_skipWidgetHeightIncrease;
 @property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
-@property (nonatomic, assign) float nextUpHeight;
-- (void)initNextUp;
 - (void)addNextUpView;
 - (void)removeNextUpView;
 - (MediaControlsPanelViewController *)panelViewController;
+- (float)nextUpXPosition;
+- (float)nextUpExtraWidth;
+- (float)nextUpHeight;
+- (float)extraBottomPaddingForNextUpHeight:(float)nextUpHeight;
 @end
 
 
@@ -186,6 +205,17 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 - (void)cfw_colorize:(CFWColorInfo *)colorInfo;
 - (void)cfw_revert;
 @end
+
+@interface CFWPrefsManager : NSObject
+@property(nonatomic, assign, getter=isLockScreenEnabled) BOOL lockScreenEnabled;
+@property(nonatomic, assign, getter=isMusicEnabled) BOOL musicEnabled;
+@property(nonatomic, assign, getter=isSpotifyEnabled) BOOL spotifyEnabled;
+
+@property(nonatomic, assign, getter=shouldRemoveArtworkShadow) BOOL removeArtworkShadow;
+@property(nonatomic, assign, getter=isLockScreenResizingEnabled) BOOL lockScreenResizingEnabled;
+
++ (instancetype)sharedInstance;
+@end
 // ---
 
 /* Nereid */
@@ -198,4 +228,4 @@ typedef enum UIImpactFeedbackStyle : NSInteger {
 @property (nonatomic, retain) UIColor *mainColor;
 + (instancetype)sharedInstance;
 @end
-/* */
+// ---

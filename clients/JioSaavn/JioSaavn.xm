@@ -2,21 +2,30 @@
 #import "../CommonClients.h"
 
 
-PlayerVC *getPlayerVC() {
+@interface NSString (Missing)
+- (id)CDVStringByXMLUnquoting;
+@end
+
+// Pro status (debugging)
+// %hook UserData
+// - (void)setProStatus:(BOOL)status {
+//     %orig(YES);
+// }
+// %end
+
+static PlayerVC *getPlayerVC() {
     return [(AppDelegate *)[[UIApplication sharedApplication] delegate] getPlayerVC];
-}
-
-void skipNext(notificationArguments) {
-    [getPlayerVC() skipNext];
-}
-
-void manualUpdate(notificationArguments) {
-    [getPlayerVC() fetchNextUp];
 }
 
 %hook PlayerVC
 
 - (void)updateQueueWithoutChangingSong {
+    %orig;
+
+    [self fetchNextUp];
+}
+
+- (void)refreshQueueAtCurrentSong:(int)arg1 {
     %orig;
 
     [self fetchNextUp];
@@ -50,7 +59,7 @@ void manualUpdate(notificationArguments) {
 - (NSDictionary *)serializeSong:(NSDictionary *)song image:(UIImage *)image {
     NSMutableDictionary *metadata = [NSMutableDictionary new];
 
-    metadata[kTitle] = song[@"title"];
+    metadata[kTitle] = [song[@"title"] CDVStringByXMLUnquoting];
     metadata[kSubtitle] = [%c(SongUtil) getPrimaryArtistNamesForSong:song];
 
     if (image)
@@ -72,12 +81,21 @@ void manualUpdate(notificationArguments) {
         NSString *imageURLString = song[@"image"];
         UIImage *image = [[%c(SDImageCache) sharedImageCache] imageFromDiskCacheForKey:imageURLString];
         if (!image) {
-            [[%c(SDWebImageManager) sharedManager] downloadImageWithURL:[NSURL URLWithString:imageURLString]
-                                                                options:0
-                                                               progress:nil
-                                                              completed:^(UIImage *image, NSError *error, NSURL *url) {
+            SDWebImageManager *imageManager = [%c(SDWebImageManager) sharedManager];
+            id completion = ^(UIImage *image, NSError *error, NSURL *url) {
                 sendNextTrackMetadata([self serializeSong:song image:image]);
-            }];
+            };
+
+            if ([imageManager respondsToSelector:@selector(downloadImageWithURL:options:progress:completed:)])
+                [imageManager downloadImageWithURL:[NSURL URLWithString:imageURLString]
+                                           options:0
+                                          progress:nil
+                                         completed:completion];
+            else if ([imageManager respondsToSelector:@selector(loadImageWithURL:options:progress:completed:)])
+                [imageManager loadImageWithURL:[NSURL URLWithString:imageURLString]
+                                       options:0
+                                      progress:nil
+                                     completed:completion];
         } else {
             sendNextTrackMetadata([self serializeSong:song image:image]);
         }
@@ -86,8 +104,15 @@ void manualUpdate(notificationArguments) {
 
 %end
 
+
 %ctor {
-    NSString *bundleID = [NSBundle mainBundle].bundleIdentifier;
-    if (!initClient(bundleID, skipNext, manualUpdate))
-        return;
+    if (shouldInitClient(JioSaavn)) {
+        registerNotify(^(int _) {
+            [getPlayerVC() skipNext];
+        },
+        ^(int _) {
+            [getPlayerVC() fetchNextUp];
+        });
+        %init;
+    }
 }

@@ -1,28 +1,15 @@
+#import "NUSettingsListController.h"
 #import <Preferences/Preferences.h>
 #import <UIKit/UITableViewLabel.h>
-#import "../Common.h"
-#import "../DRMOptions.mm"
-#import "../../DRM/PFStatusBarAlert/PFStatusBarAlert.h"
 #import <spawn.h>
+#import <notify.h>
 #import "../../TwitterStuff/Prompt.h"
 #import "../SettingsKeys.h"
 
-#define NextUpColor [UIColor colorWithRed:0.00 green:0.65 blue:1.00 alpha:1.0] // #00A5FF
-#define preferencesFrameworkPath @"/System/Library/PrivateFrameworks/Preferences.framework"
 #define kPostNotification @"PostNotification"
 
-@interface NextUpRootListController : PSListController <PFStatusBarAlertDelegate, DRMDelegate> {
-    UIWindow *settingsView;
-}
-@property (nonatomic, strong) PFStatusBarAlert *statusAlert;
-@property (nonatomic, weak) UIAlertAction *okAction;
-@property (nonatomic, weak) NSString *okRegex;
-@property (nonatomic, strong) UIAlertController *giveawayAlertController;
+@interface NextUpRootListController : NUSettingsListController
 @end
-
-#define kIconImage @"iconImage"
-#define kKey @"key"
-#define kDefault @"default"
 
 @implementation NextUpRootListController
 
@@ -45,20 +32,38 @@
     for (PSSpecifier *specifier in _specifiers) {
         if ([specifier.identifier isEqualToString:@"Music"] || [specifier.identifier isEqualToString:@"Mail"]) {
             NSString *imageName = [NSString stringWithFormat:@"%@.png", specifier.identifier];
-            UIImage *image = [UIImage imageNamed:imageName inBundle:[NSBundle bundleWithPath:preferencesFrameworkPath]];
+            UIImage *image = [UIImage imageNamed:imageName inBundle:[NSBundle bundleWithPath:kPrefPath]];
             if (image)
                 [specifier setProperty:image forKey:kIconImage];
-        } else if ([UIApplication sharedApplication].userInterfaceLayoutDirection == UIUserInterfaceLayoutDirectionRightToLeft &&
-                   [[specifier propertyForKey:kKey] isEqualToString:kHideArtwork]) {
+        } else if ([[specifier propertyForKey:kKey] isEqualToString:kHideArtwork] &&
+                   [UIApplication sharedApplication].userInterfaceLayoutDirection == UIUserInterfaceLayoutDirectionRightToLeft) {
             [specifier setProperty:@(NO) forKey:@"enabled"];
         }
     }
 
-    // Add license specifier
-    NSMutableArray *mspecs = (NSMutableArray *)[_specifiers mutableCopy];
-    _specifiers = addDRMSpecifiers(mspecs, self, licensePath$bs(), kPrefPath, package$bs(), licenseFooterText$bs(), trialFooterText$bs());
-
     return _specifiers;
+}
+
+- (id)readPreferenceValue:(PSSpecifier *)specifier {
+    id value = [super readPreferenceValue:specifier];
+
+    NSString *key = [specifier propertyForKey:kKey];
+    if ([key isEqualToString:kLockscreen])
+        [self enableLockscreenSpecifiers:[value boolValue]];
+
+    return value;
+}
+
+- (void)preferenceValueChanged:(id)value specifier:(PSSpecifier *)specifier {
+    NSString *key = [specifier propertyForKey:kKey];
+    if ([key isEqualToString:kLockscreen])
+        [self enableLockscreenSpecifiers:[value boolValue]];
+}
+
+- (void)enableLockscreenSpecifiers:(BOOL)enabled {
+    [self setEnabled:enabled forSpecifier:[self specifierForID:kHideXButtons]];
+    [self setEnabled:enabled forSpecifier:[self specifierForID:kHideHomeBar]];
+    [self setEnabled:enabled forSpecifier:[self specifierForID:kSlimmedLSMode]];
 }
 
 - (void)loadView {
@@ -66,103 +71,20 @@
     presentFollowAlert(kPrefPath, self);
 }
 
-- (id)readPreferenceValue:(PSSpecifier *)specifier {
-    NSDictionary *preferences = [NSDictionary dictionaryWithContentsOfFile:kPrefPath];
-    NSString *key = [specifier propertyForKey:kKey];
-
-    if (preferences[key])
-        return preferences[key];
-
-    return specifier.properties[kDefault];
-}
-
-- (void)setPreferenceValue:(id)value specifier:(PSSpecifier *)specifier {
-    NSMutableDictionary *preferences = [[NSMutableDictionary alloc] initWithContentsOfFile:kPrefPath];
-    if (!preferences) preferences = [[NSMutableDictionary alloc] init];
-    NSString *key = [specifier propertyForKey:kKey];
-
-    [preferences setObject:value forKey:key];
-    [preferences writeToFile:kPrefPath atomically:YES];
-    
-    if (specifier.properties[kPostNotification]) {
-        CFStringRef post = (CFStringRef)CFBridgingRetain(specifier.properties[kPostNotification]);
-        notify(post);
-    }
-}
-
-- (void)respring {
-    respring(NO);
-}
-
-- (void)activate {
-    activate(licensePath$bs(), package$bs(), self);
-}
-
-- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
-    [self textFieldChanged:textField];
-    return YES;
-}
-
-- (void)textFieldChanged:(UITextField *)textField {
-    determineUnlockOKButton(textField, self);
-}
-
-- (void)trial {
-    trial(licensePath$bs(), package$bs(), self);
-}
-
-- (void)viewDidLoad {
-    [super viewDidLoad];
-
-    if (!self.statusAlert) {
-        self.statusAlert = [[PFStatusBarAlert alloc] initWithMessage:nil
-                                                        notification:nil
-                                                              action:@selector(respring)
-                                                              target:self];
-        self.statusAlert.backgroundColor = [UIColor colorWithHue:0.590 saturation:1 brightness:1 alpha:0.9];
-        self.statusAlert.textColor = [UIColor whiteColor];
-    }
-}
-
-- (void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-
-    // Tint
-    settingsView = [[UIApplication sharedApplication] keyWindow];
-    settingsView.tintColor = NextUpColor;
-
-    [self reloadSpecifiers];
-}
-
-- (void)viewWillDisappear:(BOOL)animated {
-    [super viewWillDisappear:animated];
-    settingsView = [[UIApplication sharedApplication] keyWindow];
-    settingsView.tintColor = nil;
-
-    if (self.statusAlert)
-        [self.statusAlert hideOverlay];
-}
-
 - (void)sendEmail {
     openURL([NSURL URLWithString:@"mailto:andreaskhenriksson@gmail.com?subject=NextUp"]);
 }
 
-- (void)purchase {
-    fetchPrice(package$bs(), self, ^(const NSString *respondingServer, const NSString *price, const NSString *URL) {
-        redirectToCheckout(respondingServer, URL, self);
-    });
+- (void)followTwitter {
+    openTwitter();
 }
 
 - (void)myTweaks {
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://henrikssonbrothers.com/cydia/repo/packages.html"]];
+    openURL([NSURL URLWithString:@"https://henrikssonbrothers.com/cydia/repo/packages.html"]);
 }
 
 - (void)troubleshoot {
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://github.com/Nosskirneh/NextUp-Public/blob/master/README.md#troubleshooting--faq"]];
-}
-
-- (void)safariViewControllerDidFinish:(id)arg1 {
-    safariViewControllerDidFinish(self);
+    openURL([NSURL URLWithString:@"https://github.com/Nosskirneh/NextUp-Public/blob/master/README.md#troubleshooting--faq"]);
 }
 
 @end
@@ -195,6 +117,7 @@
 @end
 
 @implementation NextUpSettingsHeaderCell
+
 - (id)initWithSpecifier:(PSSpecifier *)specifier {
     self = [super initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"headerCell" specifier:specifier];
     if (self) {
@@ -208,22 +131,46 @@
         [_label setAttributedText:attributedString];
         [_label setTextAlignment:NSTextAlignmentCenter];
         [_label setBackgroundColor:[UIColor clearColor]];
-        
+
         [self addSubview:_label];
         [self setBackgroundColor:[UIColor clearColor]];
-        
+
         // Setup constraints
-        NSLayoutConstraint *leftConstraint = [NSLayoutConstraint constraintWithItem:_label attribute:NSLayoutAttributeLeft relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeLeft multiplier:1.0 constant:0.0];
-        NSLayoutConstraint *rightConstraint = [NSLayoutConstraint constraintWithItem:_label attribute:NSLayoutAttributeRight relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeRight multiplier:1.0 constant:0.0];
-        NSLayoutConstraint *bottomConstraint = [NSLayoutConstraint constraintWithItem:_label attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeBottom multiplier:1.0 constant:0.0];
-        NSLayoutConstraint *topConstraint = [NSLayoutConstraint constraintWithItem:_label attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeTop multiplier:1.0 constant:0.0];
-        [self addConstraints:[NSArray arrayWithObjects:leftConstraint, rightConstraint, bottomConstraint, topConstraint, nil]];
+        NSLayoutConstraint *leftConstraint = [NSLayoutConstraint constraintWithItem:_label
+                                                                          attribute:NSLayoutAttributeLeft
+                                                                          relatedBy:NSLayoutRelationEqual
+                                                                             toItem:self
+                                                                          attribute:NSLayoutAttributeLeft
+                                                                         multiplier:1.0
+                                                                           constant:0.0];
+        NSLayoutConstraint *rightConstraint = [NSLayoutConstraint constraintWithItem:_label
+                                                                           attribute:NSLayoutAttributeRight
+                                                                           relatedBy:NSLayoutRelationEqual
+                                                                              toItem:self
+                                                                           attribute:NSLayoutAttributeRight
+                                                                          multiplier:1.0
+                                                                            constant:0.0];
+        NSLayoutConstraint *bottomConstraint = [NSLayoutConstraint constraintWithItem:_label
+                                                                            attribute:NSLayoutAttributeBottom
+                                                                            relatedBy:NSLayoutRelationEqual
+                                                                               toItem:self
+                                                                            attribute:NSLayoutAttributeBottom
+                                                                           multiplier:1.0
+                                                                             constant:0.0];
+        NSLayoutConstraint *topConstraint = [NSLayoutConstraint constraintWithItem:_label
+                                                                         attribute:NSLayoutAttributeTop
+                                                                         relatedBy:NSLayoutRelationEqual
+                                                                            toItem:self
+                                                                         attribute:NSLayoutAttributeTop
+                                                                        multiplier:1.0
+                                                                          constant:0.0];
+        [self addConstraints:@[leftConstraint, rightConstraint, bottomConstraint, topConstraint]];
     }
     return self;
 }
 
-- (CGFloat)preferredHeightForWidth:(CGFloat)arg1 {
-    // Return a custom cell height.
+// Return a custom cell height.
+- (CGFloat)preferredHeightForWidth:(CGFloat)width {
     return 140.f;
 }
 

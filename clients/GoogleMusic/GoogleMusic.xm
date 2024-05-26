@@ -2,24 +2,16 @@
 #import "../CommonClients.h"
 
 
-AppDelegate *getGPMAppDelegate() {
+static AppDelegate *getGPMAppDelegate() {
     return (AppDelegate *)[[UIApplication sharedApplication] delegate];
 }
 
-GPMImageFetcher *getImageFetcher() {
+static GPMImageFetcher *getImageFetcher() {
     return getGPMAppDelegate().appServiceManager.imageFetcher;
 }
 
-MusicQueueManager *getQueueManager() {
+static MusicQueueManager *getQueueManager() {
     return getGPMAppDelegate().musicQueueManager;
-}
-
-void skipNext(notificationArguments) {
-    [getQueueManager() skipNext];
-}
-
-void manualUpdate(notificationArguments) {
-    [getQueueManager() manuallyUpdate];
 }
 
 %hook MusicQueueManager
@@ -56,7 +48,11 @@ void manualUpdate(notificationArguments) {
     self.lastSentTrack = track;
 
     NSURL *artworkURL = [NSURL URLWithString:track.albumArtURLString];
-    [getImageFetcher() fetchImageWithURL:artworkURL size:ARTWORK_SIZE quality:1 operationSequence:[%c(GPMOperationSequence) new] completionHandler:^(UIImage *image) {
+    [getImageFetcher() fetchImageWithURL:artworkURL
+                                    size:ARTWORK_SIZE
+                                 quality:1
+                       operationSequence:[%c(GPMOperationSequence) new]
+                       completionHandler:^(UIImage *image) {
         NSDictionary *metadata = [self serializeTrack:track image:image];
         sendNextTrackMetadata(metadata);
     }];
@@ -85,7 +81,13 @@ void manualUpdate(notificationArguments) {
 
 
 %ctor {
-    NSString *bundleID = [NSBundle mainBundle].bundleIdentifier;
-    if (!initClient(bundleID, &skipNext, &manualUpdate))
-        return;
+    if (shouldInitClient(GoogleMusic)) {
+        registerNotify(^(int _) {
+            [getQueueManager() skipNext];
+        },
+        ^(int _) {
+            [getQueueManager() manuallyUpdate];
+        });
+        %init;
+    }
 }

@@ -1,3 +1,6 @@
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+
 @interface HNKCache
 + (id)sharedCache;
 - (BOOL)fetchImageForFetcher:(id)arg1 formatName:(id)arg2 success:(id)arg3 failure:(id)arg4;
@@ -12,6 +15,7 @@
 @interface VOXPlayerQueue : NSObject
 - (VoxPlayableItem *)nextPlayableItem;
 - (BOOL)removeItem:(VoxPlayableItem *)item;
+- (void)skipNext;
 - (void)fetchNextUp;
 - (NSDictionary *)serializeTrack:(VoxPlayableItem *)item image:(UIImage *)image;
 @end

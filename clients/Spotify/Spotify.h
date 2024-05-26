@@ -1,3 +1,36 @@
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+
+
+@interface SpotifyServiceList
++ (NSArray *(^)(void))sessionServices;
++ (void)setSessionServices:(NSArray *(^)(void))sessionServices;
+@end
+
+
+@protocol SPTService;
+
+@protocol SPTServiceProvider <NSObject>
+- (id <SPTService>)provideOptionalServiceForIdentifier:(NSString *)identifier;
+- (id <SPTService>)provideServiceForIdentifier:(NSString *)identifier;
+@end
+
+@protocol SPTServiceProvider;
+
+@protocol SPTService <NSObject>
+@property (atomic, class, readonly) NSString *serviceIdentifier;
+- (void)configureWithServices:(id<SPTServiceProvider>)serviceProvider;
+
+@optional
+- (void)idleStateWasReached;
+- (void)initialViewDidAppear;
+- (void)load;
+- (void)unload;
+@end
+
+
+
+
 @interface SPTPlayerTrack : NSObject
 @property (readonly, nonatomic, getter=isAdvertisement) BOOL advertisement;
 @property (readonly, nonatomic) NSString *subtitle;
@@ -33,54 +66,12 @@
 @property (readonly, nonatomic) NSArray<SPTQueueTrackImplementation *> *upNextTracks;
 @end
 
-@interface SPTGLUEImageLoader : NSObject
-- (id)loadImageForURL:(id)arg1 imageSize:(CGSize)arg2 completion:(id)arg3;
-@end
-
 @interface SPTQueueViewModelImplementation : NSObject {
     SPTPlayerImpl *_player;
 }
-@property (nonatomic, retain) SPTPlayerTrack *lastSentTrack;
-@property (nonatomic, retain) SPTGLUEImageLoader *imageLoader;
 @property (nonatomic, strong) SPTQueueViewModelDataSource *dataSource;
 - (void)enableUpdates;
-- (SPTQueueViewModelDataSource *)removeTracks:(NSSet *)arg1;
-- (void)sendNextUpMetadata:(SPTPlayerTrack *)track;
-- (void)fetchNextUp;
-- (void)fetchNextUpForState:(SPTPlayerState *)state;
-- (void)skipNext;
-@end
-
-
-
-@interface SPTStatefulPlayerQueue : NSObject
-@property (retain, nonatomic) SPTPlayerState *playerState;
-@end
-
-@interface SPTStatefulPlayer : NSObject
-@property (retain, nonatomic) SPTStatefulPlayerQueue *queue;
-@end
-
-@interface SPTGLUEImageLoaderFactoryImplementation : NSObject
-- (id)createImageLoaderForSourceIdentifier:(NSString *)sourceIdentifier;
-@end
-
-@interface SPTQueueServiceImplementation : NSObject
-@property (retain, nonatomic) SPTGLUEImageLoaderFactoryImplementation *glueImageLoaderFactory;
-@end
-
-
-@interface SPTQueueInteractorImplementation : NSObject
-@property (nonatomic) __weak SPTQueueViewModelImplementation *target;
-@end
-
-@interface NowPlayingFeatureImplementation : NSObject
-@property (nonatomic) __weak SPTQueueServiceImplementation *queueService;
-@property (nonatomic) __weak SPTQueueInteractorImplementation *queueInteractor;
-@end
-
-@interface SpotifyApplication : UIApplication
-@property (nonatomic) __weak NowPlayingFeatureImplementation *remoteControlDelegate;
+- (SPTQueueViewModelDataSource *)removeTracks:(NSSet *)trackSet;
 @end
 
 
@@ -90,15 +81,38 @@
 
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+@protocol SPTQueueInteractor <NSObject>
+@property (nonatomic) __weak SPTQueueViewModelImplementation *target;
+@end
 
-    SpotifyApplication *getSpotifyApplication();
-    NowPlayingFeatureImplementation *getRemoteDelegate();
-    SPTQueueServiceImplementation *getQueueService();
-    SPTQueueViewModelImplementation *getQueueImplementation();
+@interface SPTNowPlayingServiceImplementation : NSObject<SPTService>
+@property (retain, nonatomic) id <SPTQueueInteractor> queueInteractor;
+@end
 
-#ifdef __cplusplus
-}
-#endif
+@interface SPTGLUEImageLoader : NSObject
+- (id)loadImageForURL:(id)arg1 imageSize:(CGSize)arg2 completion:(id)arg3;
+@end
+
+@protocol SPTGLUEImageLoaderFactory <NSObject>
+- (SPTGLUEImageLoader *)createImageLoaderForSourceIdentifier:(NSString *)sourceIdentifier;
+@end
+
+@protocol SPTGLUEService <SPTService>
+- (id <SPTGLUEImageLoaderFactory>)provideImageLoaderFactory;
+@end
+
+
+@protocol SPTPlayer <NSObject>
+@end
+
+@protocol SPTPlayerObserver <NSObject>
+@optional
+- (void)player:(id <SPTPlayer>)player didEncounterError:(NSError *)error;
+- (void)player:(id <SPTPlayer>)player stateDidChange:(SPTPlayerState *)newState fromState:(SPTPlayerState *)oldState;
+- (void)player:(id <SPTPlayer>)player stateDidChange:(SPTPlayerState *)newState;
+@end
+
+@interface SPTPlayerFeatureImplementation : NSObject<SPTService>
+- (void)removePlayerObserver:(id<SPTPlayerObserver>)observer;
+- (void)addPlayerObserver:(id<SPTPlayerObserver>)observer;
+@end

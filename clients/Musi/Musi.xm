@@ -1,17 +1,11 @@
 #import "Musi.h"
 #import "../CommonClients.h"
 
-MMusicSession *getMusicSession() {
-    MSplashViewController *splashViewController = (MSplashViewController *)[[[UIApplication sharedApplication] delegate] window].rootViewController;
+
+static MMusicSession *getMusicSession() {
+    MSplashViewController *splashViewController = (MSplashViewController *)[[[UIApplication sharedApplication]
+                                                                             delegate] window].rootViewController;
     return splashViewController.mainViewController.nowPlayingViewController.session;
-}
-
-void skipNext(notificationArguments) {
-    [getMusicSession() skipNext];
-}
-
-void manualUpdate(notificationArguments) {
-    [getMusicSession() fetchNextUp];
 }
 
 %hook MMusicSession
@@ -73,7 +67,12 @@ void manualUpdate(notificationArguments) {
     NSURL *url = next.thumbnailSmallURL;
     UIImage *image = [[%c(SDImageCache) sharedImageCache] imageFromDiskCacheForKey:url.absoluteString];
     if (!image) {
-        [[%c(SDWebImageManager) sharedManager] downloadImageWithURL:url options:0 progress:nil completed:^(UIImage *image, NSError *error, NSURL *url) {
+        [[%c(SDWebImageManager) sharedManager] downloadImageWithURL:url
+                                                            options:0
+                                                           progress:nil
+                                                          completed:^(UIImage *image,
+                                                                      NSError *error,
+                                                                      NSURL *url) {
             NSDictionary *metadata = [self serializeTrack:next image:image];
             sendNextTrackMetadata(metadata);
         }];
@@ -92,7 +91,7 @@ void manualUpdate(notificationArguments) {
     if (image)
         metadata[kArtwork] = UIImagePNGRepresentation(image);
 
-    metadata[kSkipable] = @YES;
+    metadata[kSkippable] = @YES;
     return metadata;
 }
 
@@ -100,7 +99,13 @@ void manualUpdate(notificationArguments) {
 
 
 %ctor {
-    NSString *bundleID = [NSBundle mainBundle].bundleIdentifier;
-    if (!initClient(bundleID, &skipNext, &manualUpdate))
-        return;
+    if (shouldInitClient(Musi)) {
+        registerNotify(^(int _) {
+            [getMusicSession() skipNext];
+        },
+        ^(int _) {
+            [getMusicSession() fetchNextUp];
+        });
+        %init;
+    }
 }

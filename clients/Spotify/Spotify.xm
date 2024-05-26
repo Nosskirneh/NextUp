@@ -1,137 +1,131 @@
 #import "Spotify.h"
 #import "../CommonClients.h"
 #import <substrate.h>
+#import <HBLog.h>
 
-void skipNext(notificationArguments) {
-    [getQueueImplementation() skipNext];
-}
-
-void manualUpdate(notificationArguments) {
-    SPTQueueViewModelImplementation *queueViewModel = getQueueImplementation();
-    if (!queueViewModel)
-        return;
-    [queueViewModel fetchNextUp];
-}
-
-SpotifyApplication *getSpotifyApplication() {
-    return (SpotifyApplication *)[UIApplication sharedApplication];
-}
-
-NowPlayingFeatureImplementation *getRemoteDelegate() {
-    return getSpotifyApplication().remoteControlDelegate;
-}
-
-SPTQueueServiceImplementation *getQueueService() {
-    return getRemoteDelegate().queueService;
-}
-
-SPTQueueViewModelImplementation *getQueueImplementation() {
-    return getRemoteDelegate().queueInteractor.target;
-}
-
-// Fetch next track on app launch
-%hook SPBarViewController
-
-- (void)viewDidLoad {
-    %orig;
-
-    // Load image loader
-    SPTQueueViewModelImplementation *queueViewModel = getQueueImplementation();
-    queueViewModel.imageLoader = [getQueueService().glueImageLoaderFactory createImageLoaderForSourceIdentifier:@"se.nosskirneh.nextup"];
-
-    // Add observer (otherwise this is only done as late as when opening the now playing view)
-    SPTPlayerImpl *player = MSHookIvar<SPTPlayerImpl *>(queueViewModel, "_player");
-    [player addPlayerObserver:queueViewModel];
-
-    // This will fill the dataSource's futureTracks, which makes it possible to skip tracks
-    [queueViewModel enableUpdates];
-}
-
-%end
+#define SERVICE_CLASS %c(NUSPTService)
 
 
 %hook SPTQueueViewModelImplementation
 
-%property (nonatomic, retain) SPTGLUEImageLoader *imageLoader;
-%property (nonatomic, retain) SPTPlayerTrack *lastSentTrack;
-
-- (void)player:(SPTPlayerImpl *)player stateDidChange:(SPTPlayerState *)newState fromState:(SPTPlayerState *)oldState {
-    %orig;
-
-    [self fetchNextUpForState:newState];
-}
-
-%new
-- (void)fetchNextUp {
-    SPTPlayerImpl *player = MSHookIvar<SPTPlayerImpl *>(self, "_player");
-    self.lastSentTrack = nil;
-    [self fetchNextUpForState:player.state];
-}
-
-%new
-- (void)fetchNextUpForState:(SPTPlayerState *)state {
-    NSArray<SPTPlayerTrack *> *next = state.future;
-    if (next.count > 0) {
-        if (![next[0] isEqual:self.lastSentTrack])
-            [self sendNextUpMetadata:next[0]];
-        return;
-    }
-    
-    sendNextTrackMetadata(nil);
-}
-
-%new
-- (void)skipNext {
-    NSArray *queue = nil;
-    if (self.dataSource.futureTracks && self.dataSource.futureTracks.count > 0)
-        queue = self.dataSource.futureTracks;
-    else if (self.dataSource.upNextTracks && self.dataSource.upNextTracks.count > 0)
-        queue = self.dataSource.upNextTracks;
-    else
-        return;
-
-    NSSet *tracks = [NSSet setWithArray:@[queue[0]]];
-    [self removeTracks:tracks];
-}
-
-%new
-- (void)sendNextUpMetadata:(SPTPlayerTrack *)track {
-    self.lastSentTrack = track;
-
-    NSMutableDictionary *metadata = [NSMutableDictionary new];
-    metadata[kTitle] = [track trackTitle];
-    metadata[kSubtitle] = track.artistTitle;
-
-    // Artwork
-    __block UIImage *image = [UIImage trackSPTPlaceholderWithSize:0];
-
-    // Do this lastly
-    if ([self.imageLoader respondsToSelector:@selector(loadImageForURL:imageSize:completion:)]) {
-        [self.imageLoader loadImageForURL:track.coverArtURL imageSize:ARTWORK_SIZE completion:^(UIImage *img) {
-            if (img)
-                image = img;
-
-            metadata[kArtwork] = UIImagePNGRepresentation(image);
-            sendNextTrackMetadata(metadata);
-        }];
-    }
+- (void)disableUpdates {
+    /* This gets called by the Spotify app itself in some cases.
+       I have no idea why, but hooking it seems like a better
+       idea compared to always calling `enableUpdates`. */
 }
 
 %end
 
-%hook GaiaLocalAudioSessionController
+static NSDictionary *_addNextUpServiceToClassScopes(NSDictionary<NSString *, NSArray<NSString *> *> *scopes,
+                                                    id classObject) {
+    NSMutableDictionary *newScopes = [scopes mutableCopy];
+    NSMutableArray *newSessionArray = [newScopes[@"session"] mutableCopy];
+    [newSessionArray addObject:classObject];
+    newScopes[@"session"] = newSessionArray;
+    return newScopes;
+}
 
-- (void)player:(SPTPlayerImpl *)player stateDidChange:(SPTPlayerState *)newState fromState:(SPTPlayerState *)oldState {
-    %orig;
+static NSDictionary *addNextUpServiceToClassNamesScopes(NSDictionary<NSString *, NSArray<NSString *> *> *scopes) {
+    return _addNextUpServiceToClassScopes(scopes, NSStringFromClass(SERVICE_CLASS));
+}
 
-    [getQueueImplementation() fetchNextUpForState:newState];
+static NSDictionary *addNextUpServiceToClassScopes(NSDictionary<NSString *, NSArray<NSString *> *> *scopes) {
+    return _addNextUpServiceToClassScopes(scopes, SERVICE_CLASS);
+}
+
+%group SPTDictionaryBasedServiceList
+%hook SPTDictionaryBasedServiceList
+
+- (id)initWithClassNamesByScope:(NSDictionary<NSString *, NSArray<NSString *> *> *)scopes
+                   scopeParents:(NSDictionary *)scopeParents {
+    return %orig(addNextUpServiceToClassNamesScopes(scopes), scopeParents);
 }
 
 %end
+%end
+
+
+%group SPTServiceSystem
+%hook SPTServiceList
+
+- (id)initWithScopes:(NSDictionary<NSString *, NSArray<NSString *> *> *)scopes
+        scopeParents:(NSDictionary *)scopeParents {
+    return %orig(addNextUpServiceToClassNamesScopes(scopes), scopeParents);
+}
+
+%end
+%end
+
+%group SPTServiceSystem_864
+%hook SPTServiceList
+
+- (id)initWithScopeGraph:(id)graph
+   serviceClassesByScope:(NSDictionary<NSString *, NSArray<NSString *> *> *)scopes {
+    return %orig(graph, addNextUpServiceToClassScopes(scopes));
+}
+
+%end
+%end
+
+
+%group AppDelegate
+%hook AppDelegate
+
+- (NSArray *)sessionServices {
+    NSArray *orig = %orig;
+    if (!orig) {
+        return @[SERVICE_CLASS];
+    }
+
+    NSMutableArray *newArray = [orig mutableCopy];
+    [newArray addObject:SERVICE_CLASS];
+    return newArray;
+}
+
+%end
+%end
+
+
+static inline BOOL initServiceSystem(Class serviceListClass) {
+    if (serviceListClass) {
+        if ([serviceListClass instancesRespondToSelector:@selector(initWithScopeGraph:serviceClassesByScope:)]) {
+            %init(SPTServiceSystem_864);
+        } else {
+            %init(SPTServiceSystem, SPTServiceList = serviceListClass);
+        }
+        return YES;
+    }
+    return NO;
+}
+
+
+%hookf(int, UIApplicationMain, int argc, char *_Nullable *argv, NSString *principalClassName, NSString *delegateClassName) {
+    Class Delegate = NSClassFromString(delegateClassName);
+    if ([Delegate instancesRespondToSelector:@selector(sessionServices)]) {
+        %init(AppDelegate, AppDelegate = Delegate);
+    } else {
+        Class SpotifyServiceList = objc_getClass("SPTClientServices.SpotifyServiceList");
+        if (SpotifyServiceList && [SpotifyServiceList respondsToSelector:@selector(setSessionServices:)]) {
+            NSArray *sessionServices = [SpotifyServiceList sessionServices]();
+            [SpotifyServiceList setSessionServices:^{
+                NSMutableArray *newSessionServicesArray = [sessionServices mutableCopy];
+                [newSessionServicesArray addObject:SERVICE_CLASS];
+                return newSessionServicesArray;
+            }];
+        }
+    }
+
+    return %orig;
+}
 
 
 %ctor {
-    NSString *bundleID = [NSBundle mainBundle].bundleIdentifier;
-    if (!initClient(bundleID, &skipNext, &manualUpdate))
-        return;
+    if (shouldInitClient(Spotify)) {
+        %init;
+
+        if (!initServiceSystem(%c(SPTServiceList)) &&
+            !initServiceSystem(objc_getClass("SPTServiceSystem.SPTServiceList"))) {
+            %init(SPTDictionaryBasedServiceList);
+        }
+    }
 }

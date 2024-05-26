@@ -1,3 +1,6 @@
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+#import <CoreGraphics/CoreGraphics.h>
 #import <MediaPlayer/MediaPlayer.h>
 
 @interface MPNowPlayingInfoCenter (Addition)
@@ -36,9 +39,9 @@
 - (BOOL)removeItemWithContentID:(NSString *)itemID;
 - (BOOL)nowPlayingInfoCenter:(id)arg removeItemAtOffset:(NSInteger)offset;
 
-- (NSDictionary *)serializeTrack:(MTPlayerItem *)item image:(UIImage *)image skipable:(BOOL)skipable;
+- (NSDictionary *)serializeTrack:(MTPlayerItem *)item image:(UIImage *)image skippable:(BOOL)skippable;
 - (void)fetchNextUp;
-- (void)fetchNextUpFromItem:(MTPlayerItem *)item skipable:(BOOL)skipable;
+- (void)fetchNextUpFromItem:(MTPlayerItem *)item skippable:(BOOL)skippable;
 - (MTCompositeManifest *)getManifest;
 - (void)skipNext;
 @end

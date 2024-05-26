@@ -1,39 +1,59 @@
 #import "YouTubeMusic.h"
 #import "../CommonClients.h"
+#import <MediaPlayer/MPNowPlayingInfoCenter.h>
+#import <HBLog.h>
 
 
-void skipNext(notificationArguments) {
-    [[NSNotificationCenter defaultCenter] postNotificationName:kSkipNext object:nil];
+// This used to be able to retrieve it from GIMMe, but they changed that...
+YTImageService *imageService = nil;
+
+%hook YTImageService
+
+- (id)init {
+    return imageService = %orig;
 }
 
-void manualUpdate(notificationArguments) {
-    [[NSNotificationCenter defaultCenter] postNotificationName:kManualUpdate object:nil];
-}
-
-YTMAppDelegate *getYTMAppDelegate() {
-    return (YTMAppDelegate *)[[UIApplication sharedApplication] delegate];
-}
-
-GIMMe *gimme() {
-    return getYTMAppDelegate().gimme;
-}
+%end
 
 %hook YTMQueueController
+
+%property (nonatomic, assign) int skipNextNotifyToken;
+%property (nonatomic, assign) int manualUpdateNotifyToken;
 
 - (void)commonInit {
     %orig;
 
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(skipNext)
-                                                 name:kSkipNext
-                                               object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(fetchNextUp)
-                                                 name:kManualUpdate
-                                               object:nil];
+    int skipNextNotifyToken;
+    int manualUpdateNotifyToken;
+
+    registerNotifyTokens(^(int _) {
+            [self skipNext];
+        },
+        ^(int _) {
+            [self fetchNextUp];
+        },
+        &skipNextNotifyToken,
+        &manualUpdateNotifyToken);
+
+    self.skipNextNotifyToken = skipNextNotifyToken;
+    self.manualUpdateNotifyToken = manualUpdateNotifyToken;
 }
 
-- (unsigned long long)addQueueItems:(NSArray *)items numItemsToReveal:(long long)reveal atIndex:(unsigned long long)index {
+/* This is necessary as it spawns two of these classes, one of which is
+   deallocated shortly after. When the `manualUpdate` notification call
+   comes, `self` is something entirely different which results in a crash. */
+- (void)dealloc {
+    notify_cancel(self.skipNextNotifyToken);
+    notify_cancel(self.manualUpdateNotifyToken);
+
+    %orig;
+}
+
+%group AddQueueItems_New
+- (unsigned long long)addQueueItems:(NSArray *)items
+                   numItemsToReveal:(long long)reveal
+                            atIndex:(unsigned long long)index
+             ignoreSelectedProperty:(BOOL)ignoreSelectedProperty {
     unsigned long long orig = %orig;
 
     if (index == self.nextVideoIndex)
@@ -41,6 +61,20 @@ GIMMe *gimme() {
 
     return orig;
 }
+%end
+
+%group AddQueueItems_Old
+- (unsigned long long)addQueueItems:(NSArray *)items
+                   numItemsToReveal:(long long)reveal
+                            atIndex:(unsigned long long)index {
+    unsigned long long orig = %orig;
+
+    if (index == self.nextVideoIndex)
+        [self fetchNextUp];
+
+    return orig;
+}
+%end
 
 - (void)moveItemAtIndexPath:(NSIndexPath *)from toIndexPath:(NSIndexPath *)to {
     %orig;
@@ -49,21 +83,35 @@ GIMMe *gimme() {
         [self fetchNextUp];
 }
 
+%group RemoveVideoAtIndex
 - (void)removeVideoAtIndex:(unsigned long long)index {
     %orig;
 
     if (index == self.nextVideoIndex)
         [self fetchNextUp];
 }
+%end
 
-- (void)automixController:(id)controller didRemoveRenderersAtIndexes:(NSIndexSet *)indexes {
+%group RemoveQueueItemAtIndex
+- (void)removeQueueItemAtIndex:(unsigned long long)index {
+    %orig;
+
+    if (index == self.nextVideoIndex)
+        [self fetchNextUp];
+}
+%end
+
+- (void)automixController:(id)controller
+        didRemoveRenderersAtIndexes:(NSIndexSet *)indexes {
     %orig;
 
     if ([indexes containsIndex:self.nextVideoIndex])
         [self fetchNextUp];
 }
 
-- (void)automixController:(id)controller didInsertRenderersAtIndexes:(NSIndexSet *)indexes response:(id)arg3 {
+- (void)automixController:(id)controller
+        didInsertRenderersAtIndexes:(NSIndexSet *)indexes
+        response:(id)arg3 {
     %orig;
 
     if ([indexes containsIndex:self.nextVideoIndex])
@@ -76,17 +124,39 @@ GIMMe *gimme() {
     [self fetchNextUp];
 }
 
-- (void)playItemAtIndex:(unsigned long long)index autoPlaySource:(int)autoplay atStartTime:(double)starttime {
+- (void)updateMDXPlaybackOrder {
     %orig;
 
     [self fetchNextUp];
 }
 
+%group PlayItemAtIndex_Old
+- (void)playItemAtIndex:(unsigned long long)index
+         autoPlaySource:(int)autoplay
+            atStartTime:(double)starttime {
+    %orig;
+
+    [self fetchNextUp];
+}
+%end
+
+%group PlayItemAtIndex_New
+- (void)playItemAtIndex:(unsigned long long)index
+        autoPlaySource:(int)autoplay
+        isPlaybackControllerInternalTransition:(BOOL)transition
+        atStartTime:(double)starttime {
+    %orig;
+
+    [self fetchNextUp];
+}
+%end
+
 %new
 - (void)fetchNextUp {
     YTIPlaylistPanelVideoRenderer *next;
 
-    if ([self respondsToSelector:@selector(nextVideo)]) // Earlier YouTube Music version
+    // Using an earlier YouTube Music version?
+    if ([self respondsToSelector:@selector(nextVideo)])
         next = self.nextVideo;
     else
         next = [self nextVideoWithAutoplay:[self hasAutoplayVideo]];
@@ -101,12 +171,9 @@ GIMMe *gimme() {
                 break;
         }
 
-        NSString *URL = pickedThumbnail.URL;
-
-        YTImageServiceImpl *imageService = [gimme() instanceForType:%c(YTImageService)];
-        [imageService makeImageRequestWithURL:[NSURL URLWithString:URL] responseBlock:^(UIImage *image) {
-            NSDictionary *metadata = [self serializeTrack:next image:image];
-            sendNextTrackMetadata(metadata);
+        NSURL *URL = [NSURL URLWithString:pickedThumbnail.URL];
+        [imageService makeImageRequestWithURL:URL responseBlock:^(UIImage *image) {
+            sendNextTrackMetadata([self serializeTrack:next image:image]);
         } errorBlock:nil];
     } else {
         sendNextTrackMetadata(nil);
@@ -114,7 +181,8 @@ GIMMe *gimme() {
 }
 
 %new
-- (NSDictionary *)serializeTrack:(YTIPlaylistPanelVideoRenderer *)item image:(UIImage *)image {
+- (NSDictionary *)serializeTrack:(YTIPlaylistPanelVideoRenderer *)item
+                           image:(UIImage *)image {
     NSMutableDictionary *metadata = [NSMutableDictionary new];
 
     if (item.hasTitle)
@@ -127,21 +195,63 @@ GIMMe *gimme() {
         metadata[kArtwork] = UIImagePNGRepresentation(image);
 
     if (self.nowPlayingIndex + 1 == self.queueCount)
-        metadata[kSkipable] = @NO;
+        metadata[kSkippable] = @NO;
 
     return metadata;
 }
 
 %new
 - (void)skipNext {
-    [self removeVideoAtIndex:self.nextVideoIndex];
+    NSUInteger index = self.nextVideoIndex;
+    if ([self respondsToSelector:@selector(removeQueueItemAtIndex:)]) {
+        [self removeQueueItemAtIndex:index];
+    } else {
+        [self removeVideoAtIndex:index];
+    }
+}
+
+/* Fixes an issue where the timestamp slider would get reverted
+   to a previous checkpoint when skipping the next track. */
+- (void)contentVideoMediaTimeDidChangeToTime:(double)time totalMediaTime:(double)totalTime {
+    %orig;
+
+    MPNowPlayingInfoCenter *center = [MPNowPlayingInfoCenter defaultCenter];
+    NSMutableDictionary *nowPlayingInfo = [center.nowPlayingInfo mutableCopy];
+    nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = @(time);
+
+    center.nowPlayingInfo = nowPlayingInfo;
 }
 
 %end
 
 
 %ctor {
-    NSString *bundleID = [NSBundle mainBundle].bundleIdentifier;
-    if (!initClient(bundleID, &skipNext, &manualUpdate))
-        return;
+    if (shouldInitClient(YouTubeMusic)) {
+        %init;
+
+        Class queueController = %c(YTMQueueController);
+        if ([queueController instancesRespondToSelector:@selector(playItemAtIndex:
+                                                                  autoPlaySource:
+                                                                  isPlaybackControllerInternalTransition:
+                                                                  atStartTime:)]) {
+            %init(PlayItemAtIndex_New);
+        } else {
+            %init(PlayItemAtIndex_Old);
+        }
+
+        if ([queueController instancesRespondToSelector:@selector(addQueueItems:
+                                                                  numItemsToReveal:
+                                                                  atIndex:
+                                                                  ignoreSelectedProperty:)]) {
+            %init(AddQueueItems_New);
+        } else {
+            %init(AddQueueItems_Old)
+        }
+
+        if ([queueController instancesRespondToSelector:@selector(removeQueueItemAtIndex:)]) {
+            %init(RemoveQueueItemAtIndex);
+        } else {
+            %init(RemoveVideoAtIndex);
+        }
+    }
 }

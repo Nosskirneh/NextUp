@@ -2,21 +2,12 @@
 #import "../CommonClients.h"
 
 
-void skipNext(notificationArguments) {
-    [getQueuer() skipNext];
-}
-
-void manualUpdate(notificationArguments) {
-    [getQueuer() fetchNextUp];
-}
-
-DZRPlaybackQueuer *getQueuer() {
+static DZRPlaybackQueuer *getQueuer() {
     return [%c(DZRAudioPlayer) sharedPlayer].queuer;
 }
 
 // Changing from a playlist to Flow doesn't automatically call setCurrentTrackIndex.
 // This will make it fetch tracks when starting Flow.
-
 %hook DZRMyMusicShuffleQueuer
 
 - (void)setTracks:(NSArray *)tracks {
@@ -47,7 +38,9 @@ DZRPlaybackQueuer *getQueuer() {
     [self fetchNextUp];
 }
 
-- (void)replacePlayables:(id)arg1 shuffledTracksIDs:(id)arg2 currentTrackIndex:(unsigned long long)index {
+- (void)replacePlayables:(id)arg1
+       shuffledTracksIDs:(id)arg2
+       currentTrackIndex:(unsigned long long)index {
     %orig;
 
     if (index == self.currentTrackIndex + 1)
@@ -61,10 +54,12 @@ DZRPlaybackQueuer *getQueuer() {
         [self fetchNextUp];
 }
 
-- (void)movePlayableAtIndex:(unsigned long long)from toIndex:(unsigned long long)to {
+- (void)movePlayableAtIndex:(unsigned long long)from
+                    toIndex:(unsigned long long)to {
     %orig;
 
-    if (from == self.currentTrackIndex + 1 || to == self.currentTrackIndex + 1)
+    if (from == self.currentTrackIndex + 1 ||
+        to == self.currentTrackIndex + 1)
         [self fetchNextUp];
 }
 
@@ -95,9 +90,15 @@ DZRPlaybackQueuer *getQueuer() {
 
 %new
 - (void)skipNext {
-    NSMutableArray *newTracks = [self.tracks mutableCopy];
-    [newTracks removeObjectAtIndex:self.currentTrackIndex + 1];
-    MSHookIvar<NSArray *>(self, "_tracks") = newTracks;
+    int nextIndex = self.currentTrackIndex + 1;
+    if ([self respondsToSelector:@selector(shuffledTracks)]) {
+        // DZRBasicQueuer
+        [self removePlayableAtIndex:nextIndex];
+    } else {
+        NSMutableArray *newTracks = [self.tracks mutableCopy];
+        [newTracks removeObjectAtIndex:nextIndex];
+        MSHookIvar<NSArray *>(self, "_tracks") = newTracks;
+    }
 
     if ([self respondsToSelector:@selector(fetchMoreTracksIfNeededAfterSelectTrackAtIndex:)])
         [((DZRMixQueuer *)self) fetchMoreTracksIfNeededAfterSelectTrackAtIndex:self.currentTrackIndex];
@@ -132,7 +133,8 @@ DZRPlaybackQueuer *getQueuer() {
     [%c(_TtC6Deezer19IllustrationManager) fetchImageFor:illustration
                                                    size:ARTWORK_SIZE
                                                  effect:nil
-                                                success:^(_TtC6Deezer18DeezerIllustration *illustration, UIImage *image) {
+                                                success:^(_TtC6Deezer18DeezerIllustration *illustration,
+                                                          UIImage *image) {
                                                     completion(image);
                                               } failure:nil];
 }
@@ -141,7 +143,13 @@ DZRPlaybackQueuer *getQueuer() {
 
 
 %ctor {
-    NSString *bundleID = [NSBundle mainBundle].bundleIdentifier;
-    if (!initClient(bundleID, &skipNext, &manualUpdate))
-        return;
+    if (shouldInitClient(Deezer)) {
+        registerNotify(^(int _) {
+            [getQueuer() skipNext];
+        },
+        ^(int _) {
+            [getQueuer() fetchNextUp];
+        });
+        %init;
+    }
 }

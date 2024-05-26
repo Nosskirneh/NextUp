@@ -2,23 +2,22 @@
 #import "../CommonClients.h"
 
 
-void skipNext(notificationArguments) {
-    [[%c(_TtC4WiMP16PlayQueueManager) sharedInstance] skipNext];
-}
-
-void manualUpdate(notificationArguments) {
-    [[%c(_TtC4WiMP16PlayQueueManager) sharedInstance] manuallyUpdate];
-}
-
 %hook _TtC4WiMP16PlayQueueManager
 %property (nonatomic, retain) WMPImageService *imageService;
 %property (nonatomic, retain) _TtC4WiMP13PlayQueueItem *lastSentTrack;
 
 - (id)init {
-    _TtC4WiMP16PlayQueueManager *orig = %orig;
-    orig.imageService = [[%c(WMPImageService) alloc] init];
+    self = %orig;
+    self.imageService = [[%c(WMPImageService) alloc] init];
 
-    return orig;
+    [[NSNotificationCenter defaultCenter] addObserverForName:@"kPlayQueueDidChange"
+                                                      object:nil
+                                                       queue:nil
+                                                  usingBlock:^(NSNotification *notification) {
+        [self fetchNextUp];
+    }];
+
+    return self;
 }
 
 %new
@@ -49,7 +48,9 @@ void manualUpdate(notificationArguments) {
     metadata[kTitle] = item.title;
     metadata[kSubtitle] = item.artistTitle;
 
-    UIImage *image = [self.imageService imageForAlbumId:@(item.albumId) withImageResourceId:item.imageResourceId size:8];
+    UIImage *image = [self.imageService imageForAlbumId:@(item.albumId)
+                                    withImageResourceId:item.imageResourceId
+                                                   size:8];
     if (!image)
         image = [self.imageService getDefaultAlbumImageForSize:8];
 
@@ -66,20 +67,15 @@ void manualUpdate(notificationArguments) {
 
 %end
 
-// This is called on next track, toggling shuffle, reordering, adding or removing to/from the queue.
-%hook _TtC4WiMP15PlayQueueModule
-
-- (void)playQueueDidChange:(id)arg1 {
-    %orig;
-
-    [[%c(_TtC4WiMP16PlayQueueManager) sharedInstance] fetchNextUp];
-}
-
-%end
-
 
 %ctor {
-    NSString *bundleID = [NSBundle mainBundle].bundleIdentifier;
-    if (!initClient(bundleID, &skipNext, &manualUpdate))
-        return;
+    if (shouldInitClient(TIDAL)) {
+        registerNotify(^(int _) {
+            [[%c(_TtC4WiMP16PlayQueueManager) sharedInstance] skipNext];
+        },
+        ^(int _) {
+            [[%c(_TtC4WiMP16PlayQueueManager) sharedInstance] manuallyUpdate];
+        });
+        %init;
+    }
 }

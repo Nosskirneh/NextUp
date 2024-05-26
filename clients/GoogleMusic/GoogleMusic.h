@@ -1,3 +1,6 @@
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+
 @interface Track : NSObject
 @property (copy, nonatomic) NSString *albumArtURLString;
 @property (copy, nonatomic) NSString *albumArtistString;
@@ -21,7 +24,11 @@
 @end
 
 @interface GPMImageFetcher : NSObject
-- (id)fetchImageWithURL:(NSURL *)URL size:(CGSize)size quality:(NSUInteger)quality operationSequence:(GPMOperationSequence *)sequence completionHandler:(id)completion;
+- (id)fetchImageWithURL:(NSURL *)URL
+				   size:(CGSize)size
+			    quality:(NSUInteger)quality
+      operationSequence:(GPMOperationSequence *)sequence
+      completionHandler:(id)completion;
 @end
 
 @interface GPMAppServiceManager : NSObject

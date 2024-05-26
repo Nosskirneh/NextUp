@@ -1,3 +1,5 @@
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 #import <MediaPlayer/MPMediaItem.h>
 
 @interface _TtC6Deezer18DeezerIllustration : NSObject
@@ -21,6 +23,7 @@
 @interface DZRPlaybackQueuer : NSObject
 @property(nonatomic) unsigned long long currentTrackIndex;
 @property(readonly, nonatomic) NSArray<DeezerTrack *> *tracks;
+- (void)removePlayableAtIndex:(unsigned long long)index;
 
 - (void)fetchNextUp;
 - (NSDictionary *)serializeTrack:(DeezerTrack *)track image:(UIImage *)image;
@@ -38,12 +41,3 @@
 @property (nonatomic, strong, readwrite) DZRPlaybackQueuer *queuer;
 + (DZRAudioPlayer *)sharedPlayer;
 @end
-
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-    DZRPlaybackQueuer *getQueuer();
-#ifdef __cplusplus
-}
-#endif

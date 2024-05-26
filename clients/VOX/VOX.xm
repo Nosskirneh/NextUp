@@ -1,27 +1,18 @@
 #import "VOX.h"
 #import "../CommonClients.h"
 
-void skipNext(notificationArguments) {
-    [[NSNotificationCenter defaultCenter] postNotificationName:kSkipNext object:nil];
-}
-
-void manualUpdate(notificationArguments) {
-    [[NSNotificationCenter defaultCenter] postNotificationName:kManualUpdate object:nil];
-}
 
 %hook VOXPlayerQueue
 
 - (id)init {
     self = %orig;
 
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(skipNext)
-                                                 name:kSkipNext
-                                               object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(fetchNextUp)
-                                                 name:kManualUpdate
-                                               object:nil];
+    registerNotify(^(int _) {
+            [self skipNext];
+        },
+        ^(int _) {
+            [self fetchNextUp];
+        });
 
     return self;
 }
@@ -49,7 +40,9 @@ void manualUpdate(notificationArguments) {
 
     VOXImageFetcher *imageFetcher = [%c(VOXImageFetcher) fetcherURL:[NSURL URLWithString:next.artworkURL]];
 
-    [[%c(HNKCache) sharedCache] fetchImageForFetcher:imageFetcher formatName:@"smallArtworkCache" success:^(UIImage *image) {
+    [[%c(HNKCache) sharedCache] fetchImageForFetcher:imageFetcher
+                                          formatName:@"smallArtworkCache"
+                                             success:^(UIImage *image) {
         sendNextTrackMetadata([self serializeTrack:next image:image]);
     } failure:^() {
         sendNextTrackMetadata([self serializeTrack:next image:nil]);
@@ -65,7 +58,7 @@ void manualUpdate(notificationArguments) {
     if (image)
         metadata[kArtwork] = UIImagePNGRepresentation(image);
 
-    metadata[kSkipable] = @YES;
+    metadata[kSkippable] = @YES;
     return metadata;
 }
 
@@ -73,7 +66,6 @@ void manualUpdate(notificationArguments) {
 
 
 %ctor {
-    NSString *bundleID = [NSBundle mainBundle].bundleIdentifier;
-    if (!initClient(bundleID, &skipNext, &manualUpdate))
-        return;
+    if (shouldInitClient(VOX))
+        %init;
 }

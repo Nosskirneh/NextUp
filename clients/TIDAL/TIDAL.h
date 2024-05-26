@@ -1,5 +1,10 @@
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+
 @interface WMPImageService : NSObject
-- (UIImage *)imageForAlbumId:(NSNumber *)albumId withImageResourceId:(NSString *)resourceId size:(unsigned long long)size;
+- (UIImage *)imageForAlbumId:(NSNumber *)albumId
+         withImageResourceId:(NSString *)resourceId
+                        size:(unsigned long long)size;
 - (UIImage *)getDefaultAlbumImageForSize:(unsigned long long)size;
 @end
 

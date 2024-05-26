@@ -1,12 +1,12 @@
-NSString *const kHasSeenTrialEnded = @"hasSeenTrialEnded";
+#import <Foundation/Foundation.h>
 
-NSString *const kShowNextUp = @"se.nosskirneh.nextup/showNextUp";
-NSString *const kHideNextUp = @"se.nosskirneh.nextup/hideNextUp";
-NSString *const kUpdateLabels = @"se.nosskirneh.nextup/updateLabels";
+const char *kSettingsChanged = "se.nosskirneh.nextup/preferencesChanged";
 
 NSString *const kControlCenter = @"controlcenter";
 NSString *const kLockscreen = @"lockscreen";
 NSString *const kHideXButtons = @"hideXButtons";
+NSString *const kHideHomeBar = @"hideHomeBar";
+NSString *const kExtraBottomPadding = @"extraBottomPadding";
 NSString *const kSlimmedLSMode = @"slimmedLSMode";
 NSString *const kHideOnEmpty = @"hideOnEmpty";
 NSString *const kHideArtwork = @"hideArtwork";

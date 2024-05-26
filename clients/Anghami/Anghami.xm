@@ -2,16 +2,8 @@
 #import "../CommonClients.h"
 
 
-ANGPlayQueue *getQueue() {
+static ANGPlayQueue *getQueue() {
     return [%c(PlayQueueSingleton) currentPlayQueue];
-}
-
-void skipNext(notificationArguments) {
-    [getQueue() skipNext];
-}
-
-void manualUpdate(notificationArguments) {
-    [getQueue() manuallyUpdate];
 }
 
 %hook ANGPlayQueue
@@ -24,7 +16,9 @@ void manualUpdate(notificationArguments) {
 }
 
 // This seems to be called on all usable methods in PlayQueueSingleton (move, add, clear etc)
-- (BOOL)setCurrentIndex:(unsigned long long)index userAction:(BOOL)userAction report:(BOOL)report {
+- (BOOL)setCurrentIndex:(unsigned long long)index
+             userAction:(BOOL)userAction
+                 report:(BOOL)report {
     BOOL orig = %orig;
     [self fetchNextUp];
 
@@ -54,7 +48,8 @@ void manualUpdate(notificationArguments) {
     ANGImageDownloader *imageDownloader = [%c(ANGImageDownloader) sharedInstance];
     [imageDownloader getImage:spec callback:^(void) {
         BOOL thumbnail = YES;
-        UIImage *image = [imageDownloader imageFromCacheForSpec:spec thumbnail:&thumbnail];
+        UIImage *image = [imageDownloader imageFromCacheForSpec:spec
+                                                      thumbnail:&thumbnail];
         NSDictionary *metadata = [self serializeTrack:item image:image];
         sendNextTrackMetadata(metadata);
     }];
@@ -83,7 +78,13 @@ void manualUpdate(notificationArguments) {
 
 
 %ctor {
-    NSString *bundleID = [NSBundle mainBundle].bundleIdentifier;
-    if (!initClient(bundleID, &skipNext, &manualUpdate))
-        return;
+    if (shouldInitClient(Anghami)) {
+        registerNotify(^(int _) {
+            [getQueue() skipNext];
+        },
+        ^(int _) {
+            [getQueue() manuallyUpdate];
+        });
+        %init;
+    }
 }

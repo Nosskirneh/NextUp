@@ -1,3 +1,6 @@
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+
 @interface GIMMe : NSObject
 - (id)instanceForType:(id)arg1;
 - (id)instanceForKey:(id)arg1;
@@ -10,9 +13,6 @@
 
 
 @interface YTImageService : NSObject
-@end
-
-@interface YTImageServiceImpl : YTImageService
 - (void)makeImageRequestWithURL:(id)arg1 responseBlock:(id)arg2 errorBlock:(id)arg3;
 @end
 
@@ -51,8 +51,13 @@
 - (YTIPlaylistPanelVideoRenderer *)nextVideoWithAutoplay:(BOOL)autoplay;
 - (BOOL)hasAutoplayVideo;
 - (unsigned long long)nextVideoIndex;
-- (void)removeVideoAtIndex:(unsigned long long)arg1;
+- (void)removeVideoAtIndex:(unsigned long long)index; // old
+- (void)removeQueueItemAtIndex:(unsigned long long)index; // new
 
+
+@property (nonatomic, assign) int skipNextNotifyToken;
+@property (nonatomic, assign) int manualUpdateNotifyToken;
+- (void)skipNext;
 - (void)fetchNextUp;
 - (NSDictionary *)serializeTrack:(YTIPlaylistPanelVideoRenderer *)item image:(UIImage *)image;
 @end

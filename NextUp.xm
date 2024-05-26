@@ -2,107 +2,85 @@
 #import "SettingsKeys.h"
 #import "Common.h"
 #import "Headers.h"
-#import "DRMValidateOptions.mm"
-#import "notify.h"
+#import <SpringBoard/SBMediaController.h>
 
 
 NextUpManager *manager;
 
-void preferencesChanged(notificationArguments) {
-    [manager reloadPreferences];
-}
-
-/* Listen on changes of now playing app */
-%hook SBMediaController
-
-%new
-- (BOOL)shouldActivateForApplicationID:(NSString *)bundleID {
-    return [manager.enabledApps containsObject:bundleID] &&
-           (!manager.preferences[bundleID] || [manager.preferences[bundleID] boolValue]);
-}
-
-- (void)_setNowPlayingApplication:(SBApplication *)app {
-    NSString *bundleID = app.bundleIdentifier;
-    if ([self shouldActivateForApplicationID:bundleID] && !manager.trialEnded) {
-        [manager setMediaApplication:bundleID];
-
-        // If we should not hide on empty, we show NextUp from the beginning.
-        // In the other case, this is done from the NextUpViewController
-        if (![manager hideOnEmpty])
-            [[NSNotificationCenter defaultCenter] postNotificationName:kShowNextUp object:nil];
-    } else {
-        [manager setMediaApplication:nil];
-        [[NSNotificationCenter defaultCenter] postNotificationName:kHideNextUp object:nil];
-    }
-
-    %orig;
-}
-
-%end
-
 /* Adding the widget */
 %hook MediaControlsPanelViewController
+#define _self (self)
 
 %property (nonatomic, retain) NextUpViewController *nextUpViewController;
-%property (nonatomic, assign, getter=isNextUpInitialized) BOOL nextUpInitialized;
 
 - (void)setDelegate:(id)delegate {
     %orig;
 
-    // This has to be done in `setDelegate` as it seems like the only way to know if its CC/LS is by comparing the delegate class.
-    // Not ideal, but it works. Thus, we have to use `setDelegate` as it's executed after `viewDidLoad`.
-    [self initNextUp];
+    /* This has to be done in `setDelegate` as it seems to be the
+       only way to know if its CC/LS is by comparing the delegate
+       class. Not ideal, but it works. Thus, we have to use
+       `setDelegate` as it's executed after `viewDidLoad`. */
+
+    BOOL controlCenter = [self NU_isControlCenter];
+    /* If the current mode is not enabled, return here */
+    if ((!controlCenter && ![manager lockscreenEnabled]) ||
+        (controlCenter && ![manager controlCenterEnabled]))
+        return;
+    [self initNextUpInControlCenter:controlCenter];
 }
 
 %new
 - (BOOL)NU_isControlCenter {
-    return ([self.delegate class] == %c(MediaControlsEndpointsViewController));
+    return ([_self.delegate class] == %c(MediaControlsEndpointsViewController));
 }
 
 - (void)setStyle:(int)style {
     %orig;
-
-    self.nextUpViewController.style = style;
+    _self.nextUpViewController.style = style;
 }
 
 %new
-- (void)initNextUp {
-    if (![self isNextUpInitialized]) {
-        BOOL controlCenter = [self NU_isControlCenter];
-        self.nextUpViewController = [[%c(NextUpViewController) alloc] initWithControlCenter:controlCenter
-                                                                                     defaultStyle:self.style
-                                                                                          manager:manager];
-
+- (void)initNextUpInControlCenter:(BOOL)controlCenter {
+    MediaControlsPanelViewController *controller = self;
+    if (!controller.nextUpViewController) {
+        controller.nextUpViewController = [[%c(NextUpViewController) alloc] initWithControlCenter:controlCenter
+                                                                                     defaultStyle:controller.style];
+        NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
         if (controlCenter) {
             MediaControlsContainerView *containerView = self.parentContainerView.mediaControlsContainerView;
 
-            if ([containerView respondsToSelector:@selector(nextUpView)]) {
-                [[NSNotificationCenter defaultCenter] addObserver:containerView
-                                                         selector:@selector(showNextUp)
-                                                             name:kShowNextUp
-                                                           object:nil];
+            containerView.nextUpHeight = 105.0;
+            containerView.heightWithNextUpActive = 102.0;
 
-                [[NSNotificationCenter defaultCenter] addObserver:containerView
-                                                         selector:@selector(hideNextUp)
-                                                             name:kHideNextUp
-                                                           object:nil];
+            if ([containerView respondsToSelector:@selector(nextUpView)]) {
+                [center addObserver:containerView
+                           selector:@selector(showNextUp)
+                               name:kShowNextUp
+                             object:nil];
+
+                [center addObserver:containerView
+                           selector:@selector(hideNextUp)
+                               name:kHideNextUp
+                             object:nil];
 
                 containerView.nextUpView = self.nextUpViewController.view;
             }
         }
 
-        self.nextUpInitialized = YES;
-        [[NSNotificationCenter defaultCenter] postNotificationName:kNextUpDidInitialize
-                                                            object:nil
-                                                          userInfo:nil];
+        [center postNotificationName:kNextUpDidInitialize
+                              object:nil
+                            userInfo:nil];
     }
 }
 
+#undef _self
 %end
 // ---
 
-// The remaining parts (CC/LS) is for changing the heights/y-coordinates of their respective views.
-// Can't be done in the panelViewController as they are fundamentally different views.
+
+/* The remaining parts (CC/LS) is for changing the height/y-coordinate
+   of their respective views. Can't be done in the panelViewController
+   as they are fundamentally different views. */
 %group ControlCenter
     %hook CCUIContentModuleContainerViewController
 
@@ -120,43 +98,76 @@ void preferencesChanged(notificationArguments) {
     %property (nonatomic, retain) UIView *nextUpView;
     %property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
     %property (nonatomic, assign) BOOL shouldShowNextUp;
+    %property (nonatomic, assign) float nextUpHeight;
+    %property (nonatomic, assign) float heightWithNextUpActive;
 
     - (void)layoutSubviews {
         %orig;
 
         if (manager.controlCenterExpanded && self.shouldShowNextUp) {
-            CGRect frame = self.frame;
-            frame.size.height = 101.0;
-            self.frame = frame;
-
-            self.nextUpView.frame = CGRectMake(frame.origin.x,
-                                               frame.origin.y + frame.size.height,
-                                               frame.size.width,
-                                               105);
+            [self prepareFramesForNextUp];
 
             if (!self.showingNextUp)
-                [self addNextUpView];
+                [self showNextUp];
         }
+    }
+
+    %new
+    - (void)prepareFramesForNextUp {
+        CGRect frame = self.frame;
+        frame.size.height = self.heightWithNextUpActive;
+        self.frame = frame;
+
+        self.nextUpView.frame = CGRectMake(frame.origin.x,
+                                           frame.origin.y + frame.size.height,
+                                           frame.size.width,
+                                           self.nextUpHeight);
+    }
+
+    %new
+    - (CGRect)revertFrameForNextUp {
+        CGRect frame = self.frame;
+        frame.size.height = self.nextUpHeight + self.heightWithNextUpActive;
+        return frame;
     }
 
     %new
     - (void)addNextUpView {
         [self.superview addSubview:self.nextUpView];
-        self.showingNextUp = YES;
     }
 
     %new
     - (void)showNextUp {
         self.shouldShowNextUp = YES;
-        if (!self.showingNextUp)
-            [self layoutSubviews];
+        if (!self.showingNextUp) {
+            self.showingNextUp = YES;
+            [self addNextUpView];
+            self.nextUpView.alpha = 0.0f;
+
+            [UIView animateWithDuration:0.25 animations:^{
+                [self prepareFramesForNextUp];
+                [self layoutIfNeeded];
+
+                self.nextUpView.alpha = 1.0f;
+            } completion:nil];
+        }
     }
 
     %new
     - (void)hideNextUp {
         self.shouldShowNextUp = NO;
-        if (self.showingNextUp)
-            [self layoutSubviews];
+        if (self.showingNextUp && manager.controlCenterExpanded) {
+            CGRect frame = [self revertFrameForNextUp];
+            self.showingNextUp = NO;
+            [UIView animateWithDuration:0.25 animations:^{
+                self.frame = frame;
+                [self layoutIfNeeded];
+
+                self.nextUpView.alpha = 0.0f;
+            } completion:^(BOOL finished) {
+                [self.nextUpView removeFromSuperview];
+            }];
+        }
     }
 
     %end
@@ -166,18 +177,20 @@ void preferencesChanged(notificationArguments) {
 
 %group Lockscreen
     %hook SBDashBoardNotificationAdjunctListViewController
+    #define _self (self)
 
     - (id)init {
         self = %orig;
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(showNextUp)
-                                                     name:kShowNextUp
-                                                   object:nil];
+        NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+        [center addObserver:self
+                   selector:@selector(showNextUp)
+                       name:kShowNextUp
+                     object:nil];
 
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(hideNextUp)
-                                                     name:kHideNextUp
-                                                   object:nil];
+        [center addObserver:self
+                   selector:@selector(hideNextUp)
+                       name:kHideNextUp
+                     object:nil];
         return self;
     }
 
@@ -224,14 +237,15 @@ void preferencesChanged(notificationArguments) {
         }
     }
 
+    #undef _self
     %end
 
 
     %hook SBDashBoardMediaControlsViewController
+    #define _self (self)
     %property (nonatomic, assign) BOOL shouldShowNextUp;
     %property (nonatomic, assign) BOOL nu_skipWidgetHeightIncrease;
     %property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
-    %property (nonatomic, assign) float nextUpHeight;
 
     - (id)init {
         self = %orig;
@@ -240,31 +254,51 @@ void preferencesChanged(notificationArguments) {
            it becomes some value that are undefined and changes */
         self.nu_skipWidgetHeightIncrease = NO;
 
-        float nextUpHeight = 105.0;
-        if ([manager slimmedLSMode])
-            nextUpHeight -= 40;
-        self.nextUpHeight = nextUpHeight;
-
         return self;
+    }
+
+    %new
+    - (float)nextUpHeight {
+        return manager.lockscreenHeight;
+    }
+
+    %new
+    - (float)extraBottomPaddingForNextUpHeight:(float)nextUpHeight {
+        if (nextUpHeight == 0.f) {
+            return 0.f;
+        }
+        return manager.extraBottomPadding;
     }
 
     - (CGSize)preferredContentSize {
         CGSize orig = %orig;
-        if (self.shouldShowNextUp && !self.nu_skipWidgetHeightIncrease)
-            orig.height += self.nextUpHeight;
+        if (!_self.nu_skipWidgetHeightIncrease) {
+            float nextUpHeight = _self.nextUpHeight;
+            orig.height += nextUpHeight + [_self extraBottomPaddingForNextUpHeight:nextUpHeight];
+        }
         return orig;
     }
 
     - (void)_layoutMediaControls {
         %orig;
 
-        if (self.shouldShowNextUp)
-            [self addNextUpView];
+        if (_self.shouldShowNextUp)
+            [_self addNextUpView];
     }
 
     %new
     - (MediaControlsPanelViewController *)panelViewController {
         return MSHookIvar<MediaControlsPanelViewController *>(self, "_mediaControlsPanelViewController");
+    }
+
+    %new
+    - (float)nextUpXPosition {
+        return [self panelViewController].view.frame.origin.x;
+    }
+
+    %new
+    - (float)nextUpExtraWidth {
+        return 0.f;
     }
 
     %new
@@ -274,13 +308,12 @@ void preferencesChanged(notificationArguments) {
             return;
 
         MediaControlsPanelViewController *panelViewController = [self panelViewController];
-        [self.view addSubview:panelViewController.nextUpViewController.view];
-
         UIView *nextUpView = panelViewController.nextUpViewController.view;
+        float height = [_self nextUpHeight];
         nextUpView.frame = CGRectMake(panelViewController.view.frame.origin.x,
-                                      size.height - self.nextUpHeight,
+                                      size.height - height - [_self extraBottomPaddingForNextUpHeight:height],
                                       size.width,
-                                      self.nextUpHeight);
+                                      height);
         [self.view addSubview:nextUpView];
         self.showingNextUp = YES;
     }
@@ -290,6 +323,7 @@ void preferencesChanged(notificationArguments) {
         [[self panelViewController].nextUpViewController.view removeFromSuperview];
     }
 
+    #undef _self
     %end
 
     /* Hide iPhone X buttons */
@@ -300,15 +334,16 @@ void preferencesChanged(notificationArguments) {
     - (id)initWithFrame:(CGRect)frame delegate:(id)delegate {
         self = %orig;
 
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(showNextUp)
-                                                     name:kShowNextUp
-                                                   object:nil];
+        NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+        [center addObserver:self
+                   selector:@selector(showNextUp)
+                       name:kShowNextUp
+                     object:nil];
 
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(hideNextUp)
-                                                     name:kHideNextUp
-                                                   object:nil];
+        [center addObserver:self
+                   selector:@selector(hideNextUp)
+                       name:kHideNextUp
+                     object:nil];
 
         return self;
     }
@@ -316,22 +351,92 @@ void preferencesChanged(notificationArguments) {
     %new
     - (void)showNextUp {
         self.showingNextUp = YES;
-        [self setAlpha:0];
+        if ([self shouldHideWithNextUp])
+            [self animateHide:YES];
     }
 
     %new
     - (void)hideNextUp {
         self.showingNextUp = NO;
+        if ([self shouldHideWithNextUp])
+            [self animateHide:NO];
+    }
+
+    %new
+    - (void)animateHide:(BOOL)hide {
+        CGFloat alpha = hide ? 0.0f : 1.0f;
+        [UIView animateWithDuration:0.2
+                animations:^{
+                    self.alpha = alpha;
+                }
+                completion:nil];
+    }
+
+    %new
+    - (BOOL)shouldHideWithNextUp {
+        return [[manager class] isShowingMediaControls] && manager.hideXButtons;
+    }
+
+    %new
+    - (BOOL)shouldOverrideAlpha {
+        return [self isShowingNextUp] && [self shouldHideWithNextUp];
     }
 
     - (void)setAlpha:(CGFloat)alpha {
-        if ([self isShowingNextUp] &&
-            [self.delegate.dashBoardViewController isShowingMediaControls] &&
-            [manager.preferences[kHideXButtons] boolValue])
+        if (alpha == 1.0f && [self shouldOverrideAlpha])
             return %orig(0.0);
         %orig;
     }
 
+    %end
+    // ---
+
+
+    /* Hide home bar */
+    %hook SBDashBoardHomeAffordanceView
+    #define _self (self)
+
+    %property (nonatomic, assign, getter=isShowingNextUp) BOOL showingNextUp;
+
+    - (id)init {
+        self = %orig;
+
+        NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+        [center addObserver:self
+                   selector:@selector(showNextUp)
+                       name:kShowNextUp
+                     object:nil];
+
+        [center addObserver:self
+                   selector:@selector(hideNextUp)
+                       name:kHideNextUp
+                     object:nil];
+
+        return self;
+    }
+
+    %new
+    - (void)showNextUp {
+        _self.showingNextUp = YES;
+        [self setAlpha:0];
+    }
+
+    %new
+    - (void)hideNextUp {
+        _self.showingNextUp = NO;
+    }
+
+    - (void)setAlpha:(CGFloat)alpha {
+        if ([[%c(SBLockScreenManager) sharedInstance] isLockScreenVisible] &&
+            [self isShowingNextUp] &&
+            [[manager class] isShowingMediaControls] &&
+            manager.hideHomeBar)
+            return %orig(0.0);
+
+        %orig;
+    }
+
+    #undef _self
     %end
     // ---
 %end
@@ -394,6 +499,7 @@ void preferencesChanged(notificationArguments) {
 
         self.routingButton.clear.strokeColor = self.textColor.CGColor;
         self.routingButton.backgroundColor = self.skipBackgroundColor;
+        [self updateTextColor];
     }
 
     %end
@@ -411,7 +517,7 @@ void preferencesChanged(notificationArguments) {
         UIColor *color = ((NRDManager *)[%c(NRDManager) sharedInstance]).mainColor;
         NextUpViewController *nextUpViewController = self.nextUpViewController;
         nextUpViewController.headerLabel.textColor = color;
-        [nextUpViewController.mediaView updateTextColor:color];
+        [nextUpViewController.mediaView setNewTextColor:color];
     }
 
     %end
@@ -424,52 +530,33 @@ void preferencesChanged(notificationArguments) {
 
     %property (nonatomic, retain) CAShapeLayer *clear;
     %property (nonatomic, assign) CGFloat size;
+    %property (nonatomic, assign) BOOL controlCenter;
 
-    - (void)setFrame:(CGRect)frame {
-        frame.origin.x += (frame.size.width - self.size) / 2;
-        frame.origin.y += (frame.size.height - self.size) / 2;
-        frame.size.width = self.size;
-        frame.size.height = self.size;
-        %orig;
-    }
-    %end
+    %new
+    + (id)buttonWithSize:(CGFloat)size {
+        NUSkipButton *button = [self buttonWithType:UIButtonTypeCustom];
+        button.size = size;
+        button.layer.cornerRadius = size / 2;
 
-    %subclass NextUpMediaHeaderView : MediaControlsHeaderView
-
-    // Override routing button
-    %property (nonatomic, retain) NUSkipButton *routingButton;
-    %property (nonatomic, retain) UIColor *textColor;
-    %property (nonatomic, assign) CGFloat textAlpha;
-    %property (nonatomic, retain) UIColor *skipBackgroundColor;
-
-    - (id)initWithFrame:(CGRect)arg1 {
-        self = %orig;
-
-        float size = 24.0;
-
-        self.routingButton = [%c(NUSkipButton) buttonWithType:UIButtonTypeCustom];
-        self.routingButton.size = size;
-        self.routingButton.layer.cornerRadius = size / 2;
-        
         float ratio = 1/3.;
         float crossSize = size * ratio;
         float offset = (size - crossSize) / 2;
 
         float startPoint = offset;
         float endPoint = offset + crossSize;
-        
+
         UIBezierPath *firstLinePath = [UIBezierPath bezierPath];
         [firstLinePath moveToPoint:CGPointMake(startPoint, startPoint)];
         [firstLinePath addLineToPoint:CGPointMake(endPoint, endPoint)];
-        
+
         UIBezierPath *secondLinePath = [UIBezierPath bezierPath];
         [secondLinePath moveToPoint:CGPointMake(endPoint, startPoint)];
         [secondLinePath addLineToPoint:CGPointMake(startPoint, endPoint)];
-        
+
         [firstLinePath appendPath:secondLinePath];
-        
+
         float lineWidthAndRadius = size * 0.0875;
-        
+
         CAShapeLayer *clear = [CAShapeLayer layer];
         clear.frame = CGRectMake(0, 0, size, size);
         clear.lineCap = kCALineCapRound;
@@ -479,10 +566,88 @@ void preferencesChanged(notificationArguments) {
         clear.cornerRadius = lineWidthAndRadius;
         clear.opacity = 1.0;
         [clear setMasksToBounds:YES];
-        
-        [self.routingButton.layer addSublayer:clear];
-        self.routingButton.clear = clear;
 
+        [button.layer addSublayer:clear];
+        button.clear = clear;
+
+        [button addTarget:button action:@selector(shrink) forControlEvents:UIControlEventTouchDown];
+        [button addTarget:button
+                   action:@selector(grow)
+         forControlEvents:UIControlEventTouchUpInside | UIControlEventTouchUpOutside | UIControlEventTouchCancel];
+
+        return button;
+    }
+
+    %new
+    + (id)buttonWithSize:(CGFloat)size controlCenter:(BOOL)controlCenter {
+        NUSkipButton *button = [self buttonWithSize:size];
+        button.controlCenter = controlCenter;
+        return button;
+    }
+
+    %new
+    - (CABasicAnimation *)sizeAnimationForGrowing:(BOOL)grow {
+        NSNumber *from;
+        NSNumber *to;
+        if (grow) {
+            from = [NSNumber numberWithFloat:0.9f];
+            to = [NSNumber numberWithFloat:1.0f];
+        } else {
+            from = [NSNumber numberWithFloat:1.0f];
+            to = [NSNumber numberWithFloat:0.9f];
+        }
+
+        CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
+        animation.duration = 0.35f;
+        animation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+        animation.fromValue = from;
+        animation.toValue = to;
+        animation.removedOnCompletion = NO;
+        animation.fillMode = kCAFillModeForwards;
+        return animation;
+    }
+
+    %new
+    - (void)shrink {
+        [self.layer addAnimation:[self sizeAnimationForGrowing:NO] forKey:@"shrink-grow"];
+    }
+
+    %new
+    - (void)grow {
+        [self.layer addAnimation:[self sizeAnimationForGrowing:YES] forKey:@"shrink-grow"];
+    }
+
+    - (void)setFrame:(CGRect)frame {
+        frame.origin.x += (frame.size.width - self.size) / 2;
+        frame.origin.y += (frame.size.height - self.size) / 2;
+        frame.size.width = self.size;
+        frame.size.height = self.size;
+        %orig;
+    }
+
+    %end
+
+    %subclass NextUpMediaHeaderView : MediaControlsHeaderView
+
+    // Override routing button
+    %property (nonatomic, retain) NUSkipButton *routingButton;
+    %property (nonatomic, retain) UIColor *textColor;
+    %property (nonatomic, assign) CGFloat textAlpha;
+    %property (nonatomic, retain) UIColor *skipBackgroundColor;
+    %property (nonatomic, assign) BOOL controlCenter;
+
+    %new
+    - (id)initWithFrame:(CGRect)frame controlCenter:(BOOL)controlCenter {
+        self = [self initWithFrame:frame];
+        self.controlCenter = controlCenter;
+
+        return self;
+    }
+
+    - (id)initWithFrame:(CGRect)frame {
+        self = %orig;
+
+        self.routingButton = [%c(NUSkipButton) buttonWithSize:26.0f controlCenter:self.controlCenter];
         [self addSubview:self.routingButton];
 
         // Artwork view
@@ -505,14 +670,25 @@ void preferencesChanged(notificationArguments) {
     }
 
     %new
-    - (void)updateTextColor:(UIColor *)color {
+    - (void)setNewTextColor:(UIColor *)color {
         self.textColor = color;
+        [self updateTextColor];
+    }
 
+    %new
+    - (void)updateTextColor {
+        UIColor *color = self.textColor;
+        self.primaryLabel.textColor = color;
+        self.secondaryLabel.textColor = color;
         self.routingButton.clear.strokeColor = color.CGColor;
     }
 
     %new
-    - (CGRect)rectForMaxWidth:(CGRect)frame maxWidth:(CGFloat)maxWidth fallbackOriginX:(CGFloat)fallbackOriginX bonusWidth:(CGFloat)bonusWidth bonusOriginX:(CGFloat)bonusOriginX {
+    - (CGRect)rectForMaxWidth:(CGRect)frame
+                     maxWidth:(CGFloat)maxWidth
+              fallbackOriginX:(CGFloat)fallbackOriginX
+                   bonusWidth:(CGFloat)bonusWidth
+                 bonusOriginX:(CGFloat)bonusOriginX {
         frame.size.width += bonusWidth;
         if (maxWidth < frame.size.width) {
             if ([UIApplication sharedApplication].userInterfaceLayoutDirection == UIUserInterfaceLayoutDirectionRightToLeft)
@@ -527,13 +703,18 @@ void preferencesChanged(notificationArguments) {
         return frame;
     }
 
+    %new
+    - (UIView *)getArtworkContainerView {
+        return self.artworkView;
+    }
+
     // This is a bit messy, but it's because MPUMarqueeView is weird.
     // Changing its frame doesn't work very well with RTL either...
     - (void)layoutSubviews {
         %orig;
 
         NUSkipButton *routingButton = self.routingButton;
-        UIView *artworkView = self.artworkView;
+        UIView *artworkView = [self getArtworkContainerView];
 
         if (routingButton.center.x == 0 && routingButton.center.y == 0) { // Coordinates will not be set properly on iOS 11.2.x
             float buttonSize = routingButton.size;
@@ -568,12 +749,20 @@ void preferencesChanged(notificationArguments) {
 
         // Primary label
         CGRect frame = self.primaryMarqueeView.frame;
-        frame = [self rectForMaxWidth:frame maxWidth:maxWidth fallbackOriginX:fallbackOriginX bonusWidth:bonusWidth bonusOriginX:bonusOriginX];
+        frame = [self rectForMaxWidth:frame
+                             maxWidth:maxWidth
+                      fallbackOriginX:fallbackOriginX
+                           bonusWidth:bonusWidth
+                         bonusOriginX:bonusOriginX];
         self.primaryMarqueeView.frame = frame;
 
         // Secondary label
         frame = self.secondaryMarqueeView.frame;
-        frame = [self rectForMaxWidth:frame maxWidth:maxWidth fallbackOriginX:fallbackOriginX bonusWidth:bonusWidth bonusOriginX:bonusOriginX];
+        frame = [self rectForMaxWidth:frame
+                             maxWidth:maxWidth
+                      fallbackOriginX:fallbackOriginX
+                           bonusWidth:bonusWidth
+                         bonusOriginX:bonusOriginX];
         self.secondaryMarqueeView.frame = frame;
 
         self.buttonBackground.hidden = YES;
@@ -586,10 +775,8 @@ void preferencesChanged(notificationArguments) {
         self.secondaryLabel.alpha = self.textAlpha;
 
         // Do not color the labels if ColorFlow is active
-        if (![manager colorFlowEnabled]) {
-            self.primaryLabel.textColor = self.textColor;
-            self.secondaryLabel.textColor = self.textColor;
-        }
+        if (!manager.colorFlowEnabled)
+            [self updateTextColor];
 
         self.routingButton.alpha = 0.95;
         self.routingButton.userInteractionEnabled = YES;
@@ -600,98 +787,35 @@ void preferencesChanged(notificationArguments) {
 // ---
 
 
-%group PackagePirated
-%hook SBCoverSheetPresentationManager
+__attribute__((always_inline, visibility("hidden")))
+static inline void initLockscreen() {
+    %init(Lockscreen);
 
-- (void)_cleanupDismissalTransition {
-    %orig;
+    Class c = %c(SBDashBoardMediaControlsViewController);
 
-    static dispatch_once_t once;
-    dispatch_once(&once, ^{
-        showPiracyAlert(packageShown$bs());
-    });
-}
+    if ([c instancesRespondToSelector:@selector(cfw_colorize:)])
+        %init(ColorFlow);
 
-%end
-%end
-
-
-%group Welcome
-%hook SBCoverSheetPresentationManager
-
-- (void)_cleanupDismissalTransition {
-    %orig;
-    showSpringBoardDismissAlert(packageShown$bs(), WelcomeMsg$bs());
-}
-
-%end
-%end
-
-
-%group CheckTrialEnded
-%hook SBCoverSheetPresentationManager
-
-- (void)_cleanupDismissalTransition {
-    %orig;
-
-    if (!manager.trialEnded && check_lic(licensePath$bs(), package$bs()) == CheckInvalidTrialLicense) {
-        [manager setTrialEnded];
-        [[NSNotificationCenter defaultCenter] postNotificationName:kHideNextUp object:nil];
-        showSpringBoardDismissAlert(packageShown$bs(), TrialEndedMsg$bs());
-    }
-}
-
-%end
-%end
-
-static inline void initTrial() {
-    %init(CheckTrialEnded);
+    if ([c instancesRespondToSelector:@selector(nrdUpdate)])
+        %init(Nereid);
 }
 
 %ctor {
-    if (fromUntrustedSource(package$bs()))
-        %init(PackagePirated);
+    manager = [NextUpManager sharedInstance];
 
-    manager = [[NextUpManager alloc] init];
+    /* Load other tweaks if any. */
+    dlopen("/Library/MobileSubstrate/DynamicLibraries/ColorFlow4.dylib", RTLD_NOW);
 
-    // License check – if no license found, present message. If no valid license found, do not init
-    switch (check_lic(licensePath$bs(), package$bs())) {
-        case CheckNoLicense:
-            %init(Welcome);
-            return;
-        case CheckInvalidTrialLicense:
-            initTrial();
-            return;
-        case CheckValidTrialLicense:
-            initTrial();
-            break;
-        case CheckValidLicense:
-            break;
-        case CheckInvalidLicense:
-        case CheckUDIDsDoNotMatch:
-        default:
-            return;
-    }
-    // ---
     [manager setup];
 
     %init();
     %init(CustomViews);
-    if (!manager.preferences[kControlCenter] || [manager.preferences[kControlCenter] boolValue])
+    if (manager.controlCenterEnabled)
         %init(ControlCenter);
 
-    if (!manager.preferences[kLockscreen] || [manager.preferences[kLockscreen] boolValue]) {
-        %init(Lockscreen);
+    if (manager.lockscreenEnabled)
+        initLockscreen();
 
-        if ([%c(SBDashBoardMediaControlsViewController) instancesRespondToSelector:@selector(cfw_colorize:)])
-            %init(ColorFlow);
-
-        if ([%c(MediaControlsPanelViewController) instancesRespondToSelector:@selector(nrdUpdate)])
-            %init(Nereid);
-    }
-
-    if (!manager.preferences[kHapticFeedbackOther] || [manager.preferences[kHapticFeedbackOther] boolValue])
+    if (manager.hapticFeedbackOther)
         %init(HapticFeedback);
-
-    subscribe(preferencesChanged, kPrefChanged);
 }

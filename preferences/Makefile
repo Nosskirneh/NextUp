@@ -1,11 +1,10 @@
 include $(THEOS)/makefiles/common.mk
 
-TARGET = iphone:clang:9.2
-TARGET_IPHONEOS_DEPLOYMENT_VERSION = 9.2
+TARGET = iphone:clang:11.2
 ARCHS = arm64
 
 BUNDLE_NAME = NextUpPrefs
-$(BUNDLE_NAME)_FILES = NextUpRootListController.m ../../DRM/PFStatusBarAlert/PFStatusBarAlert.mm ../../TwitterStuff/Prompt.m ../SettingsKeys.m
+$(BUNDLE_NAME)_FILES = NextUpRootListController.m NUSettingsListController.xm ../../TwitterStuff/Prompt.m ../SettingsKeys.m
 $(BUNDLE_NAME)_CFLAGS = -fobjc-arc
 $(BUNDLE_NAME)_INSTALL_PATH = /Library/PreferenceBundles
 $(BUNDLE_NAME)_FRAMEWORKS = SafariServices
